@@ -25,7 +25,7 @@
   <aside class="control-panel">
     <h2>CRT CONTROL / 控制台</h2>
 
-    <details class="control-group" open>
+    <details class="control-group">
       <summary>CONFIG & PRESETS / 配置与预设</summary>
 <div class="quick-guide">1. Upload media / 上传媒体 → 2. Choose preset / 选择预设 → 3. Fine tune / 微调 → 4. Export / 导出。<br />内置预设下拉菜单已高亮，选择后点击 Apply / 应用。</div>
 <div class="button-row">
@@ -147,9 +147,9 @@
     <div class="control">
       <label><span>Effect Boundary / 效果范围</span></label>
       <select id="effectBoundaryInput" data-config="effectBoundary">
-        <option value="stage" selected>Stage / 全画布</option>
+        <option value="stage">Stage / 全画布</option>
         <option value="media">Media Bounds / 仅媒体范围</option>
-        <option value="source">Source Ratio / 按源媒体比例导出</option>
+        <option value="source" selected>Source Ratio / 按源媒体比例导出</option>
       </select>
       <p class="hint">“按源媒体比例导出”会以导入媒体的宽高比建立输出画布，消除导出文件中的黑边。</p>
     </div>
@@ -193,7 +193,7 @@
 <p class="hint">图片可直接导出 PNG；视频优先输出高质量 MP4/WebM，并在浏览器能力不足时回退为兼容 WebM。</p>
     </details>
 
-    <details class="control-group" open>
+    <details class="control-group">
       <summary>CRT CORE / CRT 核心</summary>
 <div class="control">
       <label><span>Warp Direction / 畸变方向</span><span id="warpDirectionValue">barrel</span></label>
@@ -413,7 +413,7 @@
       </div>
     </details>
 
-    <details class="control-group" open>
+    <details class="control-group">
       <summary>VHS LAB / VHS 实验室</summary>
 <p class="hint">这一组负责录像带化处理。色度相关参数现在全部并入 VHS：其中 NTSC Chroma Bleed 会按亮度 / 色度分离思路，只压缩色度带宽，不是简单 RGB 硬分离。</p>
 
@@ -588,7 +588,7 @@
       "exportBitrate": "50",
       "exportScale": "1.5",
       "exportFormat": "mp4",
-      "effectBoundary": "stage",
+      "effectBoundary": "source",
       "audioPreset": "clean",
       "audioVolume": "1",
       "audioChannels": "stereo",
@@ -2354,11 +2354,30 @@
       setPresetStatus(key === "vhs" ? "Applied system preset: VHS / 已应用系统预设：VHS" : `Applied built-in preset: ${key}`);
     }
 
-    function downloadCurrentFrame() {
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = "crt-processed-frame.png";
-      link.click();
+    async function downloadCurrentFrame() {
+      if (exportInProgress) return;
+      exportInProgress = true;
+      exportRenderScale = Math.max(1, Math.min(3, num("exportScale")));
+      try {
+        resize();
+        renderFrame(performance.now());
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        if (!blob) throw new Error("PNG encoding failed");
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "crt-processed-frame.png";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1600);
+        setPresetStatus("PNG exported at source ratio / 已按源媒体比例导出 PNG");
+      } catch (error) {
+        console.error(error);
+        setPresetStatus("PNG export failed / PNG 导出失败");
+      } finally {
+        exportInProgress = false;
+        exportRenderScale = 1;
+        resize();
+      }
     }
 
     async function downloadProcessedVideo() {
