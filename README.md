@@ -1,808 +1,252 @@
-<div align="center">
-
-# DOM CRT Simulator
-
-**A real-DOM CRT display effect for the web.**  
-真实 DOM 网页的 CRT 屏幕模拟器。
+# CRT Simulator
 
 [English](#english) · [简体中文](#简体中文)
 
-![License](https://img.shields.io/badge/license-MIT-green)
-![Third--party](https://img.shields.io/badge/third--party-BSD--2--Clause-blue)
-![Dependencies](https://img.shields.io/badge/runtime_dependencies-none-brightgreen)
-![Stack](https://img.shields.io/badge/HTML%20%2F%20CSS%20%2F%20SVG%20%2F%20JS-native-orange)
-
-**Live demo:** https://mazkosoft.github.io/CRT-Simulator/  
-**Repository:** https://github.com/mazkosoft/CRT-Simulator
-
-</div>
-
----
+[Live demo / 在线体验](https://mazkosoft.github.io/CRT-Simulator/) · [Source / 开源仓库](https://github.com/mazkosoft/CRT-Simulator)
 
 <a id="english"></a>
 
-# English
+## English
 
-## Overview
+A browser-local image/video effects tool in a beige retro terminal. The current
+renderer uses multipass **WebGL**, not the previous DOM/SVG implementation.
+It is a creative CRT/VHS approximation, not a calibrated hardware emulator.
+Project credit: ㄢ誌慖（mazko）.
 
-DOM CRT Simulator is an experimental CRT effect for **real, interactive DOM pages**.
+### Features
 
-The main goal is not to render a fake webpage into a `<canvas>`, and not to mirror the page through screenshots. The page itself remains normal HTML, so native browser behavior such as text selection, caret rendering, form controls, hover, click, scrolling, and dynamic DOM updates can continue to work.
+- Curvature, RGB phosphor, mask, glow and moving beam.
+- VHS noise, jitter, interlace, chroma bleed, sharpening and dropouts.
+- Built-in/custom presets, JSON import/export and local configuration.
+- Playback, seeking, volume dial, fullscreen zoom/pan and mobile fine adjustment.
+- PNG and offline frame-by-frame MP4/WebM export with WebCodecs/Mediabunny.
+- Export audio gain, bandwidth, hiss, distortion, modulation and reverb.
+- English/Chinese controls, About and Credits groups.
 
-The CRT look is built from native browser technologies:
+### Online user guide
+
+#### Load media and choose a look
+
+Open the [live demo](https://mazkosoft.github.io/CRT-Simulator/). The supplied image
+loads automatically. In **Media & Export**, choose an image/video. **Load default
+image** and **Clear** both return to the sample; neither deletes your local file.
+Input format support depends on browser decoders.
+
+Use `contain` for the full source, `cover` to fill/crop, or `fill` to stretch.
+**Source aspect ratio** makes exported dimensions follow the source instead of
+adding letterbox bars. Curvature/vignette may still create intentional dark edges.
+The preview screen ratio can differ from the export ratio.
+
+In **Presets**, select a built-in look and press **Apply**, then adjust CRT,
+phosphor/mask, beam/glow and VHS groups. Save your current settings before replacing
+them with a preset. On phones use number fields and `−`/`+` for precision; the panel
+scrolls independently. **Fine/Smooth** changes preview refresh rate, not export quality.
+
+#### Playback and inspection
+
+**Play/Pause** controls video. Dragging the timeline pauses and seeks; press Play
+to resume. Images have no active timeline. Drag the volume dial up/right to increase
+or down/left to decrease; wheel/arrows also work, Home sets zero and End sets maximum.
+Zero is mute. This controls original-source listening only, not export audio.
+
+**View** enters fullscreen or an in-page fallback. Use `+`/`−`, wheel or two-finger
+pinch to zoom, drag to pan, and the percentage button to reset. Exit or Escape returns.
+Zoom affects inspection only. The power key hides the preview; it does not unload
+media or stop video playback.
+
+#### Configuration
+
+**Config** opens JSON import/export, local save/load and reset. Named presets and
+local settings belong to the current browser/origin, not other devices. Export JSON
+for backup/sharing; it contains settings, not media. Keep existing configuration keys.
+
+#### Image and video export
+
+**Export image** saves the current processed frame as PNG. Casing, glass reflection
+and controls are excluded.
+
+Before **High-quality export**, set duration, fps, bitrate, resolution multiplier and
+format. MP4 uses H.264/AAC and WebM VP9/Opus when a source audio track is available.
+A still image can generate an animated effects clip. Video export starts at source
+time zero, not the timeline cursor. Keep duration within the source length for
+predictable audio/video output; this is not an in/out editing range.
+
+Try 1–3 seconds, 30 fps and 1× resolution first. Bitrate is an encoder target, not
+a file-size/quality guarantee. Seeking, rendering and encoding depend on the device;
+offline export is not necessarily faster than realtime. Keep the tab open and active.
+Long/high-resolution outputs consume memory. Check the resulting file before use.
+
+#### Retro audio
+
+Select a preset in **Retro audio**, then adjust export gain, bandwidth, hiss,
+distortion, wow/reverb and channels. These effects apply to offline export, not live
+listening. Silent sources remain silent. Preview-volume zero does not mute export;
+adjust export audio gain separately.
+
+Known limitations: “narrow stereo” currently attenuates channels rather than mixing
+stereo width. Audio is processed in decoded chunks, which can limit reverb tails and
+modulation continuity at boundaries. The compatibility recorder does not provide
+the same offline audio processing. Decoder/encoder support varies by browser.
+
+### Local development and structure
+
+Clone/download the complete repository, not just `index.html`. No build step:
+
+```sh
+python -m http.server 8080 --bind 127.0.0.1
+```
+
+With Windows' Python launcher use `py -m http.server`. Open `http://127.0.0.1:8080/`.
+Use localhost HTTP or HTTPS for consistent codec behavior; `file://` is not recommended.
+Node.js is only needed for developer checks.
 
 ```text
-real DOM
-   ↓
-SVG displacement / phosphor / mask pipeline
-   ↓
-post-warp blur + bloom
-   ↓
-CSS overlays: scanlines / beam / noise / vignette / flicker
-   ↓
-final CRT output
+index.html                 Page structure / GitHub Pages entry
+css/crt.css                Casing, screen and physical controls
+css/ui.css                 Parameter panel, dialogs and sliders
+js/config.js               Defaults, presets and configuration
+js/crt.js                  WebGL, media and image/video/audio export
+js/controls.js             UI, language, transport and startup
+assets/demo-desktop.png    Supplied default image
+vendor/                    Mediabunny bundle and its license
+tests/structure.test.cjs   Dependency-free checks
+CONTRIBUTING.md            Development / bug-report guide
+LICENSE                    Original-code MIT license
+THIRD_PARTY_NOTICES.md     Third-party provenance and licenses
 ```
 
-No framework, package manager, CDN library, external font, external image, or runtime dependency is required by the current single-file build.
-
----
-
-## Features
-
-- Real DOM content — not a screenshot-based UI
-- Barrel / pincushion screen curvature
-- Runtime-generated displacement map
-- Adjustable displacement-map resolution
-- RGB phosphor stripe simulation
-- Adjustable RGB channel bias
-- Phosphor blur on X / Y axes
-- Cell / shadow-mask simulation
-- Adjustable mask blur
-- Scanlines
-- Moving beam with selectable blend mode
-- CRT flicker
-- Vignette
-- Post-warp blur
-- Full-frame bloom / glow
-- Selectable glow blend algorithm
-- Brightness / contrast / saturation applied to the complete CRT stage
-- JSON preset import / export
-- Chinese parameter UI
-- No build step
-
----
-
-## Quick start
-
-Download `index.html` and open it directly in a modern browser.
-
-For more consistent browser behavior, serving it through a local HTTP server is recommended:
-
-```bash
-python -m http.server 8080
-```
-
-Then open:
-
-```text
-http://localhost:8080
-```
-
-Chrome / Chromium-based browsers are currently the primary development target.
-
----
-
-## How it works
-
-### 1. Real DOM layer
-
-The webpage remains ordinary HTML. The CRT effect is applied to the rendered DOM instead of replacing the DOM with a Canvas UI.
-
-This means the browser still owns:
-
-```text
-selection
-caret
-inputs
-links
-hover states
-focus
-scrolling
-DOM updates
-```
-
-### 2. Curvature
-
-Curvature is implemented with SVG `feDisplacementMap`.
-
-A displacement texture is generated at runtime. Its red and green channels encode horizontal and vertical displacement. The map is then supplied to the SVG filter through `<feImage>`.
-
-Conceptually:
-
-```text
-viewport coordinates
-→ radial distortion function
-→ R/G displacement map
-→ feDisplacementMap
-→ curved DOM image
-```
-
-The generated map is resolution-scaled through `filterQuality`, so curvature quality can be traded for performance.
-
-### 3. RGB phosphor simulation
-
-The RGB phosphor pattern is generated as a tiny runtime tile and repeated with SVG `<feTile>`.
-
-The current implementation does not simply place a red/green/blue translucent texture over the page. The phosphor pattern participates in the SVG image-processing chain and is recombined with the warped image.
-
-Available blend approximations include:
-
-| Mode | Behavior |
-|---|---|
-| `plus-lighter` | Additive-style emission; closest to the physical idea of emissive RGB phosphors |
-| `screen` | Softer bloom-like combination |
-| `color-dodge` | Stronger, more stylized luminous response |
-| `lighten` | Reduced additive approximation |
-| `normal` | Linear mix; intentionally less CRT-like |
-
-For a physically motivated starting point, use:
-
-```json
-"rgbBlend": "plus-lighter"
-```
-
-The current visual preset intentionally defaults to:
-
-```json
-"rgbBlend": "color-dodge"
-```
-
-because it produces a stronger stylized phosphor response.
-
-### 4. Cell / shadow mask
-
-A second runtime-generated tile represents the darker gaps between phosphor cells.
-
-The mask can be adjusted independently with:
-
-```text
-opacity
-X thickness
-Y thickness
-X blur
-Y blur
-```
-
-### 5. Bloom / glow
-
-The current bloom is generated from the complete post-warp CRT image:
-
-```text
-post-warp image
-→ Gaussian blur
-→ gain
-→ blend with original CRT image
-```
-
-This is deliberately different from drawing decorative radial gradients. The glow is derived from the displayed image itself.
-
-Supported glow blend approximations:
-
-```text
-screen
-plus-lighter
-color-dodge
-lighten
-normal
-```
-
-`screen` is a good general-purpose bloom mode. `plus-lighter` is more aggressively additive.
-
-### 6. Final overlays
-
-Effects that do not need to participate in the expensive displacement pipeline are kept as lighter CSS overlays:
-
-```text
-scanlines
-moving beam
-noise
-vignette
-flicker
-```
-
-This reduces the amount of work performed by the SVG filter.
-
----
-
-## Performance
-
-Applying a full-screen SVG filter to a live DOM tree is expensive.
-
-The heaviest operations are usually:
-
-```text
-1. full-frame bloom blur
-2. feDisplacementMap curvature
-3. RGB phosphor blur
-4. mask blur
-5. post-warp blur
-```
-
-Every scroll, animation, hover, input change, or other repaint can cause the filtered surface to be recomputed.
-
-For a lighter preset, start around:
-
-```json
-{
-  "filterQuality": 0.35,
-  "postBlurX": 0.3,
-  "postBlurY": 0.3,
-  "glowMode": "fast",
-  "glowOpacity": 0.25,
-  "glowBlurX": 5,
-  "glowBlurY": 5
-}
-```
-
-The project intentionally prioritizes **real DOM compatibility** over the raw rendering efficiency of a pure WebGL CRT shader.
-
----
-
-## Current default preset
-
-```json
-{
-  "warpDirection": "barrel",
-  "warpScale": 110,
-  "mapZoom": 0.71,
-  "mapGain": 0.32,
-  "filterQuality": 0.5,
-  "postBlurX": 0.83,
-  "postBlurY": 0.75,
-  "brightness": 1,
-  "contrast": 1.29,
-  "flickerAmount": 0.46,
-  "flickerSpeed": 4.3,
-  "vignetteOpacity": 0,
-  "vignetteInner": 38,
-  "vignetteOuter": 103,
-  "rgbOpacity": 0.47,
-  "rgbBlend": "color-dodge",
-  "redBias": 1,
-  "greenBias": 1,
-  "blueBias": 1,
-  "rgbPeriod": 7,
-  "rgbBlurX": 2.09,
-  "rgbBlurY": 2.09,
-  "maskOpacity": 0.19,
-  "maskX": 2,
-  "maskY": 2,
-  "maskBlurX": 3.04,
-  "maskBlurY": 2.94,
-  "beamBlend": "plus-lighter",
-  "beamOpacity": 0.28,
-  "beamHeight": 130,
-  "beamSpeed": 9,
-  "glowOpacity": 0.38,
-  "glowMode": "balanced",
-  "glowQuality": 0.65,
-  "glowBlurX": 8,
-  "glowBlurY": 8,
-  "saturation": 1
-}
-```
-
----
-
-## Known limitations
-
-**Visual geometry and DOM hit-testing are not the same thing.** SVG filters change the rendered appearance, but they do not rewrite the browser's layout geometry. Strong curvature can therefore create visible offset between a distorted element and its original hit area.
-
-**SVG filtering on a large live DOM surface can be expensive.** A pure WebGL renderer can run a comparable visual pipeline more efficiently because it works directly on GPU textures/framebuffers.
-
-**Blend modes are browser rendering approximations.** CSS/SVG blending is not numerically identical to a custom linear-light WebGL shader.
-
-**Browser differences exist.** Chrome / Chromium is the main development target. Firefox and Safari can produce different SVG-filter or blend-mode results.
-
----
-
-## Third-party acknowledgements and provenance
-
-This project is intentionally explicit about external references.
-
-### Chafalleiro / Retromator
-
-Repository:  
-**https://github.com/Chafalleiro/retromator**
-
-License: **BSD 2-Clause**
-
-Retromator / Videomator was an important technical reference while developing the real-DOM curvature approach, particularly its use of SVG `<feImage>` together with `<feDisplacementMap>` to distort live webpage/video content.
-
-This project does **not** redistribute Retromator's `sphere_wide_1.png`, fonts, images, audio, screen-dirt assets, or other bundled media. The current implementation generates its own displacement map at runtime and substantially extends the processing pipeline with its own RGB phosphor, mask, bloom, configuration, and performance logic.
-
-Because the curvature implementation was developed with Retromator as a direct technical reference, its BSD 2-Clause copyright and license notice is preserved in full in the [Third-party license notices](#third-party-license-notices) section below.
-
-### itorr / vaporwave — 「蒸気機」
-
-Repository:  
-**https://github.com/itorr/vaporwave**
-
-Project page:  
-**https://lab.magiconch.com/vaporwave/**
-
-The project was referenced for the idea of a **parameterized visual-effects tool / preset-oriented UI workflow**.
-
-No source code, image assets, logos, presets, or bundled resources from `itorr/vaporwave` are included in this repository.
-
-At the time this README was prepared, the upstream repository did not expose a LICENSE file. For that reason it is treated strictly as a design / UX reference here, not as reusable source code.
-
-### MDN Web Docs
-
-Documentation:  
-**https://developer.mozilla.org/**
-
-MDN was used as documentation/reference material for standard browser APIs, SVG filters, Canvas-generated data URLs, CSS filters, and blend modes. No MDN library is bundled.
-
-### Project lineage
-
-Earlier visual/parameter experiments are available at:
-
-**https://github.com/mazkosoft/CRT-Simulator**  
-**https://mazkosoft.github.io/CRT-Simulator/**
-
----
-
-## Licensing
-
-Unless otherwise noted, the original code in this repository is released under the **MIT License**.
-
-Third-party material is **not relicensed** by this project. Where an upstream license notice is required, it is retained below.
-
-Because this repository currently keeps licensing information in a single README file, GitHub may not automatically detect and display the repository license as it would with a standalone `LICENSE` file. The full license grant is nevertheless reproduced below.
-
-<a id="third-party-license-notices"></a>
-
-### MIT License — DOM CRT Simulator
-
-```text
-MIT License
-
-Copyright (c) 2026 Mazko
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
-
-### BSD 2-Clause License — Retromator / Chafalleiro
-
-The following notice is retained for the Retromator technical reference / adapted approach described above.
-
-```text
-BSD 2-Clause License
-
-Copyright (c) 2022, Chafalleiro
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
-```
-
----
+Classic scripts share scope and load in `config → crt → controls` order. Initialization
+lives in controls; these are not independent ES modules. No duplicate `dist` is maintained.
+All paths are relative for project-site hosting.
+
+For branch-based GitHub Pages, choose the intended branch and root folder; publish
+HTML, CSS, JS, assets and vendor together. No build workflow is required. Local
+changes are not online until committed, pushed and deployed.
+
+### Troubleshooting and privacy
+
+- WebGL is required; check browser/GPU settings if the fallback appears.
+- Start with a current Chrome/Edge for offline export, but codec/OS/resolution support
+  is not guaranteed. Other browsers may preview without the requested encoder.
+- Press Play if browser policy blocks sound autoplay.
+- If offline encoding is unavailable, video input can use realtime compatibility
+  WebM recording. Still-image video export requires the offline encoder. Encoding
+  errors are reported; automatic fallback is not guaranteed.
+- Reduce duration, fps and resolution for failed/slow exports; try WebM and inspect
+  the console. Compatibility recording is not lossless/offline rendering.
+- Selected media is processed locally, not uploaded by the app. External About/Credits
+  links contact other sites. Browser storage restrictions may prevent local saving.
+
+Run `node tests/structure.test.cjs` and the manual checks in [CONTRIBUTING.md](CONTRIBUTING.md).
+Structural tests do not certify visual quality, codecs or audio fidelity.
+[Report issues](https://github.com/mazkosoft/CRT-Simulator/issues) with reproduction details.
+
+### Credits and licensing
+
+Original code is [MIT](LICENSE). Mediabunny 1.61.3 remains MPL-2.0. Retromator/Chafalleiro
+is a historical technical reference; its BSD-2-Clause notice is retained. itorr/vaporwave
+is UX/product inspiration only; no permission to reuse its code/resources is inferred.
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). MIT code licensing does not grant
+rights to third-party content visible in the supplied screenshot or imported media.
 
 <a id="简体中文"></a>
 
-# 简体中文
+## 简体中文
 
-## 项目简介
+在浏览器本地处理图片与视频的 CRT／录像带复古效果工具，外观为米色终端一体机。
+当前使用多通道 **WebGL**，不是旧版 DOM／SVG 滤镜。用于视觉创作，不是经校准的硬件仿真。
+Project credit: ㄢ誌慖（mazko）。
 
-DOM CRT Simulator 是一个面向 **真实、可交互 DOM 网页** 的 CRT 屏幕效果实验。
+### 功能
 
-这个项目的重点不是把网页截图后再丢进 Canvas，也不是重新用 Canvas 画一套“看起来像网页”的假 UI。页面本体仍然是普通 HTML，因此浏览器原生的文字选择、输入光标、表单、hover、点击、滚动以及动态 DOM 更新都可以继续存在。
+曲率、RGB 荧光粉、遮罩、辉光、光带、VHS 噪声／抖动／隔行／渗色／锐化／掉磁；
+内置及自定义预设、JSON 配置、本地保存；视频定位播放、音量、全屏缩放与手机精细调参；
+PNG、离线逐帧 MP4／WebM 和导出音轨处理；中英文界面及独立关于／鸣谢。
 
-整体处理结构：
+### 在线体验使用说明书
 
-```text
-真实 DOM
-   ↓
-SVG 桶形 / 荧光粉 / 单元罩处理
-   ↓
-后置模糊 + 辉光
-   ↓
-CSS 扫描线 / 光带 / 噪声 / 暗角 / 闪烁
-   ↓
-最终 CRT 画面
+#### 载入媒体与选择效果
+
+打开[在线体验](https://mazkosoft.github.io/CRT-Simulator/)，默认图自动载入。
+在“媒体与导出”选择图片或视频。“载入默认图”和“清除”都会恢复示例，不删除本地文件。
+输入格式支持取决于浏览器解码器。
+
+`contain` 保留完整画面，`cover` 填满并裁切，`fill` 拉伸。“按源媒体比例导出”让输出
+尺寸跟随源媒体，避免比例黑边；曲率和暗角仍可能形成刻意暗边。预览与导出比例可以不同。
+
+在“效果预设”选内置效果并点击应用，再展开 CRT、荧光粉／遮罩、光带／辉光、VHS 分组微调。
+应用预设会替换参数，重要设置请先保存。手机可用数字框及 `−`／`+` 精调，面板独立滚动。
+“精细／流畅”只改变预览刷新率，不改变导出质量。
+
+#### 播放与查看细节
+
+播放键控制视频；拖动进度条暂停并定位，需再按播放才能继续。图片模式禁用进度条。
+音量旋钮向上／右拖增加、向下／左拖减少，支持滚轮、方向键、Home 归零、End 最大。
+归零即静音，仅控制原视频试听，不改变导出音量。
+
+“放大查看”进入全屏或页面内放大。用 `+`／`−`、滚轮、双指缩放，拖动平移；
+百分比按钮重置，退出或 Escape 返回。缩放仅用于查看，不影响输出。
+电源键隐藏预览，不卸载媒体，也不停止视频播放。
+
+#### 保存配置
+
+“配置”打开 JSON 导入导出、本地保存／读取和恢复默认。命名预设及配置属于当前浏览器和
+网址，不跨设备同步；导出 JSON 便于备份或分享。配置只含参数，不含媒体，保留已有键名。
+
+#### 导出图片与视频
+
+“导出图片”保存当前效果帧为 PNG，不包含机壳、玻璃和控件。
+
+“高质量导出”前设置时长、帧率、码率、分辨率倍率和格式。MP4 使用 H.264／AAC，
+WebM 使用 VP9／Opus，声音取决于源音轨及解码支持。图片也能生成带动态效果的视频。
+视频从源文件零秒导出，不从进度条位置导出；时长不要超过源视频，以保证音画结果可预期。
+当前提供导出时长，不是剪辑入点／出点。
+
+建议先用 1–3 秒、30fps、1× 试导。码率是编码目标，不保证文件大小或画质。
+离线仍需定位、渲染和编码，不保证快于实时。保持标签页开启且活跃；长视频和高分辨率
+占用内存较多，正式使用前检查输出文件。
+
+#### 复古音频
+
+选择音频预设，再调导出音量、带宽、底噪、失真、音调抖动、混响及声道。
+这些效果仅用于离线导出，不用于实时试听。无音轨的源不会自动生成声音。
+试听音量为零不代表导出静音，需单独调整导出音量。
+
+已知限制：“窄立体声”目前为声道衰减，不是完整声场混合；音频按解码块处理，块边界
+可能限制混响尾音及调制连续性；兼容录制不提供相同的离线音频处理。编解码支持因浏览器而异。
+
+### 本地运行、结构和 Pages
+
+克隆完整仓库，不要只下载 HTML。无需构建，使用已安装的静态服务，例如：
+
+```sh
+python -m http.server 8080 --bind 127.0.0.1
 ```
 
-当前单文件版本不依赖框架、npm 包、CDN、外部字体、外部图片或运行时第三方库。
-
----
-
-## 功能
-
-- 真实 DOM，而非截图镜像
-- 桶形 / 枕形屏幕畸变
-- 运行时动态生成位移图
-- 可调整位移贴图分辨率
-- RGB 荧光粉条带模拟
-- RGB 三通道独立偏置
-- 荧光粉 X / Y 模糊
-- 单元罩 / 阴罩模拟
-- 单元罩 X / Y 模糊
-- 扫描线
-- 可切换混合模式的移动光带
-- CRT 闪烁
-- 暗角
-- 桶形后模糊
-- 基于完整画面的辉光 / Bloom
-- 可切换辉光混合算法
-- 整体亮度 / 对比度 / 饱和度
-- JSON 参数配置导入 / 导出
-- 中文参数控制面板
-- 无需构建
-
----
-
-## 快速使用
-
-直接下载并打开 `index.html` 即可。
-
-为了获得更稳定的浏览器行为，推荐使用本地 HTTP Server：
-
-```bash
-python -m http.server 8080
-```
-
-然后打开：
-
-```text
-http://localhost:8080
-```
-
-目前主要以 Chrome / Chromium 浏览器作为开发与测试目标。
-
----
-
-## 实现原理
-
-### 1. 真实 DOM
-
-网页本体仍然是普通 HTML，CRT 效果施加在浏览器已经渲染出的 DOM 上，而不是用 Canvas 替换网页。
-
-因此下面这些行为依旧由浏览器原生处理：
-
-```text
-文字选择
-输入光标
-input / textarea
-链接
-hover
-focus
-滚动
-动态 DOM 更新
-```
-
-### 2. 桶形畸变
-
-桶形效果由 SVG `feDisplacementMap` 完成。
-
-页面运行时会动态生成一张位移贴图，其中：
-
-```text
-R 通道 → 水平位移
-G 通道 → 垂直位移
-```
-
-处理流程：
-
-```text
-视口坐标
-→ 径向畸变函数
-→ RGB 位移贴图
-→ feDisplacementMap
-→ 弯曲后的 DOM 画面
-```
-
-`filterQuality` 会改变位移图分辨率，因此可以在清晰度和性能之间取舍。
-
-### 3. RGB 荧光粉
-
-RGB 荧光粉不是简单在网页上覆盖一层半透明彩条。
-
-当前版本会运行时生成小尺寸 RGB tile，再通过 SVG `<feTile>` 平铺，并让它真正进入画面处理管线。
-
-混合模式：
-
-| 模式 | 特点 |
-|---|---|
-| `plus-lighter` | 更接近真实 CRT 的加法发光 |
-| `screen` | 更柔和，更像一般 Bloom |
-| `color-dodge` | 更强、更亮、更风格化 |
-| `lighten` | 较弱的增亮近似 |
-| `normal` | 普通线性混合，CRT 感较弱 |
-
-从真实 CRT 的发光机制出发，推荐：
-
-```json
-"rgbBlend": "plus-lighter"
-```
-
-当前默认预设为了得到更强烈的视觉效果使用：
-
-```json
-"rgbBlend": "color-dodge"
-```
-
-### 4. 单元罩 / Shadow Mask
-
-另一张运行时生成的小 tile 用于模拟荧光粉单元之间较暗的间隙。
-
-可以独立控制：
-
-```text
-透明度
-X 厚度
-Y 厚度
-X 模糊
-Y 模糊
-```
-
-### 5. 辉光 / Bloom
-
-当前辉光来自**完整 CRT 画面本身**：
-
-```text
-桶形后的画面
-→ Gaussian Blur
-→ 增益
-→ 与原 CRT 画面重新混合
-```
-
-不是额外画几个径向光斑。
-
-支持：
-
-```text
-screen
-plus-lighter
-color-dodge
-lighten
-normal
-```
-
-一般推荐 `screen`；需要更强烈的加法发光时可使用 `plus-lighter`。
-
-### 6. 最终叠加效果
-
-不需要参加昂贵 SVG 位移计算的效果留在 CSS Overlay：
-
-```text
-扫描线
-移动光带
-噪声
-暗角
-闪烁
-```
-
-这样可以减少整个 SVG Filter 的重绘负担。
-
----
-
-## 性能说明
-
-真实 DOM 上的全屏 SVG Filter 本身就比较重。
-
-当前主要性能消耗通常来自：
-
-```text
-1. 完整画面的辉光模糊
-2. feDisplacementMap 桶形
-3. RGB 荧光粉模糊
-4. 单元罩模糊
-5. 后置模糊
-```
-
-页面滚动、hover、输入、动画或其它重绘发生时，浏览器都有可能重新计算滤镜结果。
-
-性能优先可以从以下参数开始：
-
-```json
-{
-  "filterQuality": 0.35,
-  "postBlurX": 0.3,
-  "postBlurY": 0.3,
-  "glowMode": "fast",
-  "glowOpacity": 0.25,
-  "glowBlurX": 5,
-  "glowBlurY": 5
-}
-```
-
-这个项目的设计取舍是：
-
-```text
-优先保留真实 DOM 交互
-而不是追求纯 WebGL CRT Shader 的最高性能
-```
-
----
-
-## 当前默认参数
-
-```json
-{
-  "warpDirection": "barrel",
-  "warpScale": 110,
-  "mapZoom": 0.71,
-  "mapGain": 0.32,
-  "filterQuality": 0.5,
-  "postBlurX": 0.83,
-  "postBlurY": 0.75,
-  "brightness": 1,
-  "contrast": 1.29,
-  "flickerAmount": 0.46,
-  "flickerSpeed": 4.3,
-  "vignetteOpacity": 0,
-  "vignetteInner": 38,
-  "vignetteOuter": 103,
-  "rgbOpacity": 0.47,
-  "rgbBlend": "color-dodge",
-  "redBias": 1,
-  "greenBias": 1,
-  "blueBias": 1,
-  "rgbPeriod": 7,
-  "rgbBlurX": 2.09,
-  "rgbBlurY": 2.09,
-  "maskOpacity": 0.19,
-  "maskX": 2,
-  "maskY": 2,
-  "maskBlurX": 3.04,
-  "maskBlurY": 2.94,
-  "beamBlend": "plus-lighter",
-  "beamOpacity": 0.28,
-  "beamHeight": 130,
-  "beamSpeed": 9,
-  "glowOpacity": 0.38,
-  "glowMode": "balanced",
-  "glowQuality": 0.65,
-  "glowBlurX": 8,
-  "glowBlurY": 8,
-  "saturation": 1
-}
-```
-
----
-
-## 已知限制
-
-**视觉畸变不会改变 DOM 的真实命中区域。** SVG Filter 改变的是最终渲染结果，而不是浏览器布局坐标。因此桶形特别强时，视觉位置和真实 hitbox 会产生偏移。
-
-**全屏实时 SVG Filter 的性能成本很高。** 与直接处理 GPU Texture / Framebuffer 的纯 WebGL CRT 相比，真实 DOM 路线更容易产生性能压力。
-
-**CSS / SVG 混合不等同于自定义 WebGL Shader。** 当前部分混合算法是浏览器 SVG arithmetic / CSS blending 的近似。
-
-**不同浏览器的结果可能存在差异。** 当前主要以 Chrome / Chromium 为目标环境。
-
----
-
-## 第三方项目、来源与授权说明
-
-为了让项目的来源关系清楚，本项目对开发过程中实际参考过的第三方项目做明确标注。
-
-### Chafalleiro / Retromator
-
-仓库：  
-**https://github.com/Chafalleiro/retromator**
-
-协议：**BSD 2-Clause**
-
-Retromator / Videomator 是本项目实现“真实 DOM 桶形畸变”时的重要技术参考，尤其是其利用 SVG `<feImage>` + `<feDisplacementMap>` 对网页 / 视频内容直接进行弯曲处理的方案。
-
-本项目**没有打包或重新分发** Retromator 仓库中的 `sphere_wide_1.png`、字体、图片、音频、screen dirt 等资源。当前版本使用运行时自行生成的位移贴图，并在此基础上重新实现和扩展了 RGB 荧光粉、单元罩、辉光、配置系统与性能控制等逻辑。
-
-由于桶形处理方案在开发过程中直接研究并参考了 Retromator，本 README 在下方完整保留其 BSD 2-Clause Copyright 与 License Notice。
-
-### itorr / vaporwave — 「蒸気機」
-
-仓库：  
-**https://github.com/itorr/vaporwave**
-
-项目页面：  
-**https://lab.magiconch.com/vaporwave/**
-
-开发过程中参考了其“**参数化影像效果工具 / 预设式控制界面**”的产品与交互思路。
-
-当前仓库**没有复制、打包或分发** `itorr/vaporwave` 的源码、图片、Logo、预设数据或其它资源。
-
-在整理本 README 时，其上游仓库没有公开可见的 LICENSE 文件。因此本项目只将其作为设计 / UX 参考，不将其代码视为可在本项目 MIT 协议下重新分发的内容。
-
-### MDN Web Docs
-
-文档：  
-**https://developer.mozilla.org/**
-
-用于查询 SVG Filter、Canvas Data URL、CSS Filter、Blend Mode 等标准 Web API。项目没有打包任何 MDN 软件库。
-
-### 项目演进
-
-此前的 CRT 参数与视觉实验位于：
-
-**https://github.com/mazkosoft/CRT-Simulator**  
-**https://mazkosoft.github.io/CRT-Simulator/**
-
----
-
-## 开源协议
-
-除下方明确列出的第三方内容外，本仓库原创代码采用 **MIT License**。
-
-第三方项目不会因为出现在本仓库中而被重新授权。需要保留上游 License Notice 的内容，继续按照上游协议处理。
-
-由于当前按“单 README 文件”方式发布，GitHub 不一定会像存在独立 `LICENSE` 文件时一样自动识别仓库协议；但 MIT 授权全文已经完整写在本文档中。
-
-完整协议见上方 English 部分的：
-
-- `MIT License — DOM CRT Simulator`
-- `BSD 2-Clause License — Retromator / Chafalleiro`
-
----
-
-## Credits
-
-**DOM CRT Simulator** — Mazko / MazkoSoft
-
-Technical reference / curvature approach:  
-**Chafalleiro / Retromator**  
-https://github.com/Chafalleiro/retromator
-
-Parameterized visual-tool UX reference:  
-**itorr / vaporwave**  
-https://github.com/itorr/vaporwave
-
-Web standards reference:  
-**MDN Web Docs**  
-https://developer.mozilla.org/
-
----
-
-<div align="center">
-
-Made for the open web.
-
-[English](#english) · [简体中文](#简体中文)
-
-</div>
+Windows 有 Python 启动器时可用 `py -m http.server`，打开 `http://127.0.0.1:8080/`。
+建议 localhost HTTP 或 HTTPS，不推荐用 `file://` 测试导出。Node.js 仅用于开发检查。
+
+文件结构见英文段落。两份 CSS 分别负责机壳和参数界面；三个脚本分别负责配置、
+渲染／媒体导出、界面初始化，按 `config → crt → controls` 加载并共享作用域，不是独立 ES 模块。
+不维护重复的 dist 单文件版。Pages 从分支发布时选择目标分支及根目录，并同时发布全部
+CSS、JS、assets 和 vendor。本地修改需提交、推送、部署后才在线生效，本任务不会自动推送。
+
+### 常见问题与隐私
+
+- 需要 WebGL；不可用时检查浏览器及 GPU 设置。
+- 高质量导出可先用新版 Chrome／Edge，但不能保证所有系统、编码器和分辨率支持。
+- 有声自动播放受限时手动按播放。
+- 离线编码不可用时，视频可用实时兼容 WebM 录制；图片动画导出需要离线编码器。
+  编码出错会提示，不保证自动回退。
+- 导出慢或失败时降低时长、帧率、分辨率，尝试 WebM 并检查控制台。
+- 应用不上传媒体；关于／鸣谢外链会访问其他网站。隐私模式或存储限制可能影响本地保存。
+
+运行 `node tests/structure.test.cjs` 并按 [CONTRIBUTING.md](CONTRIBUTING.md) 实测。
+结构测试不代表画质、音质或编码器兼容保证；可到 [Issues](https://github.com/mazkosoft/CRT-Simulator/issues) 提交复现信息。
+
+### 鸣谢与协议
+
+原创代码为 [MIT](LICENSE)，Mediabunny 1.61.3 为 MPL-2.0；保留 Retromator／Chafalleiro
+历史技术参考的 BSD-2-Clause 声明。itorr/vaporwave 仅为产品／交互灵感，不推定其代码和资源授权。
+详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。代码 MIT 授权不授予默认截图中的
+第三方内容及用户媒体的权利，请只分发有权使用的媒体。
