@@ -50,3 +50,18 @@
 .primary-button { font-weight:400; }
 @media(max-width:900px) { .control-panel { overflow:visible; padding:18px 0 0; border-top:1px solid #b7b09f; } .control-panel button,.control-panel select { min-height:40px; } }
 @media(max-width:500px) { .control-group[open]::details-content,.export-panel { grid-template-columns:1fr; } }
+.preview-quality-control { display:flex; align-items:center; gap:12px; margin:0 2px 16px; font-size:13px; }
+.preview-quality-control select { width:auto; flex:1; }
+.parameter-stepper { display:flex; align-items:center; gap:8px; margin:4px 0 8px; }
+.parameter-stepper button { flex:none; min-width:40px; min-height:40px; padding:4px; }
+.parameter-stepper input { min-width:0; width:100%; height:40px; padding:6px 10px; font:400 16px "Segoe UI","Microsoft YaHei",sans-serif; color:#494238; border:1px solid #b1a58e; border-radius:5px; background:#d4cbb7; box-shadow:inset 1px 2px 3px #8f806455,0 1px #fff3dc; font-variant-numeric:tabular-nums; }
+@media(min-width:901px) { .parameter-stepper { display:none; } }
+@media(max-width:900px) {
+  .control-panel { min-height:0; overflow-y:auto; overscroll-behavior-y:contain; padding:12px 2px 24px; scrollbar-gutter:stable; }
+  .dos-caption { margin-bottom:12px; }
+  .control label { font-size:14px; }
+  .control input[type=range] { height:44px; touch-action:pan-y; }
+  .control input[type=range]::-webkit-slider-thumb { width:30px; height:30px; margin-top:-11px; }
+  .control input[type=range]::-moz-range-thumb { width:28px; height:28px; }
+  .control-group summary { min-height:48px; }
+}

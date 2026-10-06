@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🅜 𝙲𝚁𝚃 𝚂𝚒𝚖𝚞𝚕𝚊𝚝𝚘𝚛</title>
-  <link rel="stylesheet" href="css/crt.css?v=glass-depth-8" />
-  <link rel="stylesheet" href="css/ui.css?v=language-7" />
+  <link rel="stylesheet" href="css/crt.css?v=mobile-9" />
+  <link rel="stylesheet" href="css/ui.css?v=mobile-9" />
 </head>
 
 <body>
@@ -58,6 +58,7 @@
       <div class="dos-tools language-control"><span id="languageLabel" class="knob-label">语言</span><button id="languageToggleButton" class="language-toggle monitor-oval" type="button" aria-label="切换为英文"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.5" ry="8"/><path d="M4 12h16M6 7.5h12M6 16.5h12"/></svg></button></div>
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
+    <div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
 
     <details class="control-group">
       <summary>CONFIG & PRESETS / 配置与预设</summary>
@@ -530,7 +531,7 @@
     </details>
 
     <details class="control-group">
-      <summary>Project credit: ㄢ誌慖（mazko）</summary>
+      <summary>Credits / 鸣谢</summary>
 <div class="control">
       <p class="credit-text">
         Project credit: ㄢ誌慖（mazko）<br />
@@ -1499,12 +1500,24 @@
       return value === "pincushion" ? 1 : 0;
     }
 
+    function getPreviewSize(width, height, maxSize) {
+      const aspect = Math.max(0.1, width / Math.max(1, height));
+      const limit = Math.min(2048, maxSize);
+      const w = Math.min(960, limit, limit * aspect);
+      return { width:Math.max(2, Math.round(w)), height:Math.max(2, Math.round(w / aspect)) };
+    }
+
     function resize() {
       const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const dpr = baseDpr * (exportInProgress ? exportRenderScale : 1);
       const rect = { width: canvas.clientWidth, height: canvas.clientHeight };
       let w = Math.max(1, Math.round(rect.width * dpr));
       let h = Math.max(1, Math.round(rect.height * dpr));
+      if (!exportInProgress) {
+        const preview = getPreviewSize(rect.width, rect.height, gl.getParameter(gl.MAX_TEXTURE_SIZE));
+        w = preview.width;
+        h = preview.height;
+      }
 
       if (exportInProgress && val("effectBoundary") === "source" && sourceAspect > 0) {
         if (w / h > sourceAspect) {
@@ -1740,8 +1753,13 @@
       passFinal();
     }
 
+    let lastPreviewFrame = -Infinity;
     function render(ms) {
-      if (!exportInProgress) renderFrame(ms);
+      const frameInterval = document.getElementById("previewQuality").value === "smooth" ? 1000 / 15 : 1000 / 30;
+      if (!exportInProgress && ms - lastPreviewFrame >= frameInterval - 1) {
+        renderFrame(ms);
+        lastPreviewFrame = ms;
+      }
       requestAnimationFrame(render);
     }
 
@@ -1852,11 +1870,45 @@
       labels.vignette.textContent = num("vignette").toFixed(2);
       labels.vignetteInner.textContent = `${val("vignetteInner")}%`;
       labels.vignetteOuter.textContent = `${val("vignetteOuter")}%`;
+      document.querySelectorAll(".parameter-value-input").forEach(input => {
+        if (document.activeElement !== input) input.value = controls[input.dataset.rangeKey].value;
+      });
     }
 
     Object.values(controls).forEach((control) => {
       control.addEventListener("input", updateLabels);
       control.addEventListener("change", updateLabels);
+    });
+
+    Object.entries(controls).filter(([, control]) => control.type === "range").forEach(([key, range]) => {
+      const title = range.parentElement.querySelector("label span:first-child");
+      const row = document.createElement("div");
+      row.className = "parameter-stepper";
+      const minus = document.createElement("button");
+      const plus = document.createElement("button");
+      const input = document.createElement("input");
+      minus.type = plus.type = "button";
+      minus.textContent = "−"; plus.textContent = "+";
+      input.type = "number"; input.inputMode = "decimal";
+      input.min = range.min; input.max = range.max; input.step = range.step;
+      input.value = range.value; input.dataset.rangeKey = key;
+      input.className = "parameter-value-input";
+      range.setAttribute("aria-label", title?.textContent || key);
+      const commit = () => {
+        if (input.value.trim() === "" || !Number.isFinite(Number(input.value))) { input.value = range.value; return; }
+        range.value = input.value;
+        input.value = range.value;
+        range.dispatchEvent(new Event("input", { bubbles:true }));
+      };
+      input.addEventListener("change", commit);
+      input.addEventListener("keydown", event => { if (event.key === "Enter") { commit(); input.blur(); } });
+      for (const [button, direction] of [[minus,-1],[plus,1]]) {
+        button.dataset.stepDirection = String(direction);
+        button.dataset.rangeKey = key;
+        button.addEventListener("click", () => { direction > 0 ? range.stepUp() : range.stepDown(); input.value = range.value; range.dispatchEvent(new Event("input", { bubbles:true })); });
+      }
+      row.append(minus, input, plus);
+      range.insertAdjacentElement("afterend", row);
     });
 
     const AUDIO_PRESETS = {
@@ -2113,6 +2165,17 @@
       document.getElementById("fullscreenLabel").textContent = lang === "zh" ? "放大查看" : "View";
       document.getElementById("fullscreenPreview").setAttribute("aria-label", lang === "zh" ? "放大查看" : "Fullscreen view");
       document.getElementById("exitFullscreenPreview").textContent = lang === "zh" ? "退出全屏" : "Exit fullscreen";
+      document.getElementById("previewQualityLabel").textContent = lang === "zh" ? "预览模式" : "Preview mode";
+      document.querySelector('#previewQuality option[value="fine"]').textContent = lang === "zh" ? "精细" : "Fine";
+      document.querySelector('#previewQuality option[value="smooth"]').textContent = lang === "zh" ? "流畅" : "Smooth";
+      document.querySelectorAll(".parameter-stepper").forEach(row => {
+        const range = controls[row.querySelector("input").dataset.rangeKey];
+        const title = range.parentElement.querySelector("label span:first-child")?.textContent || range.dataset.config;
+        range.setAttribute("aria-label", title);
+        row.querySelector("input").setAttribute("aria-label", title);
+        row.querySelector('[data-step-direction="-1"]').setAttribute("aria-label", `${lang === "zh" ? "减少" : "Decrease"} ${title}`);
+        row.querySelector('[data-step-direction="1"]').setAttribute("aria-label", `${lang === "zh" ? "增加" : "Increase"} ${title}`);
+      });
     }
 
     applyLanguage("zh");
