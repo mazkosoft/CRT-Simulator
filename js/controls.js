@@ -8,10 +8,15 @@ function updateLabels() {
   labels.imageBlurX.textContent = num("imageBlurX").toFixed(2);
   labels.imageBlurY.textContent = num("imageBlurY").toFixed(2);
   labels.pixelate.textContent = num("pixelate").toFixed(2);
-  labels.exportDuration.textContent = `${num("exportDuration").toFixed(1)}s`;
+  labels.exportDuration.textContent = `${Number(num("exportDuration").toFixed(3))}s`;
   labels.exportFps.textContent = `${Math.round(num("exportFps"))}fps`;
-  labels.exportBitrate.textContent = `${Math.round(num("exportBitrate"))}Mbps`;
+  labels.exportBitrate.textContent = `${Number(num("exportBitrate").toFixed(2))}Mbps`;
   labels.exportScale.textContent = `${num("exportScale").toFixed(2)}x`;
+  document.getElementById("exportPixelSizeValue").textContent = `${num("exportPixelSize")}px`;
+  const quality = document.getElementById("exportQualityPreset");
+  const match = Object.entries(EXPORT_QUALITY_PRESETS).find(([, preset]) =>
+    Object.keys(preset).every(key => Number(controls[key].value) === Number(preset[key])));
+  quality.value = match ? match[0] : "custom";
   labels.audioVolume.textContent = num("audioVolume").toFixed(2);
   labels.audioBandwidth.textContent = `${Math.round(num("audioBandwidth"))}Hz`;
   labels.audioHiss.textContent = num("audioHiss").toFixed(2);
@@ -81,6 +86,16 @@ Object.values(controls).forEach((control) => {
   control.addEventListener("change", updateLabels);
 });
 
+document.getElementById("exportQualityPreset").addEventListener("change", event => {
+  const preset = EXPORT_QUALITY_PRESETS[event.target.value];
+  if (!preset) return;
+  for (const key of ["exportScale", "exportFps", "exportBitrate", "exportPixelSize"]) controls[key].value = preset[key];
+  updateLabels();
+});
+for (const key of ["exportScale", "exportFps", "exportBitrate", "exportPixelSize"]) {
+  controls[key].addEventListener("input", () => { document.getElementById("exportQualityPreset").value = "custom"; });
+}
+
 Object.entries(controls).filter(([, control]) => control.type === "range").forEach(([key, range]) => {
   const title = range.parentElement.querySelector("label span:first-child");
   const row = document.createElement("div");
@@ -106,7 +121,11 @@ Object.entries(controls).filter(([, control]) => control.type === "range").forEa
   for (const [button, direction] of [[minus,-1],[plus,1]]) {
     button.dataset.stepDirection = String(direction);
     button.dataset.rangeKey = key;
-    button.addEventListener("click", () => { direction > 0 ? range.stepUp() : range.stepDown(); input.value = range.value; range.dispatchEvent(new Event("input", { bubbles:true })); });
+    button.addEventListener("click", () => {
+      if (range.step === "any") range.value = String(Number(range.value) + direction * 0.5);
+      else direction > 0 ? range.stepUp() : range.stepDown();
+      input.value = range.value; range.dispatchEvent(new Event("input", { bubbles:true }));
+    });
   }
   row.append(minus, input, plus);
   range.insertAdjacentElement("afterend", row);
@@ -311,7 +330,7 @@ function applyLanguage(lang) {
   currentLang = lang;
   document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
   document.documentElement.dataset.lang = lang;
-  localStorage.setItem("crt-ui-lang", lang);
+  try { localStorage.setItem("crt-ui-lang", lang); } catch { /* Language switching still works without persistence. */ }
 
   document.querySelectorAll(
     ".control-group summary, .control label span:first-child, .control-panel button, .control-panel h2, .control-panel option"

@@ -115,8 +115,29 @@
 
       <div class="export-panel">
       <div class="control">
+        <label for="exportQualityPreset"><span>Export quality / 导出画质</span></label>
+        <select id="exportQualityPreset">
+          <option value="original">Original quality / 原始质量</option>
+          <option value="low">Low quality / 低画质</option>
+          <option value="network">Network patina / 网络包浆</option>
+          <option value="mosaic">Mosaic / 马赛克画质</option>
+          <option value="custom">Custom / 自定义</option>
+        </select>
+        <p class="hint" data-i18n-zh="预设只调整导出参数，不改变 CRT 效果。马赛克仅在导出视频中生效。" data-i18n-en="Presets change export settings only. Mosaic pixel blocks apply only to exported video.">预设只调整导出参数，不改变 CRT 效果。马赛克仅在导出视频中生效。</p>
+      </div>
+      <div id="exportProgressPanel" class="export-progress-panel" hidden>
+        <label for="exportProgress" id="exportProgressLabel">导出进度</label>
+        <progress id="exportProgress" max="100" value="0"></progress>
+        <p id="exportProgressStatus" role="status" aria-live="polite"></p>
+      </div>
+      <div class="control">
+        <label><span>Export pixel block size / 导出像素块大小</span><span id="exportPixelSizeValue">0px</span></label>
+        <input id="exportPixelSizeInput" data-config="exportPixelSize" type="range" min="0" max="32" step="1" value="0" />
+        <p class="hint" data-i18n-zh="0 为关闭；仅影响离线导出视频，可在选择预设后继续调整。" data-i18n-en="0 disables pixel blocks. Applies only to offline video export; adjustable after selecting a preset.">0 为关闭；仅影响离线导出视频，可在选择预设后继续调整。</p>
+      </div>
+      <div class="control">
         <label><span>Export Duration / 导出时长</span><span id="exportDurationValue">6.0s</span></label>
-        <input id="exportDurationInput" data-config="exportDuration" type="range" min="1" max="60" step="0.5" value="6" />
+        <input id="exportDurationInput" data-config="exportDuration" type="range" min="0.001" max="60" step="any" value="6" />
         <p class="hint">图片也可以导出成视频，会按当前动态闪烁、光带、VHS 抖动录制这段时长。</p>
       </div>
 
@@ -127,13 +148,13 @@
 
       <div class="control">
         <label><span>Export Bitrate / 导出码率</span><span id="exportBitrateValue">50Mbps</span></label>
-        <input id="exportBitrateInput" data-config="exportBitrate" type="range" min="4" max="120" step="1" value="50" />
+        <input id="exportBitrateInput" data-config="exportBitrate" type="range" min="0.1" max="120" step="0.05" value="50" />
         <p class="hint">视频质量主要受码率限制。建议 1080p 用 30–60Mbps，2K 以上用 60–120Mbps。</p>
       </div>
 
       <div class="control">
-        <label><span>Export Resolution Scale / 导出分辨率倍率</span><span id="exportScaleValue">1.5x</span></label>
-        <input id="exportScaleInput" data-config="exportScale" type="range" min="1" max="3" step="0.25" value="1.5" />
+        <label><span>Export Resolution Scale / 导出分辨率倍率</span><span id="exportScaleValue">1x</span></label>
+        <input id="exportScaleInput" data-config="exportScale" type="range" min="0.25" max="3" step="0.25" value="1" />
         <p class="hint">导出时临时提高 WebGL 后台渲染分辨率。越高越清晰，但越慢。</p>
       </div>
 
@@ -172,8 +193,8 @@
       <label><span>Effect Boundary / 效果范围</span></label>
       <select id="effectBoundaryInput" data-config="effectBoundary">
         <option value="stage">Stage / 全画布</option>
-        <option value="media">Media Bounds / 仅媒体范围</option>
-        <option value="source" selected>Source Ratio / 按源媒体比例导出</option>
+        <option value="media" selected>Media Bounds / 仅媒体范围</option>
+        <option value="source">Source Ratio / 按源媒体比例导出</option>
       </select>
       <p class="hint">“按源媒体比例导出”会以导入媒体的宽高比建立输出画布，消除导出文件中的黑边。</p>
     </div>
@@ -228,8 +249,8 @@
     </div>
 
     <div class="control">
-      <label><span>Warp Scale / 桶形强度</span><span id="scaleValue">76</span></label>
-      <input id="scaleInput" data-config="scale" type="range" min="0" max="480" step="1" value="76" />
+      <label><span>Warp Scale / 桶形强度</span><span id="scaleValue">38</span></label>
+      <input id="scaleInput" data-config="scale" type="range" min="0" max="480" step="1" value="38" />
     </div>
 
     <div class="control">

@@ -1,17 +1,51 @@
+<div align="center">
+
 # CRT Simulator
 
-[English](#english) · [简体中文](#简体中文)
+**Max-OS 1998**
 
-[Live demo / 在线体验](https://mazkosoft.github.io/CRT-Simulator/) · [Source / 开源仓库](https://github.com/mazkosoft/CRT-Simulator)
+**A retro terminal for your images, videos and sound.**<br />
+**把图片、视频与声音，带回显像管时代。**
+
+WebGL · CRT / VHS · PNG / MP4 / WebM · Local processing
+
+[**在线体验 · Live demo**](https://mazkosoft.github.io/CRT-Simulator/) · [**单文件版 · Standalone**](dist/crt-simulator-standalone.html) · [**English**](#english) · [**简体中文**](#简体中文)
+
+![CRT Simulator — Max-OS 1998 terminal interface](assets/readme-preview.jpg)
+
+*Project credit: ㄢ誌慖（mazko）*
+
+</div>
+
+---
 
 <a id="english"></a>
 
 ## English
 
+[Getting started](#getting-started) · [User guide](#online-user-guide) · [Development](#local-development-and-structure) · [License](#credits-and-licensing)
+
 A browser-local image/video effects tool in a beige retro terminal. The current
 renderer uses multipass **WebGL**, not the previous DOM/SVG implementation.
 It is a creative CRT/VHS approximation, not a calibrated hardware emulator.
 Project credit: ㄢ誌慖（mazko）.
+
+### Getting started
+
+| Use it your way | Start here |
+| --- | --- |
+| In the browser | [Open the live demo](https://mazkosoft.github.io/CRT-Simulator/) — no installation |
+| One file, offline | [Download the standalone HTML](https://github.com/mazkosoft/CRT-Simulator/raw/refs/heads/main/dist/crt-simulator-standalone.html), save as `.html`, then open it in a browser |
+| Work on the source | Clone the repository and serve the root `index.html`; see [development](#local-development-and-structure) |
+
+The standalone release embeds the default image, styles, application scripts,
+Mediabunny and full license notices. It needs no sibling files, CDN or network
+connection for processing. External About/Credits links still require a connection.
+If GitHub shows the file as text, use **Download raw file** rather than saving the
+GitHub page. Download links reflect the deployed repository, not unpublished local changes.
+
+Browser security, WebGL and codec support still apply. If direct file opening limits
+export/storage on your browser, use the live site or serve the HTML over localhost.
 
 ### Features
 
@@ -33,6 +67,9 @@ image** and **Clear** both return to the sample; neither deletes your local file
 Input format support depends on browser decoders.
 
 Use `contain` for the full source, `cover` to fill/crop, or `fill` to stretch.
+The default **Media Bounds** limits effects to the displayed media footprint; it
+does not crop the exported file to the source aspect ratio. Choose **Source aspect
+ratio** separately when you want source-shaped output without letterbox bars.
 **Source aspect ratio** makes exported dimensions follow the source instead of
 adding letterbox bars. Curvature/vignette may still create intentional dark edges.
 The preview screen ratio can differ from the export ratio.
@@ -62,6 +99,30 @@ for backup/sharing; it contains settings, not media. Keep existing configuration
 
 #### Image and video export
 
+Export resolution defaults to **1×**. Loading a video sets export duration to its
+exact source duration (including videos longer than 60 seconds); still images default
+to six seconds. You can shorten duration with the slider or numeric input.
+
+**Export quality** is independent of CRT/audio presets:
+
+| Preset | Scale | Frame rate | Video bitrate | Pixel blocks |
+| --- | ---: | ---: | ---: | --- |
+| Original quality | 1× | 30 fps | 50 Mbps | Off |
+| Low quality | 0.5× | 24 fps | 1.5 Mbps | Off |
+| Network patina | 0.25× | 15 fps | 0.25 Mbps | Off |
+| Mosaic | 0.5× | 15 fps | 0.5 Mbps | 12 px |
+
+Block size is adjustable from 0 (off) to 32 pixels and is included in JSON configuration.
+Manual changes switch to Custom. Actual dimensions depend on the screen size; bitrate is a target,
+so compression artifacts vary by codec and scene. These presets are not simulations
+of actual repeated social-media transcoding.
+
+The progress bar counts completed video frame submissions, then shows audio progress
+and file finalization separately. Remaining time estimates cover the video stage only.
+Finalization is indeterminate; “Export complete” appears only when the file is built,
+not when the browser has finished saving it. Compatibility recording uses playback
+time and lacks offline mosaic/audio processing.
+
 **Export image** saves the current processed frame as PNG. Casing, glass reflection
 and controls are excluded.
 
@@ -90,15 +151,17 @@ the same offline audio processing. Decoder/encoder support varies by browser.
 
 ### Local development and structure
 
-Clone/download the complete repository, not just `index.html`. No build step:
+For source development, clone/download the complete repository, not just `index.html`.
+Standalone users need only the single release HTML. The split source needs no build step:
 
 ```sh
 python -m http.server 8080 --bind 127.0.0.1
 ```
 
-With Windows' Python launcher use `py -m http.server`. Open `http://127.0.0.1:8080/`.
+With Windows' Python launcher use `py -m http.server 8080 --bind 127.0.0.1`.
+Open `http://127.0.0.1:8080/`.
 Use localhost HTTP or HTTPS for consistent codec behavior; `file://` is not recommended.
-Node.js is only needed for developer checks.
+Node.js is only needed for developer checks and rebuilding the single-file release.
 
 ```text
 index.html                 Page structure / GitHub Pages entry
@@ -108,15 +171,29 @@ js/config.js               Defaults, presets and configuration
 js/crt.js                  WebGL, media and image/video/audio export
 js/controls.js             UI, language, transport and startup
 assets/demo-desktop.png    Supplied default image
+assets/readme-preview.jpg  Actual application screenshot
 vendor/                    Mediabunny bundle and its license
 tests/structure.test.cjs   Dependency-free checks
+tests/standalone.test.cjs  Self-contained/reproducible release checks
+scripts/build-standalone.cjs Single-file generator
+dist/crt-simulator-standalone.html Complete offline release
 CONTRIBUTING.md            Development / bug-report guide
 LICENSE                    Original-code MIT license
 THIRD_PARTY_NOTICES.md     Third-party provenance and licenses
 ```
 
 Classic scripts share scope and load in `config → crt → controls` order. Initialization
-lives in controls; these are not independent ES modules. No duplicate `dist` is maintained.
+lives in controls; these are not independent ES modules. Edit these source files,
+not the generated standalone HTML, then rebuild:
+
+```sh
+node scripts/build-standalone.cjs
+node tests/structure.test.cjs
+node tests/standalone.test.cjs
+```
+
+No npm installation or bundler is needed. The generated `dist` file is deliberately
+included so users can download one file. Its test fails if it no longer matches the source.
 All paths are relative for project-site hosting.
 
 For branch-based GitHub Pages, choose the intended branch and root folder; publish
@@ -153,9 +230,27 @@ rights to third-party content visible in the supplied screenshot or imported med
 
 ## 简体中文
 
+[快速开始](#快速开始) · [使用说明书](#在线体验使用说明书) · [本地开发](#本地运行结构和-pages) · [鸣谢与协议](#鸣谢与协议)
+
 在浏览器本地处理图片与视频的 CRT／录像带复古效果工具，外观为米色终端一体机。
 当前使用多通道 **WebGL**，不是旧版 DOM／SVG 滤镜。用于视觉创作，不是经校准的硬件仿真。
 Project credit: ㄢ誌慖（mazko）。
+
+### 快速开始
+
+| 使用方式 | 如何开始 |
+| --- | --- |
+| 在线体验 | [直接打开网页](https://mazkosoft.github.io/CRT-Simulator/)，无需安装 |
+| 单文件离线版 | [下载完整 HTML](https://github.com/mazkosoft/CRT-Simulator/raw/refs/heads/main/dist/crt-simulator-standalone.html)，保存为 `.html` 后用浏览器打开 |
+| 修改源码 | 克隆完整仓库，通过本地静态服务打开根目录 `index.html` |
+
+单文件版内嵌默认图片、全部样式与脚本、Mediabunny 编码依赖及完整协议声明。
+处理媒体无需其他配套文件、CDN 或网络连接；“关于／鸣谢”中的外链仍需要联网。
+若 GitHub 显示源码，使用 **Download raw file** 下载原始文件，不要保存 GitHub 页面。
+下载入口对应已发布的仓库内容，本地修改提交部署前不会自动更新线上版本。
+
+独立 HTML 不会绕过浏览器的安全和编码限制。若双击打开时导出或存储受限，
+可改用在线体验，或通过本地 HTTP 服务打开这个文件。
 
 ### 功能
 
@@ -173,6 +268,9 @@ PNG、离线逐帧 MP4／WebM 和导出音轨处理；中英文界面及独立�
 
 `contain` 保留完整画面，`cover` 填满并裁切，`fill` 拉伸。“按源媒体比例导出”让输出
 尺寸跟随源媒体，避免比例黑边；曲率和暗角仍可能形成刻意暗边。预览与导出比例可以不同。
+
+默认效果范围为**仅媒体范围**：效果局限于媒体显示区域，但不会自动把输出文件裁成源比例。
+需要消除比例黑边时，请另外选择“按源媒体比例导出”。两者用途不同。
 
 在“效果预设”选内置效果并点击应用，再展开 CRT、荧光粉／遮罩、光带／辉光、VHS 分组微调。
 应用预设会替换参数，重要设置请先保存。手机可用数字框及 `−`／`+` 精调，面板独立滚动。
@@ -194,6 +292,25 @@ PNG、离线逐帧 MP4／WebM 和导出音轨处理；中英文界面及独立�
 网址，不跨设备同步；导出 JSON 便于备份或分享。配置只含参数，不含媒体，保留已有键名。
 
 #### 导出图片与视频
+
+导出倍率默认为 **1×**。上传视频后，导出时长自动设为源视频的准确时长，支持超过
+60 秒的视频；图片默认 6 秒。可用滑条或数值输入缩短时长。
+
+“导出画质”独立于 CRT／音频预设：
+
+| 预设 | 分辨率倍率 | 帧率 | 视频码率 | 像素块 |
+| --- | ---: | ---: | ---: | --- |
+| 原始质量 | 1× | 30 帧／秒 | 50 Mbps | 关闭 |
+| 低画质 | 0.5× | 24 帧／秒 | 1.5 Mbps | 关闭 |
+| 网络包浆 | 0.25× | 15 帧／秒 | 0.25 Mbps | 关闭 |
+| 马赛克画质 | 0.5× | 15 帧／秒 | 0.5 Mbps | 12 像素 |
+
+像素块可调整为 0（关闭）至 32 像素，并随 JSON 配置保存。手动调整后显示“自定义”。
+实际尺寸取决于屏幕尺寸；压缩损伤随编码器和画面变化，并非真实的多次社交平台转码。
+
+进度条按实际已提交的编码帧更新，之后分别显示音轨处理和文件封装阶段。
+剩余时间仅估算视频阶段；封装阶段不伪造百分比。“导出完成”表示文件已生成，
+不代表浏览器已经保存到磁盘。兼容录制按播放时间显示进度，不支持离线马赛克和音轨处理。
 
 “导出图片”保存当前效果帧为 PNG，不包含机壳、玻璃和控件。
 
@@ -217,18 +334,30 @@ WebM 使用 VP9／Opus，声音取决于源音轨及解码支持。图片也能�
 
 ### 本地运行、结构和 Pages
 
-克隆完整仓库，不要只下载 HTML。无需构建，使用已安装的静态服务，例如：
+开发拆分源码时，请克隆完整仓库；只想使用时可下载上方单文件版。
+拆分源码无需构建，使用已安装的静态服务，例如：
 
 ```sh
 python -m http.server 8080 --bind 127.0.0.1
 ```
 
-Windows 有 Python 启动器时可用 `py -m http.server`，打开 `http://127.0.0.1:8080/`。
-建议 localhost HTTP 或 HTTPS，不推荐用 `file://` 测试导出。Node.js 仅用于开发检查。
+Windows 有 Python 启动器时可用 `py -m http.server 8080 --bind 127.0.0.1`，
+打开 `http://127.0.0.1:8080/`。
+完整源码建议通过 localhost HTTP 或 HTTPS 运行。单文件版可单独打开；
+本地文件的编码和存储支持仍取决于浏览器。Node.js 仅用于检查与重新生成单文件版。
 
 文件结构见英文段落。两份 CSS 分别负责机壳和参数界面；三个脚本分别负责配置、
 渲染／媒体导出、界面初始化，按 `config → crt → controls` 加载并共享作用域，不是独立 ES 模块。
-不维护重复的 dist 单文件版。Pages 从分支发布时选择目标分支及根目录，并同时发布全部
+请修改拆分源码，不要手改 `dist` 里的生成文件。修改后运行：
+
+```sh
+node scripts/build-standalone.cjs
+node tests/structure.test.cjs
+node tests/standalone.test.cjs
+```
+
+不需要安装 npm 包或打包器。`dist/crt-simulator-standalone.html` 特意保留在仓库中供直接下载；
+检查会发现发布文件与源码不一致的情况。Pages 从分支发布时选择目标分支及根目录，并同时发布全部
 CSS、JS、assets 和 vendor。本地修改需提交、推送、部署后才在线生效，本任务不会自动推送。
 
 ### 常见问题与隐私

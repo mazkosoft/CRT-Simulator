@@ -707,6 +707,27 @@ let currentMediaType = "demo";
 let exportInProgress = false;
 let renderFrameOverrideTime = null;
 let exportRenderScale = 1;
+let exportMosaic = false;
+let compatibilityRecording = false;
+
+function lockExportControls() {
+  const saved = [...document.querySelectorAll('input, select, button')]
+    .map(element => [element, element.disabled]);
+  saved.forEach(([element]) => { element.disabled = true; });
+  return () => saved.forEach(([element, disabled]) => { element.disabled = disabled; });
+}
+
+function showExportProgress(stage, completed = 0, total = 0, detail = "") {
+  const names = { preparing:["准备导出","Preparing export"], video:["视频编码","Video encoding"], audio:["音轨处理","Audio processing"], recording:["兼容录制","Compatibility recording"], finalizing:["封装文件","Finalizing file"], done:["导出完成","Export complete"], error:["导出失败","Export failed"] };
+  const progress = document.getElementById("exportProgress");
+  const title = names[stage][currentLang === "zh" ? 0 : 1];
+  document.getElementById("exportProgressPanel").hidden = false;
+  document.getElementById("exportProgressLabel").textContent = title;
+  if (stage === "done") progress.value = 100;
+  else if (total > 0) progress.value = exportProgressPercent(completed, total);
+  else progress.removeAttribute("value");
+  document.getElementById("exportProgressStatus").textContent = detail || (total > 0 ? `${exportProgressPercent(completed, total).toFixed(1)}%` : title);
+}
 
 const exportCanvas = document.createElement("canvas");
 const exportCtx = exportCanvas.getContext("2d", { alpha: false });
@@ -763,7 +784,7 @@ document.querySelectorAll("[data-config]").forEach((el) => {
   controls[el.dataset.config] = el;
 });
 
-let currentLang = localStorage.getItem("crt-ui-lang") || "zh";
+let currentLang = readUiLanguage();
 
 const labels = {
   imageFit: document.getElementById("imageFitValue"),
@@ -955,8 +976,8 @@ function passSource() {
   gl.uniform2f(u.u_imgSize, placement.size[0], placement.size[1]);
   gl.uniform2f(u.u_imgOffset, placement.offset[0], placement.offset[1]);
   gl.uniform1f(u.u_opacity, num("imageOpacity"));
-  gl.uniform1f(u.u_pixelate, num("pixelate"));
-  gl.uniform1f(u.u_pixelPeriod, num("rgbPeriod"));
+  gl.uniform1f(u.u_pixelate, exportMosaic ? 1 : num("pixelate"));
+  gl.uniform1f(u.u_pixelPeriod, exportMosaic ? num("exportPixelSize") : num("rgbPeriod"));
 
   drawTo(targets.fit);
 }
@@ -1121,7 +1142,7 @@ function renderFrame(ms) {
 let lastPreviewFrame = -Infinity;
 function render(ms) {
   const frameInterval = document.getElementById("previewQuality").value === "smooth" ? 1000 / 15 : 1000 / 30;
-  if (!exportInProgress && ms - lastPreviewFrame >= frameInterval - 1) {
+  if ((!exportInProgress || compatibilityRecording) && ms - lastPreviewFrame >= frameInterval - 1) {
     renderFrame(ms);
     lastPreviewFrame = ms;
   }
@@ -1165,6 +1186,8 @@ async function drawExportFrame(ms) {
 }
 
 function resetToDemo() {
+  controls.exportDuration.value = DEFAULT_CONFIG.exportDuration;
+  updateLabels();
   currentMediaType = "image";
   currentSourceFile = null;
   sourceVideo.pause();
@@ -1194,6 +1217,8 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
   currentObjectURL = URL.createObjectURL(file);
 
   if (file.type.startsWith("image/")) {
+    controls.exportDuration.value = DEFAULT_CONFIG.exportDuration;
+    updateLabels();
     currentMediaType = "image";
     sourceVideo.pause();
     sourceVideo.removeAttribute("src");
@@ -1220,6 +1245,13 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
       sourceWidth = sourceVideo.videoWidth || 1024;
       sourceHeight = sourceVideo.videoHeight || 768;
       sourceAspect = sourceWidth / sourceHeight;
+      if (Number.isFinite(sourceVideo.duration) && sourceVideo.duration > 0) {
+        controls.exportDuration.max = String(Math.max(60, sourceVideo.duration));
+        controls.exportDuration.value = String(sourceVideo.duration);
+        const input = document.querySelector('.parameter-value-input[data-range-key="exportDuration"]');
+        if (input) input.max = controls.exportDuration.max;
+        updateLabels();
+      }
     }, { once: true });
 
     sourceVideo.addEventListener("canplay", () => {
@@ -1246,7 +1278,7 @@ document.getElementById("showDemoButton").addEventListener("click", () => {
 async function downloadCurrentFrame() {
   if (exportInProgress) return;
   exportInProgress = true;
-  exportRenderScale = Math.max(1, Math.min(3, num("exportScale")));
+  exportRenderScale = Math.max(0.25, Math.min(3, num("exportScale")));
   try {
     resize();
     renderFrame(performance.now());
@@ -1270,6 +1302,7 @@ async function downloadCurrentFrame() {
 }
 
 async function downloadProcessedVideo() {
+  if (exportInProgress) return;
   if (currentMediaType !== "video") {
     setPresetStatus("Load a video first / 请先加载视频");
     return;
@@ -1293,8 +1326,10 @@ async function downloadProcessedVideo() {
     }
   }
 
-  const stream = canvas.captureStream(30);
-  const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+  const stream = canvas.captureStream(num("exportFps"));
+  const options = { videoBitsPerSecond: Math.round(num("exportBitrate") * 1000000) };
+  if (mimeType) options.mimeType = mimeType;
+  const recorder = new MediaRecorder(stream, options);
   const chunks = [];
   recorder.ondataavailable = (event) => {
     if (event.data && event.data.size > 0) chunks.push(event.data);
@@ -1305,43 +1340,66 @@ async function downloadProcessedVideo() {
   const originalTime = sourceVideo.currentTime;
   const wasPaused = sourceVideo.paused;
 
-  sourceVideo.pause();
-  sourceVideo.loop = false;
-  sourceVideo.muted = true;
-  sourceVideo.currentTime = 0;
+  exportInProgress = true;
+  // Compatibility recording needs the live render loop.
+  const unlock = lockExportControls();
+  const duration = Math.min(num("exportDuration"), sourceVideo.duration);
+  let timer;
+  let recordingError;
+  let stopRecording;
+  try {
+    sourceVideo.pause();
+    sourceVideo.loop = false;
+    sourceVideo.muted = true;
+    await seekSourceVideo(0);
 
-  const done = new Promise((resolve) => {
-    recorder.onstop = resolve;
-  });
+    const done = new Promise(resolve => { recorder.onstop = resolve; });
+    recorder.start(100);
+    showExportProgress("recording", 0, duration);
+    setPresetStatus("Recording video export... / 正在录制导出视频…");
 
-  recorder.start(100);
-  setPresetStatus("Recording video export... / 正在录制导出视频…");
+    stopRecording = () => {
+      sourceVideo.removeEventListener("ended", stopRecording);
+      if (recorder.state !== "inactive") recorder.stop();
+    };
+    sourceVideo.addEventListener("ended", stopRecording);
+    // The preview renderer is deliberately allowed to run during recording.
+    compatibilityRecording = true;
+    timer = setInterval(() => {
+      showExportProgress("recording", sourceVideo.currentTime, duration);
+      if (sourceVideo.currentTime >= duration) stopRecording();
+    }, 100);
+    recorder.onerror = event => { recordingError = event.error || new Error("Recording failed"); stopRecording(); };
+    await sourceVideo.play();
+    await done;
+    if (recordingError) throw recordingError;
+    clearInterval(timer);
+    showExportProgress("finalizing");
 
-  const stopRecording = () => {
-    sourceVideo.removeEventListener("ended", stopRecording);
+    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "crt-processed-video.webm";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1200);
+    showExportProgress("done");
+    setPresetStatus("Video export complete / 视频导出完成");
+  } catch (error) {
+    showExportProgress("error", 0, 0, String(error.message || error));
     if (recorder.state !== "inactive") recorder.stop();
-  };
-
-  sourceVideo.addEventListener("ended", stopRecording);
-  await sourceVideo.play().catch(() => {});
-
-  await done;
-
-  const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "crt-processed-video.webm";
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1200);
-
-  sourceVideo.loop = originalLoop;
-  sourceVideo.muted = originalMuted;
-  sourceVideo.currentTime = originalTime;
-  if (!wasPaused) {
-    sourceVideo.play().catch(() => {});
+  } finally {
+    clearInterval(timer);
+    if (stopRecording) sourceVideo.removeEventListener("ended", stopRecording);
+    stream.getTracks().forEach(track => track.stop());
+    unlock();
+    exportInProgress = false;
+    compatibilityRecording = false;
+    sourceVideo.loop = originalLoop;
+    sourceVideo.muted = originalMuted;
+    sourceVideo.currentTime = originalTime;
+    if (!wasPaused) sourceVideo.play().catch(() => {});
   }
-  setPresetStatus("Video export complete / 视频导出完成");
 }
 
 function makeDriveCurve(amount) {
@@ -1459,15 +1517,17 @@ async function downloadHighQualityVideo() {
   if (exportInProgress) return;
   exportInProgress = true;
   const fps = Math.max(10, Math.min(60, Math.round(num("exportFps"))));
-  const duration = Math.max(1, num("exportDuration"));
-  const bitrate = Math.max(4, Math.min(120, Math.round(num("exportBitrate")))) * 1000 * 1000;
-  exportRenderScale = Math.max(1, Math.min(3, num("exportScale")));
+  const duration = Math.max(0.001, num("exportDuration"));
+  const bitrate = Math.round(Math.max(0.1, Math.min(120, num("exportBitrate"))) * 1000 * 1000);
+  exportRenderScale = Math.max(0.25, Math.min(3, num("exportScale")));
+  exportMosaic = num("exportPixelSize") > 0;
   const useWebm = val("exportFormat") === "webm";
   const originalTime = sourceVideo.currentTime;
   const wasPaused = sourceVideo.paused;
-
+  const unlock = lockExportControls();
   try {
     if (currentMediaType === "video") sourceVideo.pause();
+    showExportProgress("preparing");
     resize();
     syncExportCanvasSize();
     const output = new mb.Output({
@@ -1479,7 +1539,7 @@ async function downloadHighQualityVideo() {
       bitrate,
       frameRate: fps
     });
-    output.addVideoTrack(videoSource);
+    output.addVideoTrack(videoSource, { frameRate: fps });
     let audioSource = null;
     let audioSamples = null;
 
@@ -1494,31 +1554,41 @@ async function downloadHighQualityVideo() {
     }
 
     await output.start();
-    const totalFrames = Math.max(1, Math.round(duration * fps));
+    const totalFrames = Math.max(1, Math.ceil(duration * fps));
     const exportStarted = performance.now();
     const exportTimings = { renderMs:0, encodeMs:0, frames:totalFrames };
     setPresetStatus(`Offline ${useWebm ? "WebM" : "MP4"} render: 0% / 正在离线高质量渲染…`);
+    showExportProgress("video", 0, totalFrames);
 
     for (let i = 0; i < totalFrames; i++) {
       const renderStarted = performance.now();
       await drawExportFrame(i * 1000 / fps);
       exportTimings.renderMs += performance.now() - renderStarted;
       const encodeStarted = performance.now();
-      await videoSource.add(i / fps, 1 / fps);
+      await videoSource.add(i / fps, Math.min(1 / fps, duration - i / fps));
       exportTimings.encodeMs += performance.now() - encodeStarted;
-      if (i % Math.max(1, Math.floor(totalFrames / 20)) === 0) {
+      if (i % Math.max(1, Math.floor(fps / 5)) === 0 || i === totalFrames - 1) {
         const elapsed = (performance.now() - exportStarted) / 1000;
         const rate = (i + 1) / Math.max(0.001, elapsed);
+        showExportProgress("video", i + 1, totalFrames, currentLang === "zh"
+          ? `${i + 1}/${totalFrames} 帧 · ${rate.toFixed(1)} 帧/秒 · 本阶段剩余约 ${Math.ceil((totalFrames - i - 1) / rate)} 秒`
+          : `${i + 1}/${totalFrames} frames · ${rate.toFixed(1)} fps · ~${Math.ceil((totalFrames - i - 1) / rate)}s left in this stage`);
+        await new Promise(resolve => setTimeout(resolve, 0));
         setPresetStatus(currentLang === "zh" ? `正在导出 ${Math.round((i + 1) / totalFrames * 100)}% · ${rate.toFixed(1)} 帧/秒 · 预计剩余 ${Math.ceil((totalFrames - i - 1) / rate)} 秒` : `Export ${Math.round((i + 1) / totalFrames * 100)}% · ${rate.toFixed(1)} fps · ${Math.ceil((totalFrames - i - 1) / rate)}s remaining`);
       }
     }
 
     if (audioSource && audioSamples) {
+      showExportProgress("audio");
       for await (const sample of audioSamples) {
-        await audioSource.add(await processRetroAudio(sample.toAudioBuffer()));
+        try {
+          await audioSource.add(await processRetroAudio(sample.toAudioBuffer()));
+          showExportProgress("audio", sample.timestamp + sample.duration, Math.min(duration, sourceVideo.duration));
+        } finally { sample.close(); }
       }
     }
 
+    showExportProgress("finalizing");
     await output.finalize();
     console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
     const mime = useWebm ? "video/webm" : "video/mp4";
@@ -1528,14 +1598,18 @@ async function downloadHighQualityVideo() {
     link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1600);
+    showExportProgress("done");
     setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
   } catch (error) {
     console.error(error);
     const detail = error && error.message ? `: ${error.message}` : "";
+    showExportProgress("error", 0, 0, detail);
     setPresetStatus(`High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
   } finally {
     exportInProgress = false;
     exportRenderScale = 1;
+    exportMosaic = false;
+    unlock();
     if (currentMediaType === "video") {
       sourceVideo.currentTime = originalTime;
       if (!wasPaused) sourceVideo.play().catch(() => {});

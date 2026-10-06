@@ -4,6 +4,11 @@ const STORAGE_KEY = "crt-media-multipass-webgl-vhs-export-presets-v1";
 const PANEL_STATE_KEY = "crt-media-panel-collapsed-v1";
 const USER_PRESETS_KEY = "crt-media-user-presets-v1";
 
+function readUiLanguage() {
+  try { return localStorage.getItem("crt-ui-lang") === "en" ? "en" : "zh"; }
+  catch { return "zh"; } // Local files/privacy settings may deny browser storage.
+}
+
 const DEFAULT_CONFIG = {
   "imageFit": "contain",
   "imageOpacity": "1",
@@ -12,7 +17,7 @@ const DEFAULT_CONFIG = {
   "imageBlurX": "0",
   "imageBlurY": "0",
   "warpDirection": "barrel",
-  "scale": "80",
+  "scale": "38",
   "mapZoom": "0.3",
   "warpBlurX": "3.64",
   "warpBlurY": "0.45",
@@ -61,9 +66,10 @@ const DEFAULT_CONFIG = {
   "exportDuration": "6",
   "exportFps": "30",
   "exportBitrate": "50",
-  "exportScale": "1.5",
+  "exportScale": "1",
+  "exportPixelSize": "0",
   "exportFormat": "mp4",
-  "effectBoundary": "source",
+  "effectBoundary": "media",
   "audioPreset": "clean",
   "audioVolume": "1",
   "audioChannels": "stereo",
@@ -73,6 +79,18 @@ const DEFAULT_CONFIG = {
   "audioWow": "0",
   "audioReverb": "0"
 };
+
+// Export-only settings: do not replace the CRT or audio preset.
+const EXPORT_QUALITY_PRESETS = {
+  original: { exportScale: "1", exportFps: "30", exportBitrate: "50", exportPixelSize: "0" },
+  low: { exportScale: "0.5", exportFps: "24", exportBitrate: "1.5", exportPixelSize: "0" },
+  network: { exportScale: "0.25", exportFps: "15", exportBitrate: "0.25", exportPixelSize: "0" },
+  mosaic: { exportScale: "0.5", exportFps: "15", exportBitrate: "0.5", exportPixelSize: "12" }
+};
+
+function exportProgressPercent(completed, total) {
+  return total > 0 ? Math.max(0, Math.min(100, completed / total * 100)) : 0;
+}
 
 const AUDIO_PRESETS = {
   clean: { audioVolume: "1", audioChannels: "stereo", audioBandwidth: "18000", audioHiss: "0", audioDrive: "0", audioWow: "0", audioReverb: "0" },
@@ -159,7 +177,7 @@ const PRESET_LIBRARY = {
           "imageBlurY": "2.91",
           "finalSaturation": "1.04",
           "warpDirection": "barrel",
-          "scale": "80",
+          "scale": "38",
           "mapZoom": "0.3",
           "warpBlurX": "7.5",
           "warpBlurY": "0",

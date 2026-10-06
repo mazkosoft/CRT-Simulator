@@ -21,7 +21,21 @@ vm.runInContext(sources[0] + '\nthis.defaults = DEFAULT_CONFIG; this.presets = P
 const keys = [...html.matchAll(/data-config="([^"]+)"/g)].map(match => match[1]);
 assert.deepEqual(new Set(Object.keys(context.defaults)), new Set(keys), 'Config keys must match controls');
 assert.ok(context.presets['soft-crt']);
-assert.equal(context.defaults.effectBoundary, 'source');
+assert.equal(context.defaults.effectBoundary, 'media');
+assert.equal(context.defaults.scale, '38');
+for (const preset of Object.values(context.presets)) assert.equal(preset.scale, '38');
+assert.ok(html.includes('id="scaleValue">38</span>'));
+assert.ok(/id="scaleInput"[^>]*value="38"/.test(html));
+assert.equal(context.readUiLanguage(), 'zh', 'Startup must tolerate unavailable browser storage');
+assert.equal(context.defaults.exportScale, '1');
+vm.runInContext('this.exportPresets = EXPORT_QUALITY_PRESETS; this.progress = exportProgressPercent;', context);
+assert.equal(context.exportPresets.mosaic.exportPixelSize, '12');
+assert.ok(Number(context.exportPresets.network.exportBitrate) < 1);
+assert.equal(context.progress(3, 10), 30);
+assert.equal(context.progress(15, 10), 100);
+assert.equal(context.progress(0, 0), 0);
+assert.ok(html.includes('id="exportProgress"'));
+assert.ok(sources[1].includes('output.addVideoTrack(videoSource, { frameRate: fps })'), 'WebM needs track frame-rate metadata for the last frame duration');
 for (const [name, cases] of [
   ['formatPlaybackTime', [[65,'1:05'],[NaN,'0:00'],[-2,'0:00']]],
   ['normalizePlaybackVolume', [[-1,0],[2,1],[0.5,0.5]]]
@@ -39,6 +53,10 @@ for (const source of sources) {
 }
 assert.ok(ids.has('aboutGroup'));
 assert.ok(read('README.md').includes('https://mazkosoft.github.io/CRT-Simulator/'));
+for (const target of ['assets/readme-preview.jpg', 'dist/crt-simulator-standalone.html']) {
+  assert.ok(read('README.md').includes(target));
+  assert.ok(fs.existsSync(path.join(root, target)), `README artifact missing: ${target}`);
+}
 assert.ok(read('THIRD_PARTY_NOTICES.md').includes('Copyright (c) 2022, Chafalleiro'));
 assert.ok(read('vendor/MEDIABUNNY-LICENSE.txt').includes('Mozilla Public License'));
 assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'vendor/mediabunny.min.cjs'))).digest('hex'),

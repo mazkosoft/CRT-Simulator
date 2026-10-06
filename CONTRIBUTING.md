@@ -9,6 +9,8 @@ These files are not independently reusable ES modules.
 Before proposing a change:
 
 1. Run `node tests/structure.test.cjs`.
+   Regenerate the single-file release with `node scripts/build-standalone.cjs`,
+   then run `node tests/standalone.test.cjs`. Do not edit `dist` by hand.
 2. Check the browser console and test image/video upload, seek/pause, configuration,
    language switching, fullscreen, PNG export and a short video export.
 3. Inspect desktop and 320px-wide/mobile landscape layouts.
@@ -30,3 +32,5 @@ media unless you intend to share it publicly.
 视频定位暂停、配置、语言、全屏、PNG 和短视频导出。检查桌面、320px 手机及
 横屏布局。保留根目录入口与相对路径，新增依赖和资源必须提供来源及授权。
 提交问题时说明浏览器版本、系统、复现步骤和错误日志；请勿公开私密媒体。
+更新源码后运行 `node scripts/build-standalone.cjs` 和 `node tests/standalone.test.cjs`，
+同步单文件发布版；不要手改 `dist` 中的生成文件。
