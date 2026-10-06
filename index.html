@@ -12,16 +12,24 @@
   <main class="machine">
     <section class="crt-cabinet" aria-label="CRT preview">
       <div class="cabinet-brand"><span>MAZKO</span><span>COLOR DISPLAY · 1998</span></div>
-      <div class="screen">
-        <canvas id="glCanvas"></canvas>
-        <div class="fallback">
+      <div class="screen-well">
+        <div class="screen">
+          <canvas id="glCanvas"></canvas>
+          <div class="fallback">
       <div>
         <h2>WebGL 不可用</h2>
         <p>这个版本使用多通道 WebGL 渲染。请换一个支持 WebGL 的浏览器。</p>
       </div>
+          </div>
         </div>
       </div>
-      <div class="cabinet-controls"><span class="cabinet-led"></span><span>STATUS</span><i></i><i></i><i></i></div>
+      <div class="cabinet-controls">
+        <div class="monitor-model">CRT-09 / COLOR MONITOR</div>
+        <div class="monitor-knobs" aria-label="Display controls"><span class="knob-label">BRIGHT</span><button class="monitor-oval" type="button" aria-label="Brightness control"></button><span class="knob-label">CONTRAST</span><button class="monitor-oval" type="button" aria-label="Contrast control"></button></div>
+        <div class="floppy-bay" aria-label="Floppy disk slot"><span></span></div>
+        <button id="powerButton" class="power-button" type="button" aria-label="Toggle monitor power" aria-pressed="true"></button>
+        <div class="signal-group"><span class="cabinet-led"></span><span>ON</span></div>
+      </div>
     </section>
 
   <aside class="control-panel">
@@ -30,7 +38,7 @@
         <p class="dos-model">CRT-SIM / 86</p>
         <h2>CRT CONTROL</h2>
       </div>
-      <div class="dos-tools"><button id="languageToggleButton" class="language-toggle" type="button">EN</button><div class="dos-led" aria-label="Power on"><span></span>POWER</div></div>
+      <div class="dos-tools"><button id="languageToggleButton" class="language-toggle" type="button">EN</button></div>
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
 
@@ -90,7 +98,7 @@
       <input id="imageUpload" type="file" accept="image/*,video/*" />
       <div class="button-row">
         <button id="clearImageButton" type="button">Clear<br />清除</button>
-        <button id="showDemoButton" type="button">Demo<br />演示</button>
+        <button id="showDemoButton" type="button">Load default<br />载入默认图</button>
       </div>
       <div class="button-row">
         <button id="downloadImageButton" class="primary-button" type="button">Export PNG<br />导出图片</button>
@@ -1326,59 +1334,6 @@
     sourceVideo.playsInline = true;
     sourceVideo.crossOrigin = "anonymous";
 
-    function makeDemoCanvas() {
-      const c = document.createElement("canvas");
-      const ctx = c.getContext("2d");
-      c.width = 1024;
-      c.height = 768;
-
-      const g = ctx.createRadialGradient(512, 384, 0, 512, 384, 650);
-      g.addColorStop(0, "rgba(0,80,70,1)");
-      g.addColorStop(0.45, "rgba(0,28,24,1)");
-      g.addColorStop(1, "rgba(2,3,3,1)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, c.width, c.height);
-
-      ctx.strokeStyle = "rgba(158,255,197,0.45)";
-      ctx.fillStyle = "rgba(0,24,20,0.76)";
-      ctx.lineWidth = 2;
-      ctx.fillRect(70, 70, 620, 410);
-      ctx.strokeRect(70, 70, 620, 410);
-
-      ctx.fillStyle = "#b5ffd0";
-      ctx.font = "48px Consolas, monospace";
-      ctx.fillText("CRT IMAGE PREVIEW", 105, 145);
-
-      ctx.fillStyle = "rgba(220,255,230,0.82)";
-      ctx.font = "24px Consolas, monospace";
-
-      [
-        "> MULTIPASS WEBGL PIPELINE READY",
-        "> GRID AND MASK ARE PRE-WARP",
-        "> TRUE GAUSSIAN BLUR PASSES",
-        "> FINAL GLOW USES BLURRED RESULT",
-        "> UPLOAD IMAGE TO TEST EFFECT"
-      ].forEach((line, i) => {
-        ctx.fillText(line, 105, 210 + i * 45);
-      });
-
-      const labels = ["RGB", "CELL", "MASK", "WARP", "LUMA", "GLOW", "SAVE", "CRT"];
-
-      labels.forEach((txt, i) => {
-        const x = 105 + (i % 4) * 135;
-        const y = 350 + Math.floor(i / 4) * 100;
-        ctx.fillStyle = "rgba(158,255,197,0.08)";
-        ctx.strokeStyle = "rgba(158,255,197,0.35)";
-        ctx.fillRect(x, y, 110, 70);
-        ctx.strokeRect(x, y, 110, 70);
-        ctx.fillStyle = "rgba(220,255,230,0.82)";
-        ctx.font = "18px Consolas, monospace";
-        ctx.fillText(txt, x + 28, y + 43);
-      });
-
-      return c;
-    }
-
     function uploadSource(source, w, h) {
       sourceWidth = w;
       sourceHeight = h;
@@ -1419,8 +1374,6 @@
         // Some browsers throw until the first decodable video frame is ready.
       }
     }
-
-    uploadSource(makeDemoCanvas(), 1024, 768);
 
     const controls = {};
     document.querySelectorAll("[data-config]").forEach((el) => {
@@ -1995,9 +1948,7 @@
         setPresetStatus("Default desktop loaded / 已载入默认桌面图");
       };
       image.onerror = () => {
-        const fallback = makeDemoCanvas();
-        uploadSource(fallback, fallback.width, fallback.height);
-        setPresetStatus("Fallback demo loaded / 默认图片未找到，已载入备用演示");
+        setPresetStatus("Default image could not be loaded / 默认图片无法加载");
       };
       image.src = new URL("assets/demo-desktop.png", document.baseURI).href;
     }
@@ -2651,6 +2602,12 @@
     document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
     document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
     document.getElementById("downloadVideoButton").addEventListener("click", downloadHighQualityVideo);
+    document.getElementById("powerButton").addEventListener("click", () => {
+      const machine = document.querySelector(".machine");
+      const off = machine.classList.toggle("machine-off");
+      document.getElementById("powerButton").setAttribute("aria-pressed", String(!off));
+      setPresetStatus(off ? "Monitor standby / 显示器已待机" : "Monitor on / 显示器已开启");
+    });
 
     refreshUserPresetSelect();
 
