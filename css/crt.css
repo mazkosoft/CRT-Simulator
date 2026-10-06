@@ -10,17 +10,76 @@
       color: #c9f5d6;
     }
 
+    .machine {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(330px, 390px);
+      gap: 18px;
+      width: min(1580px, calc(100vw - 40px));
+      height: min(920px, calc(100dvh - 40px));
+      margin: 20px auto;
+      padding: 18px;
+      background: #a9a494;
+      border: 4px solid #5a5a51;
+      border-top-color: #e3ddc9;
+      border-left-color: #e3ddc9;
+      box-shadow: inset 2px 2px #fff9e5, inset -3px -3px #67665d, 12px 14px 0 rgba(0,0,0,.45);
+    }
+
+    .crt-cabinet {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-width: 0;
+      padding: 16px 18px 12px;
+      background: linear-gradient(135deg, #c8c1ac, #8b887c 58%, #aba694);
+      border: 4px solid #5a5a51;
+      border-top-color: #eee6ce;
+      border-left-color: #eee6ce;
+      box-shadow: inset 2px 2px #f8f0d9, inset -3px -3px #636258;
+    }
+
+    .cabinet-brand { display:flex; justify-content:space-between; padding:0 4px 11px; color:#32342f; font-size:11px; letter-spacing:.1em; font-weight:bold; }
+    .cabinet-brand span:first-child { font-size:19px; letter-spacing:.16em; }
+
     .screen {
-      position: fixed;
-      inset: 0;
+      position: relative;
+      min-height: 0;
       overflow: hidden;
       background: #020303;
+      border: 16px solid #292c28;
+      border-radius: 58px;
+      clip-path: inset(0 round 58px);
+      box-shadow: inset 0 0 0 3px #030504, inset 0 0 42px #000, 2px 2px 0 #e4ddc8, 6px 7px 0 rgba(0,0,0,.34);
     }
 
     #glCanvas {
       display: block;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       background: #020303;
+      border-radius: 0;
+      transform: none;
+    }
+    .screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      border-radius: 42px;
+      background: linear-gradient(118deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.035) 18%, transparent 38%, rgba(170,230,195,.05) 62%, transparent 78%);
+      box-shadow: inset 0 0 34px rgba(0,0,0,.7), inset 0 1px 1px rgba(255,255,255,.22);
+    }
+    .cabinet-controls { display:flex; align-items:center; gap:7px; min-height:36px; padding:10px 6px 0; color:#3c403a; font-size:10px; font-weight:bold; }
+    .cabinet-led { width:9px; height:9px; border-radius:50%; background:#93bf62; border:1px solid #4a6038; box-shadow:0 0 5px #b6e17b; }
+    .cabinet-controls i { width:15px; height:15px; margin-left:auto; border-radius:50%; background:#6d6c63; border:2px solid #55564f; border-top-color:#d8d0ba; border-left-color:#d8d0ba; }
+
+    @media (max-width: 900px) {
+      html, body { overflow: auto; }
+      .machine { grid-template-columns: 1fr; grid-template-rows: minmax(280px, 47dvh) auto; width:100%; height:auto; min-height:100dvh; margin:0; padding:10px; gap:10px; }
+      .crt-cabinet { min-height:0; padding:10px 11px 8px; }
+      .screen { border-width:10px; border-radius:32px; clip-path: inset(0 round 32px); }
+      .screen::after { border-radius:22px; }
+      .cabinet-brand { padding-bottom:6px; font-size:9px; }
+      .cabinet-brand span:first-child { font-size:15px; }
     }
 

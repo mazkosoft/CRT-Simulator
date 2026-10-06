@@ -9,21 +9,30 @@
 </head>
 
 <body>
-  <main class="screen">
-    <canvas id="glCanvas"></canvas>
-    <div class="fallback">
+  <main class="machine">
+    <section class="crt-cabinet" aria-label="CRT preview">
+      <div class="cabinet-brand"><span>MAZKO</span><span>COLOR DISPLAY · 1998</span></div>
+      <div class="screen">
+        <canvas id="glCanvas"></canvas>
+        <div class="fallback">
       <div>
         <h2>WebGL 不可用</h2>
         <p>这个版本使用多通道 WebGL 渲染。请换一个支持 WebGL 的浏览器。</p>
       </div>
-    </div>
-  </main>
-
-  <button id="languageToggleButton" class="panel-toggle lang-toggle" type="button">EN</button>
-  <button id="panelToggleButton" class="panel-toggle" type="button">Hide<br />收起</button>
+        </div>
+      </div>
+      <div class="cabinet-controls"><span class="cabinet-led"></span><span>STATUS</span><i></i><i></i><i></i></div>
+    </section>
 
   <aside class="control-panel">
-    <h2>CRT CONTROL / 控制台</h2>
+    <header class="dos-header">
+      <div>
+        <p class="dos-model">CRT-SIM / 86</p>
+        <h2>CRT CONTROL</h2>
+      </div>
+      <div class="dos-tools"><button id="languageToggleButton" class="language-toggle" type="button">EN</button><div class="dos-led" aria-label="Power on"><span></span>POWER</div></div>
+    </header>
+    <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
 
     <details class="control-group">
       <summary>CONFIG & PRESETS / 配置与预设</summary>
@@ -521,6 +530,7 @@
     </details>
 
   </aside>
+  </main>
 
   <!-- Mediabunny 1.61.3, MPL-2.0; see vendor/MEDIABUNNY-LICENSE.txt -->
   <script src="vendor/mediabunny.min.cjs"></script>
@@ -1374,13 +1384,20 @@
       sourceHeight = h;
       sourceAspect = w / h;
 
-      if (!sourceTexture) {
-        sourceTexture = createTexture(w, h, source);
-      } else {
-        gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+      let replacement = null;
+      try {
+        replacement = createTexture(w, h, source);
+        if (gl.getError() !== gl.NO_ERROR) throw new Error("Texture upload failed");
+      } catch (error) {
+        if (replacement) gl.deleteTexture(replacement);
+        console.warn("Source image could not be uploaded:", error);
+        return false;
       }
+
+      const previous = sourceTexture;
+      sourceTexture = replacement;
+      if (previous) gl.deleteTexture(previous);
+      return true;
     }
 
     function uploadVideoFrame() {
@@ -1966,12 +1983,23 @@
 
 
     function resetToDemo() {
-      currentMediaType = "demo";
+      currentMediaType = "image";
+      currentSourceFile = null;
       sourceVideo.pause();
       sourceVideo.removeAttribute("src");
       sourceVideo.load();
-      uploadSource(makeDemoCanvas(), 1024, 768);
-      setPresetStatus("Demo media loaded / 已载入演示媒体");
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = () => {
+        uploadSource(image, image.naturalWidth, image.naturalHeight);
+        setPresetStatus("Default desktop loaded / 已载入默认桌面图");
+      };
+      image.onerror = () => {
+        const fallback = makeDemoCanvas();
+        uploadSource(fallback, fallback.width, fallback.height);
+        setPresetStatus("Fallback demo loaded / 默认图片未找到，已载入备用演示");
+      };
+      image.src = new URL("assets/demo-desktop.png", document.baseURI).href;
     }
 
     document.getElementById("imageUpload").addEventListener("change", (event) => {
@@ -2102,44 +2130,15 @@
         }
       });
 
-      const langButton = document.getElementById("languageToggleButton");
-      langButton.textContent = lang === "zh" ? "EN" : "中";
-
-      const collapsed = document.body.classList.contains("panel-collapsed");
-      document.getElementById("panelToggleButton").innerHTML = collapsed
-        ? (lang === "zh" ? "展开" : "Show")
-        : (lang === "zh" ? "收起" : "Hide");
-
       updateLabels();
+      document.getElementById("languageToggleButton").textContent = lang === "zh" ? "EN" : "中";
+      document.getElementById("dosCaption").textContent = lang === "zh" ? "本地媒体处理控制台" : "LOCAL MEDIA PROCESSING CONSOLE";
     }
 
-    document.getElementById("languageToggleButton").addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    applyLanguage("zh");
+    document.getElementById("languageToggleButton").addEventListener("click", () => {
       applyLanguage(currentLang === "zh" ? "en" : "zh");
     });
-
-    const panelToggleButton = document.getElementById("panelToggleButton");
-
-    function setPanelCollapsed(collapsed) {
-      document.body.classList.toggle("panel-collapsed", collapsed);
-      panelToggleButton.innerHTML = collapsed
-        ? (currentLang === "zh" ? "展开" : "Show")
-        : (currentLang === "zh" ? "收起" : "Hide");
-      localStorage.setItem(PANEL_STATE_KEY, collapsed ? "1" : "0");
-    }
-
-    panelToggleButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setPanelCollapsed(!document.body.classList.contains("panel-collapsed"));
-    });
-
-    panelToggleButton.addEventListener("pointerup", (event) => {
-      event.preventDefault();
-    });
-
-    setPanelCollapsed(localStorage.getItem(PANEL_STATE_KEY) === "1");
 
 
     const PRESET_LIBRARY = {
@@ -2656,6 +2655,7 @@
     refreshUserPresetSelect();
 
     applyConfig(DEFAULT_CONFIG);
+    resetToDemo();
     requestAnimationFrame(render);
   </script>
 </body>
