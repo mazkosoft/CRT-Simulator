@@ -4,16 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🅜 𝙲𝚁𝚃 𝚂𝚒𝚖𝚞𝚕𝚊𝚝𝚘𝚛</title>
-  <link rel="stylesheet" href="css/crt.css?v=terminal-2" />
-  <link rel="stylesheet" href="css/ui.css?v=terminal-2" />
+  <link rel="stylesheet" href="css/crt.css?v=chassis-6" />
+  <link rel="stylesheet" href="css/ui.css?v=language-7" />
 </head>
 
 <body>
   <main class="machine">
     <section class="crt-cabinet" aria-label="CRT preview">
-      <div class="cabinet-brand"><span>MAZKO</span><span>COLOR DISPLAY · 1998</span></div>
+      <div class="cabinet-brand"><span>Max-OS 1998</span><div class="cabinet-vents" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
       <div class="screen-well">
         <div class="screen">
+          <div class="preview-tools">
+            <button id="exitFullscreenPreview" type="button">退出全屏</button>
+            <button id="zoomOutPreview" type="button" aria-label="缩小">−</button>
+            <button id="zoomResetPreview" type="button">100%</button>
+            <button id="zoomInPreview" type="button" aria-label="放大">+</button>
+          </div>
           <canvas id="glCanvas"></canvas>
           <svg class="glass-reflection" viewBox="0 0 1000 800" preserveAspectRatio="none" aria-hidden="true">
             <defs>
@@ -34,11 +40,12 @@
         </div>
       </div>
       <div class="cabinet-controls">
-        <div class="monitor-model">CRT-09 / COLOR MONITOR</div>
-        <div class="monitor-knobs" aria-label="Display controls"><span class="knob-label">BRIGHT</span><button class="monitor-oval" type="button" aria-label="Brightness control"></button><span class="knob-label">CONTRAST</span><button class="monitor-oval" type="button" aria-label="Contrast control"></button></div>
+        <div class="monitor-view-control"><span id="fullscreenLabel" class="knob-label">放大查看</span><button id="fullscreenPreview" class="monitor-oval" type="button" aria-label="放大查看"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg></button></div>
+        <div class="monitor-knobs" aria-label="Display controls"><span class="knob-label">亮度</span><button id="brightnessButton" class="monitor-oval" type="button" aria-label="亮度"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></button><span class="knob-label">对比度</span><button id="contrastButton" class="monitor-oval" type="button" aria-label="对比度"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" stroke="none"/></svg></button></div>
         <div class="floppy-bay" aria-label="Floppy disk slot"><span></span></div>
-        <button id="powerButton" class="power-button" type="button" aria-label="Toggle monitor power" aria-pressed="true"></button>
-        <div class="signal-group"><span class="cabinet-led"></span><span>ON</span></div>
+        <div class="monitor-view-control"><span id="diskLabel" class="knob-label">保存配置</span><button id="diskSaveButton" class="monitor-oval" type="button" aria-label="保存配置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h13l4 4v14H3V3Zm3 0v7h10V3M7 21v-7h10v7"/><path d="M14 5v3"/></svg></button></div>
+        <button id="powerButton" class="power-button" type="button" aria-label="Toggle monitor power" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v9M7 5.5a8 8 0 1 0 10 0" /></svg></button>
+        <div class="signal-group" aria-label="Power indicator"><span class="cabinet-led"></span></div>
       </div>
     </section>
 
@@ -48,7 +55,7 @@
         <p class="dos-model">CRT-SIM / 86</p>
         <h2>CRT CONTROL</h2>
       </div>
-      <div class="dos-tools"><button id="languageToggleButton" class="language-toggle" type="button">EN</button></div>
+      <div class="dos-tools language-control"><span id="languageLabel" class="knob-label">语言</span><button id="languageToggleButton" class="language-toggle monitor-oval" type="button" aria-label="切换为英文"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.5" ry="8"/><path d="M4 12h16M6 7.5h12M6 16.5h12"/></svg></button></div>
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
 
@@ -523,10 +530,10 @@
     </details>
 
     <details class="control-group">
-      <summary>CREDIT / 鸣谢</summary>
+      <summary>Project credit: ㄢ誌慖（mazko）</summary>
 <div class="control">
       <p class="credit-text">
-        Project credit: ㄢ誌慖<br />
+        Project credit: ㄢ誌慖（mazko）<br />
         <a href="https://max-os.netlify.app" target="_blank" rel="noopener noreferrer">max-os.netlify.app</a>
       </p>
       <p class="credit-text">
@@ -1495,7 +1502,7 @@
     function resize() {
       const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const dpr = baseDpr * (exportInProgress ? exportRenderScale : 1);
-      const rect = canvas.getBoundingClientRect();
+      const rect = { width: canvas.clientWidth, height: canvas.clientHeight };
       let w = Math.max(1, Math.round(rect.width * dpr));
       let h = Math.max(1, Math.round(rect.height * dpr));
 
@@ -1507,6 +1514,10 @@
         }
       }
 
+      if (exportInProgress) {
+        w = Math.max(2, Math.floor(w / 2) * 2);
+        h = Math.max(2, Math.floor(h / 2) * 2);
+      }
       if (canvas.width === w && canvas.height === h) return;
 
       canvas.width = w;
@@ -1727,17 +1738,16 @@
       passBlur(targets.glowX.texture, targets.glow, num("glowBlurY"), 0, 1);
 
       passFinal();
-      gl.finish();
     }
 
     function render(ms) {
-      renderFrame(ms);
+      if (!exportInProgress) renderFrame(ms);
       requestAnimationFrame(render);
     }
 
     function syncExportCanvasSize() {
-      exportCanvas.width = canvas.width;
-      exportCanvas.height = canvas.height;
+      if (exportCanvas.width !== canvas.width) exportCanvas.width = canvas.width;
+      if (exportCanvas.height !== canvas.height) exportCanvas.height = canvas.height;
     }
 
     function seekSourceVideo(time) {
@@ -1762,7 +1772,6 @@
     async function drawExportFrame(ms) {
       if (currentMediaType === "video") {
         await seekSourceVideo(ms / 1000);
-        uploadVideoFrame();
       }
 
       renderFrameOverrideTime = ms;
@@ -2039,7 +2048,7 @@
     document.getElementById("muteVideoButton").addEventListener("click", () => {
       if (currentMediaType !== "video") return;
       sourceVideo.muted = !sourceVideo.muted;
-      document.getElementById("muteVideoButton").innerHTML = sourceVideo.muted ? "Unmute<br />取消静音" : "Mute<br />静音";
+      document.getElementById("muteVideoButton").textContent = currentLang === "zh" ? (sourceVideo.muted ? "取消静音" : "静音") : (sourceVideo.muted ? "Unmute" : "Mute");
     });
 
 
@@ -2082,7 +2091,7 @@
       localStorage.setItem("crt-ui-lang", lang);
 
       document.querySelectorAll(
-        ".control-group summary, .control label span:first-child, .button-row button, .control-panel h2, .control-panel option"
+        ".control-group summary, .control label span:first-child, .control-panel button, .control-panel h2, .control-panel option"
       ).forEach((el) => {
         if (el.id === "languageToggleButton") return;
         prepareI18nElement(el);
@@ -2092,15 +2101,18 @@
       });
 
       updateLabels();
-      document.getElementById("languageToggleButton").textContent = lang === "zh" ? "EN" : "中";
+      document.getElementById("languageLabel").textContent = lang === "zh" ? "语言" : "Language";
+      document.getElementById("languageToggleButton").setAttribute("aria-label", lang === "zh" ? "切换为英文" : "Switch to Chinese");
       document.getElementById("dosCaption").textContent = lang === "zh" ? "本地媒体处理控制台" : "LOCAL MEDIA PROCESSING CONSOLE";
       document.querySelector(".control-panel h2").textContent = lang === "zh" ? "显像控制台" : "CRT CONTROL";
-      document.querySelector(".cabinet-brand span:last-child").textContent = lang === "zh" ? "彩色显示终端 · 1998" : "COLOR DISPLAY · 1998";
-      document.querySelector(".monitor-model").textContent = lang === "zh" ? "CRT-09 彩色显示器" : "CRT-09 / COLOR MONITOR";
-      const physicalLabels = document.querySelectorAll(".knob-label");
+      const physicalLabels = document.querySelectorAll(".monitor-knobs .knob-label");
       physicalLabels[0].textContent = lang === "zh" ? "亮度" : "BRIGHT";
       physicalLabels[1].textContent = lang === "zh" ? "对比度" : "CONTRAST";
-      document.querySelector(".signal-group span:last-child").textContent = lang === "zh" ? "电源" : "ON";
+      document.getElementById("diskLabel").textContent = lang === "zh" ? "保存配置" : "Save config";
+      document.getElementById("diskSaveButton").setAttribute("aria-label", lang === "zh" ? "保存配置" : "Save config");
+      document.getElementById("fullscreenLabel").textContent = lang === "zh" ? "放大查看" : "View";
+      document.getElementById("fullscreenPreview").setAttribute("aria-label", lang === "zh" ? "放大查看" : "Fullscreen view");
+      document.getElementById("exitFullscreenPreview").textContent = lang === "zh" ? "退出全屏" : "Exit fullscreen";
     }
 
     applyLanguage("zh");
@@ -2573,13 +2585,21 @@
 
         await output.start();
         const totalFrames = Math.max(1, Math.round(duration * fps));
+        const exportStarted = performance.now();
+        const exportTimings = { renderMs:0, encodeMs:0, frames:totalFrames };
         setPresetStatus(`Offline ${useWebm ? "WebM" : "MP4"} render: 0% / 正在离线高质量渲染…`);
 
         for (let i = 0; i < totalFrames; i++) {
+          const renderStarted = performance.now();
           await drawExportFrame(i * 1000 / fps);
+          exportTimings.renderMs += performance.now() - renderStarted;
+          const encodeStarted = performance.now();
           await videoSource.add(i / fps, 1 / fps);
+          exportTimings.encodeMs += performance.now() - encodeStarted;
           if (i % Math.max(1, Math.floor(totalFrames / 20)) === 0) {
-            setPresetStatus(`Offline ${useWebm ? "WebM" : "MP4"} render: ${Math.round(i / totalFrames * 100)}% / 正在离线高质量渲染…`);
+            const elapsed = (performance.now() - exportStarted) / 1000;
+            const rate = (i + 1) / Math.max(0.001, elapsed);
+            setPresetStatus(currentLang === "zh" ? `正在导出 ${Math.round((i + 1) / totalFrames * 100)}% · ${rate.toFixed(1)} 帧/秒 · 预计剩余 ${Math.ceil((totalFrames - i - 1) / rate)} 秒` : `Export ${Math.round((i + 1) / totalFrames * 100)}% · ${rate.toFixed(1)} fps · ${Math.ceil((totalFrames - i - 1) / rate)}s remaining`);
           }
         }
 
@@ -2590,6 +2610,7 @@
         }
 
         await output.finalize();
+        console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
         const mime = useWebm ? "video/webm" : "video/mp4";
         const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
         const link = document.createElement("a");
@@ -2619,6 +2640,82 @@
     document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
     document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
     document.getElementById("downloadVideoButton").addEventListener("click", downloadHighQualityVideo);
+    document.getElementById("diskSaveButton").addEventListener("click", () => document.getElementById("saveLocalButton").click());
+    const previewScreen = document.querySelector(".screen");
+    let previewZoom = 1;
+    let previewX = 0;
+    let previewY = 0;
+    const previewPointers = new Map();
+    let previewToolsTimer;
+    function showPreviewTools() {
+      previewScreen.classList.remove("preview-tools-hidden");
+      clearTimeout(previewToolsTimer);
+      previewToolsTimer = setTimeout(() => {
+        if (!previewScreen.querySelector(".preview-tools").contains(document.activeElement)) previewScreen.classList.add("preview-tools-hidden");
+      }, 2400);
+    }
+    for (const eventName of ["pointermove", "pointerdown", "wheel", "keydown", "focusin"]) previewScreen.addEventListener(eventName, showPreviewTools);
+    document.getElementById("exitFullscreenPreview").addEventListener("click", async () => {
+      if (document.fullscreenElement === previewScreen) await document.exitFullscreen();
+      previewScreen.classList.remove("preview-expanded");
+      syncPreviewFullscreen();
+      document.getElementById("fullscreenPreview").focus();
+    });
+    function updatePreviewZoom(next) {
+      previewZoom = Math.max(1, Math.min(8, next));
+      if (previewZoom === 1) previewX = previewY = 0;
+      canvas.style.transform = `translate(${previewX}px, ${previewY}px) scale(${previewZoom})`;
+      document.getElementById("zoomResetPreview").textContent = `${Math.round(previewZoom * 100)}%`;
+    }
+    document.getElementById("fullscreenPreview").addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement === previewScreen) await document.exitFullscreen();
+        else if (previewScreen.requestFullscreen) await previewScreen.requestFullscreen();
+        else previewScreen.classList.toggle("preview-expanded");
+      } catch (error) {
+        previewScreen.classList.toggle("preview-expanded");
+      }
+      syncPreviewFullscreen();
+    });
+    document.getElementById("zoomInPreview").addEventListener("click", () => updatePreviewZoom(previewZoom * 1.25));
+    document.getElementById("zoomOutPreview").addEventListener("click", () => updatePreviewZoom(previewZoom / 1.25));
+    document.getElementById("zoomResetPreview").addEventListener("click", () => updatePreviewZoom(1));
+    function syncPreviewFullscreen() {
+      updatePreviewZoom(1);
+      showPreviewTools();
+    }
+    document.addEventListener("fullscreenchange", syncPreviewFullscreen);
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") { previewScreen.classList.remove("preview-expanded"); syncPreviewFullscreen(); }
+    });
+    previewScreen.addEventListener("wheel", event => {
+      if (document.fullscreenElement !== previewScreen && !previewScreen.classList.contains("preview-expanded")) return;
+      event.preventDefault();
+      updatePreviewZoom(previewZoom * Math.exp(-event.deltaY * 0.002));
+    }, { passive:false });
+    previewScreen.addEventListener("pointerdown", event => {
+      if (event.target.closest("button") || (document.fullscreenElement !== previewScreen && !previewScreen.classList.contains("preview-expanded"))) return;
+      previewPointers.set(event.pointerId, { x:event.clientX, y:event.clientY });
+      previewScreen.setPointerCapture(event.pointerId);
+    });
+    previewScreen.addEventListener("pointermove", event => {
+      const previous = previewPointers.get(event.pointerId);
+      if (!previous) return;
+      const other = [...previewPointers.entries()].find(([id]) => id !== event.pointerId)?.[1];
+      if (other) {
+        const before = Math.hypot(previous.x - other.x, previous.y - other.y);
+        const after = Math.hypot(event.clientX - other.x, event.clientY - other.y);
+        if (before > 0) updatePreviewZoom(previewZoom * after / before);
+      } else if (previewZoom > 1) {
+        previewX += event.clientX - previous.x;
+        previewY += event.clientY - previous.y;
+        updatePreviewZoom(previewZoom);
+      }
+      previewPointers.set(event.pointerId, { x:event.clientX, y:event.clientY });
+    });
+    for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) {
+      previewScreen.addEventListener(name, event => previewPointers.delete(event.pointerId));
+    }
     document.getElementById("powerButton").addEventListener("click", () => {
       const machine = document.querySelector(".machine");
       const off = machine.classList.toggle("machine-off");

@@ -6,7 +6,11 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 .crt-cabinet { display:flex; flex-direction:column; gap:12px; min-width:0; min-height:0; padding:0; }
 .cabinet-brand,.cabinet-controls { flex:none; width:100%; }
 .cabinet-brand { display:flex; align-items:start; justify-content:space-between; font-size:10px; letter-spacing:1px; color:#646156; }
-.cabinet-brand span:first-child { font-size:20px; font-weight:400; letter-spacing:4px; color:#55554d; }
+.cabinet-brand span:first-child { font-size:20px; font-weight:400; letter-spacing:.4px; color:#55554d; text-shadow:0 1px 0 #fff8; }
+.cabinet-vents { display:flex; gap:5px; align-self:center; padding:2px 4px; }
+.cabinet-vents i { display:block; width:3px; height:14px; border-radius:2px; background:linear-gradient(90deg,#8d8573,#b0a690); box-shadow:inset 1px 0 1px #554d3d66,1px 1px 0 #f5eddd; }
+.machine { position:relative; }
+.machine::after { content:""; position:absolute; pointer-events:none; left:16px; right:16px; bottom:9px; height:1px; background:#b8af9c88; box-shadow:0 1px #f5eddd88; }
 /* Narrow molded recess: continuous slopes, not four flat color wedges. */
 .screen-well { flex:1; width:100%; min-height:0; position:relative; display:flex; padding:18px 20px 22px; border:1px solid #bbb4a3; border-radius:10px; background:linear-gradient(90deg,#b7ae9d88,transparent 20px,transparent calc(100% - 20px),#e7dfcf88),linear-gradient(180deg,#afa593 0,#bdb4a2 9px,#d0c7b5 18px,#d7cebc calc(100% - 22px),#e8dfcd calc(100% - 5px),#e4dbca 100%); box-shadow:0 1px 1px #fff8e9,inset 0 1px 2px #92877455; }
 .screen { position:relative; flex:1; min-width:0; min-height:0; overflow:hidden; background:#101310; border:2px solid #34352d; border-radius:20px 20px 26px 26px; isolation:isolate; box-shadow:0 -2px 2px #5e5647aa,-2px 0 2px #756b5966,2px 0 2px #a79c8555,0 2px 2px #9b907b55; }
@@ -15,24 +19,43 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 .glass-reflection { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
 .screen::before { content:""; position:absolute; z-index:2; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 23% 17%,#dcebe50c,transparent 65%); }
 .screen::after { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 48% 42%,transparent 44%,#07100c18 67%,#0008 100%); }
-.cabinet-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:16px; padding:4px 4px 10px; font-size:11px; }
+.cabinet-controls { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:flex-start; gap:16px; padding:4px 4px 10px; font-size:11px; }
 .monitor-model { margin-right:auto; max-width:110px; font-size:10px; line-height:1.7; color:#69665b; }
 .monitor-knobs { display:grid; grid-template-columns:46px 46px; gap:4px 12px; }
 .knob-label { font-size:11px; text-align:center; grid-row:1; color:#646052; }
 .monitor-oval { grid-row:2; }
-.monitor-oval,.power-button { appearance:none; flex:none; width:46px; height:22px; min-height:0; padding:0; border-radius:50%; border:1px solid #a19b8e; background:linear-gradient(180deg,#fffcf2,#d9d3c4 65%,#c2bbab); box-shadow:inset 0 2px 2px #fff,0 3px 0 #a49c8c,0 5px 5px #81796870; cursor:pointer; }
+.monitor-oval,.power-button { appearance:none; flex:none; width:56px; height:34px; min-height:0; padding:0; display:grid; place-items:center; border-radius:50%; border:1px solid #a19b8e; background:linear-gradient(180deg,#fffcf2,#d9d3c4 65%,#c2bbab); box-shadow:inset 0 2px 2px #fff,0 3px 0 #a49c8c,0 5px 5px #81796870; cursor:pointer; }
+.monitor-oval svg { width:21px; height:21px; fill:none; stroke:currentColor; color:#625e52; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.monitor-knobs { grid-template-columns:56px 56px; }
+.monitor-view-control:first-child { margin-right:auto; }
 .monitor-oval:active,.power-button:active { transform:translateY(2px); box-shadow:inset 0 1px 2px #fff,0 1px 0 #a49c8c,0 2px 2px #81796870; }
-.power-button { width:50px; height:24px; }
+.power-button { width:34px; height:34px; min-width:34px; max-width:34px; min-height:34px; max-height:34px; aspect-ratio:1; align-self:flex-end; display:grid; place-items:center; }
+.power-button svg { display:block; width:19px; height:19px; fill:none; stroke:#625e52; stroke-width:1.8; stroke-linecap:round; filter:drop-shadow(0 1px 0 #fff9); pointer-events:none; }
+.monitor-oval:focus-visible,.power-button:focus-visible { outline:2px solid #625e52; outline-offset:4px; }
+.cabinet-controls .floppy-bay { margin-bottom:0; }
+.cabinet-controls .signal-group { align-self:flex-end; height:22px; }
 .floppy-bay { flex:none; width:clamp(100px,13vw,160px); height:32px; padding:11px 12px; background:#c1bcad; border:1px solid #999383; box-shadow:inset 1px 2px 2px #888173,0 1px #e9e4d5; }
 .floppy-bay span { display:block; height:7px; background:#242720; box-shadow:inset 0 2px #121510,0 1px #e1daca; }
 .signal-group { display:flex; align-items:center; gap:6px; font-size:10px; color:#646052; }
-.cabinet-led { width:6px; height:6px; border-radius:50%; background:#96bc65; box-shadow:0 0 4px #94bd65; animation:signal 2s steps(2,end) infinite; }
-@keyframes signal { 50% { opacity:.4; } }
+.cabinet-led { width:8px; height:8px; border:1px solid #67734d; border-radius:50%; background:radial-gradient(circle at 30% 25%,#d9efa8 0,#92bd53 35%,#497332 100%); box-shadow:inset 0 -1px 1px #29462177,0 0 4px #94bd6555,0 1px 0 #fff7; animation:signal 2s steps(1,end) infinite; }
+@keyframes signal { 50% { background:radial-gradient(circle at 30% 25%,#526b40,#183a24 55%,#10271b); box-shadow:inset 0 1px 2px #081c16aa,0 1px 0 #fff7; } }
 .machine-off #glCanvas { opacity:0; }
-.machine-off .cabinet-led { background:#55564b; animation:none; box-shadow:none; }
+.machine-off .cabinet-led { background:radial-gradient(circle at 30% 25%,#526b40,#183a24 55%,#10271b); border-color:#536044; animation:none; box-shadow:inset 0 1px 2px #081c16aa,0 1px 0 #fff7; }
 .fallback { display:none; position:absolute; inset:0; padding:24px; color:#ddd; background:#111; }
 .no-webgl .fallback { display:block; }
 @media(max-width:1100px) { .machine { gap:20px; padding:20px; } .cabinet-controls { gap:10px; } .monitor-model { display:none; } }
 @media(max-width:900px) { html,body { height:auto; overflow:auto; } body { padding:12px; } .machine { height:auto; min-height:calc(100dvh - 36px); grid-template-columns:1fr; gap:24px; padding:16px; } .screen-well { flex:none; height:clamp(220px,58vw,520px); padding:14px 16px 18px; } .cabinet-brand span:last-child { font-size:10px; } .floppy-bay { width:clamp(110px,28vw,180px); } }
 @media(max-width:400px) { .machine { padding:12px; } .cabinet-brand span:first-child { font-size:18px; } .cabinet-brand span:last-child { letter-spacing:0; font-size:9px; } .screen-well { padding:14px 16px 18px; } .cabinet-controls { gap:12px; } }
 @media(prefers-reduced-motion:reduce) { .cabinet-led { animation:none; } }
+.monitor-view-control { display:grid; justify-items:center; gap:4px; }
+.monitor-view-control .monitor-oval { grid-row:auto; }
+.preview-tools { position:absolute; right:12px; top:12px; z-index:5; display:none; gap:6px; transition:opacity .2s; }
+.preview-tools button { border:1px solid #a49b87; border-radius:3px; padding:8px 12px; background:#e4dece; color:#403b32; font:400 13px "Segoe UI","Microsoft YaHei",sans-serif; cursor:pointer; }
+.preview-tools button:focus-visible { outline:2px solid white; outline-offset:3px; }
+.preview-tools-hidden .preview-tools { opacity:0; pointer-events:none; }
+.preview-tools:focus-within { opacity:1; pointer-events:auto; }
+.screen:fullscreen,.screen.preview-expanded { border:0; border-radius:0; width:100vw; height:100dvh; background:#080a08; touch-action:none; }
+.screen.preview-expanded { position:fixed; inset:0; z-index:100; }
+.screen:fullscreen #glCanvas,.screen.preview-expanded #glCanvas { border-radius:0; clip-path:none; object-fit:contain; }
+.screen:fullscreen .preview-tools,.screen.preview-expanded .preview-tools { display:flex; }
+.screen:fullscreen .glass-reflection,.screen:fullscreen::before,.screen:fullscreen::after,.screen.preview-expanded .glass-reflection,.screen.preview-expanded::before,.screen.preview-expanded::after { display:none; }
