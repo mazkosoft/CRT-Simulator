@@ -15,6 +15,16 @@
       <div class="screen-well">
         <div class="screen">
           <canvas id="glCanvas"></canvas>
+          <svg class="glass-reflection" viewBox="0 0 1000 800" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="glassLight" x1="0" y1="0" x2="0.8" y2="1">
+                <stop offset="0" stop-color="#ffffff" stop-opacity=".48" />
+                <stop offset=".48" stop-color="#edf6f3" stop-opacity=".20" />
+                <stop offset="1" stop-color="#dcebe5" stop-opacity=".06" />
+              </linearGradient>
+            </defs>
+            <path fill="url(#glassLight)" d="M0 0 H660 C603 99 559 218 526 347 C501 445 487 533 479 624 C313 648 145 643 0 612 Z" />
+          </svg>
           <div class="fallback">
       <div>
         <h2>WebGL 不可用</h2>
@@ -2072,7 +2082,7 @@
       localStorage.setItem("crt-ui-lang", lang);
 
       document.querySelectorAll(
-        ".control-group summary, .control label span:first-child, .button-row button, .control-panel h2"
+        ".control-group summary, .control label span:first-child, .button-row button, .control-panel h2, .control-panel option"
       ).forEach((el) => {
         if (el.id === "languageToggleButton") return;
         prepareI18nElement(el);
@@ -2084,6 +2094,13 @@
       updateLabels();
       document.getElementById("languageToggleButton").textContent = lang === "zh" ? "EN" : "中";
       document.getElementById("dosCaption").textContent = lang === "zh" ? "本地媒体处理控制台" : "LOCAL MEDIA PROCESSING CONSOLE";
+      document.querySelector(".control-panel h2").textContent = lang === "zh" ? "显像控制台" : "CRT CONTROL";
+      document.querySelector(".cabinet-brand span:last-child").textContent = lang === "zh" ? "彩色显示终端 · 1998" : "COLOR DISPLAY · 1998";
+      document.querySelector(".monitor-model").textContent = lang === "zh" ? "CRT-09 彩色显示器" : "CRT-09 / COLOR MONITOR";
+      const physicalLabels = document.querySelectorAll(".knob-label");
+      physicalLabels[0].textContent = lang === "zh" ? "亮度" : "BRIGHT";
+      physicalLabels[1].textContent = lang === "zh" ? "对比度" : "CONTRAST";
+      document.querySelector(".signal-group span:last-child").textContent = lang === "zh" ? "电源" : "ON";
     }
 
     applyLanguage("zh");

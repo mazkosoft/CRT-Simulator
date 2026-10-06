@@ -7,23 +7,24 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 .cabinet-brand { display:flex; align-items:start; justify-content:space-between; font-size:10px; letter-spacing:1px; color:#646156; }
 .cabinet-brand span:first-child { font-size:20px; font-weight:400; letter-spacing:4px; color:#55554d; }
 /* Four molded bevel faces surround a rectangular opening. */
-.screen-well { min-height:0; position:relative; padding:34px; border-radius:14px; background:linear-gradient(180deg,#a4a093 0%,#c5c0b3 8%,#d9d4c7 90%,#f0ecdf 100%); box-shadow:0 -1px 1px #b4afa2,0 2px 1px #fff9ef,inset 0 12px 18px #77716470,inset 12px 0 20px #8d877955,inset -8px 0 16px #fff8, inset 0 -8px 12px #fff9; }
-.screen { position:relative; height:100%; min-height:0; overflow:hidden; background:#101310; border:3px solid #363932; border-radius:26px 26px 38px 38px; isolation:isolate; box-shadow:0 -7px 12px #49483e55,0 10px 12px #5c584b88,0 2px 2px #fff9; }
-#glCanvas { display:block; width:100%; height:100%; background:#050806; border-radius:23px 23px 35px 35px; clip-path:inset(0 round 23px 23px 35px 35px); }
+.screen-well { min-height:0; position:relative; padding:30px 32px 34px; border-radius:10px; background:linear-gradient(180deg,#aaa596 0%,#bab5a7 5%,#d4cebf 48%,#e9e3d5 94%,#f0eadc 100%); box-shadow:0 -1px 1px #b5afa0,0 1px 1px #fffaf0,inset 0 5px 5px #827b6b55,inset 5px 0 8px #9b928044,inset -4px 0 7px #fff9; }
+.screen { position:relative; height:100%; min-height:0; overflow:hidden; background:#101310; border:2px solid #30352e; border-radius:20px 20px 29px 29px; isolation:isolate; box-shadow:0 -5px 6px #59574988,-4px 0 6px #746c5a66,4px 0 6px #80766344,0 8px 8px #69604b77; }
+#glCanvas { display:block; width:100%; height:100%; background:#050806; border-radius:18px 18px 27px 27px; clip-path:inset(0 round 18px 18px 27px 27px); }
 /* A single reflected light source; no perimeter highlight. */
-.screen::before { content:""; position:absolute; z-index:2; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 20% 9%,#ffffffe0 0%,#eaf4f087 30%,#d6e4df23 65%,#c8d9d010 100%); clip-path:polygon(0 0,66% 0,62% 12%,57% 27%,52% 46%,48% 66%,46% 86%,0 92%); opacity:.42; }
+.glass-reflection { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
+.screen::before { content:""; position:absolute; z-index:2; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 23% 17%,#dcebe50c,transparent 65%); }
 .screen::after { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 48% 42%,transparent 44%,#07100c18 67%,#0008 100%); }
 .cabinet-controls { display:flex; align-items:center; gap:18px; padding:14px 4px 0; font-size:9px; }
 .monitor-model { margin-right:auto; max-width:110px; font-size:10px; line-height:1.7; color:#69665b; }
 .monitor-knobs { display:grid; grid-template-columns:46px 46px; gap:4px 12px; }
-.knob-label { font-size:9px; text-align:center; grid-row:1; }
+.knob-label { font-size:11px; text-align:center; grid-row:1; color:#646052; }
 .monitor-oval { grid-row:2; }
 .monitor-oval,.power-button { appearance:none; flex:none; width:46px; height:22px; min-height:0; padding:0; border-radius:50%; border:1px solid #a19b8e; background:linear-gradient(180deg,#fffcf2,#d9d3c4 65%,#c2bbab); box-shadow:inset 0 2px 2px #fff,0 3px 0 #a49c8c,0 5px 5px #81796870; cursor:pointer; }
 .monitor-oval:active,.power-button:active { transform:translateY(2px); box-shadow:inset 0 1px 2px #fff,0 1px 0 #a49c8c,0 2px 2px #81796870; }
 .power-button { width:50px; height:24px; }
 .floppy-bay { flex:none; width:clamp(100px,13vw,160px); height:32px; padding:11px 12px; background:#c1bcad; border:1px solid #999383; box-shadow:inset 1px 2px 2px #888173,0 1px #e9e4d5; }
 .floppy-bay span { display:block; height:7px; background:#242720; box-shadow:inset 0 2px #121510,0 1px #e1daca; }
-.signal-group { display:flex; align-items:center; gap:5px; font-size:7px; }
+.signal-group { display:flex; align-items:center; gap:6px; font-size:10px; color:#646052; }
 .cabinet-led { width:6px; height:6px; border-radius:50%; background:#96bc65; box-shadow:0 0 4px #94bd65; animation:signal 2s steps(2,end) infinite; }
 @keyframes signal { 50% { opacity:.4; } }
 .machine-off #glCanvas { opacity:0; }
