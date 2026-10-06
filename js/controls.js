@@ -1,6 +1,7 @@
 // UI bindings, localization, transport and application startup.
 // Classic scripts share scope; load config.js, crt.js, controls.js in this order.
 function updateLabels() {
+  refreshAudioAudition();
   labels.imageFit.textContent = val("imageFit");
   labels.imageOpacity.textContent = num("imageOpacity").toFixed(2);
   labels.imagePosX.textContent = `${val("imagePosX")}%`;
@@ -209,7 +210,7 @@ function syncPlaybackControls() {
   play.classList.toggle("is-playing", playing);
   play.setAttribute("aria-label", currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play"));
   document.getElementById("playbackLabel").textContent = currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play");
-  play.disabled = currentMediaType !== "video";
+  play.disabled = currentMediaType !== "video" || exportInProgress;
   syncPlaybackProgress();
   if (currentMediaType !== "video") document.getElementById("playbackStatusText").hidden = true;
 }
@@ -385,7 +386,10 @@ document.getElementById("saveUserPresetButton").addEventListener("click", saveCu
 document.getElementById("loadUserPresetButton").addEventListener("click", loadSelectedUserPreset);
 document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
 document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
-document.getElementById("downloadVideoButton").addEventListener("click", downloadHighQualityVideo);
+document.getElementById("downloadVideoButton").addEventListener("click", () => downloadHighQualityVideo());
+document.getElementById("previewExportButton").addEventListener("click", () => downloadHighQualityVideo({ preview: true }));
+document.getElementById("audioAuditionInput").addEventListener("change", enableAudioAudition);
+document.getElementById("enableAudioAuditionButton").addEventListener("click", enableAudioAudition);
 const configDialog = document.getElementById("configDialog");
 document.getElementById("diskSaveButton").addEventListener("click", () => configDialog.showModal());
 document.getElementById("closeConfigDialog").addEventListener("click", () => configDialog.close());

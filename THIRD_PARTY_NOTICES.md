@@ -19,6 +19,26 @@ Mediabunny is separate third-party code. The original DOM CRT Simulator code
 remains under the repository's stated MIT license. No Mediabunny source files
 have been modified in this repository.
 
+## Mediabunny AAC encoder 1.61.3 and FFmpeg
+
+The unmodified `vendor/mediabunny-aac-encoder.min.js` is the official
+`@mediabunny/aac-encoder` browser bundle, including its worker and WebAssembly
+payload. It supplies software AAC when native audio encoding is unavailable.
+
+- Package: https://www.npmjs.com/package/@mediabunny/aac-encoder/v/1.61.3
+- Extension source: https://github.com/Vanilagy/mediabunny/tree/v1.61.3/packages/aac-encoder
+- Extension license: MPL-2.0; full text: `vendor/AAC-ENCODER-LICENSE.txt`
+- Bundle SHA-256: `0f8cba8e4c803cf14cc2ac7b2978a6b5d56ae7ba7f7f9770bfc09a7f3d1ff2bb`
+- Original build/replacement instructions: `vendor/AAC-ENCODER-README.md`
+- Embedded FFmpeg AAC encoder: LGPL-2.1-or-later; full text: `vendor/FFMPEG-LGPL-2.1.txt`
+- FFmpeg source: https://github.com/FFmpeg/FFmpeg
+- FFmpeg licensing: https://ffmpeg.org/legal.html
+
+The upstream build instructions enable the native FFmpeg AAC encoder, not
+GPL/nonfree components. The package does not identify an exact FFmpeg revision;
+this repository does not assert one. The extension and embedded FFmpeg retain
+their own licenses and are not relicensed as MIT. No ntsc-rs source was copied.
+
 ## Retromator / Chafalleiro — historical reference
 
 Project: https://github.com/Chafalleiro/retromator

@@ -22,9 +22,12 @@ function buildStandalone() {
     }
     // HTML raw-text elements must not contain literal closing-script sequences.
     source = source.replace(/<\/script/gi, '<\\/script');
+    // The AAC worker payload contains binary control characters. JSON quoting
+    // protects them from HTML parser normalization while retaining global exports.
+    if (name === 'vendor/mediabunny-aac-encoder.min.js') source = `(0, eval)(${JSON.stringify(source + '\nglobalThis.MediabunnyAacEncoder = MediabunnyAacEncoder;').replace(/</g, '\\u003c')});`;
     return `<script data-source="${name}">\n${source}\n</script>`;
   });
-  const notices = ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/MEDIABUNNY-LICENSE.txt']
+  const notices = ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/MEDIABUNNY-LICENSE.txt', 'vendor/AAC-ENCODER-LICENSE.txt', 'vendor/FFMPEG-LGPL-2.1.txt', 'vendor/AAC-ENCODER-README.md']
     .map(name => `${name}\n${'='.repeat(name.length)}\n${read(name)}`).join('\n\n');
   const legal = `<details id="bundledLicenses"><summary data-i18n-zh="完整许可证与第三方声明" data-i18n-en="Full licenses and third-party notices">完整许可证与第三方声明</summary><pre style="max-height:240px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">${escapeHtml(notices)}</pre></details>`;
   const aboutEnd = html.indexOf('</details>', html.indexOf('id="aboutGroup"'));

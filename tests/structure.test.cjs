@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const html = read('index.html');
 const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(match => match[1]);
-assert.deepEqual(scripts, ['vendor/mediabunny.min.cjs', 'js/config.js', 'js/crt.js', 'js/controls.js']);
+assert.deepEqual(scripts, ['vendor/mediabunny.min.cjs', 'vendor/mediabunny-aac-encoder.min.js', 'js/config.js', 'js/crt.js', 'js/controls.js']);
 assert.ok(!/<script>/.test(html), 'Application code should be external');
 for (const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)) {
   if (/^(https?:|data:)/.test(match[1])) continue;

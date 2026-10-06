@@ -167,6 +167,12 @@
         <p class="hint">优先使用本地 WebCodecs/Mediabunny 离线封装；不支持时会提示使用兼容 WebM 导出。</p>
       </div>
 
+      <button id="previewExportButton" type="button" data-i18n-zh="试导出当前片段（最多 3 秒）" data-i18n-en="Test current segment (up to 3 seconds)">试导出当前片段（最多 3 秒）</button>
+      <p class="hint" data-i18n-zh="试导出使用当前编码参数，可准确查看压缩画质和处理后的音轨。调整参数后请重新生成。" data-i18n-en="The test uses your actual encoding settings, including processed audio. Regenerate after changing settings.">试导出使用当前编码参数，可准确查看压缩画质和处理后的音轨。调整参数后请重新生成。</p>
+      <div hidden>
+        <video id="exportPreviewVideo" controls playsinline style="width:100%;max-height:240px"></video>
+        <p id="exportPreviewInfo" class="hint"></p>
+      </div>
       <p class="hint">图片与视频都会离线逐帧渲染；视频音轨会按“复古音频”参数同步处理。</p>
       </div>
       <p class="hint">这版支持图片和视频。媒体、RGB、点遮罩、光带先合成，再一起桶形变形；光带等待阶段完全隐藏，扫过时是下方平直亮边、上方渐变拖影。</p>
@@ -414,7 +420,15 @@
 
     <details class="control-group">
       <summary>RETRO AUDIO / 复古音频</summary>
-      <p class="hint">仅作用于导出文件的本地音轨；图片与无音轨视频会自动跳过。</p>
+      <div class="control">
+        <label><span data-i18n-zh="实时音频试听" data-i18n-en="Live audio audition">实时音频试听</span></label>
+        <select id="audioAuditionInput">
+          <option value="original">Original / 原声</option>
+          <option value="processed">Processed / 处理后</option>
+        </select>
+        <button id="enableAudioAuditionButton" type="button" data-i18n-zh="启用试听" data-i18n-en="Enable audition">启用试听</button>
+      </div>
+      <p class="hint" data-i18n-zh="播放视频后启用试听，可即时比较音效；编码损伤请通过试导出检查。图片与无音轨视频不生成音轨。" data-i18n-en="Enable audition while playing video to compare effects live. Use a test export for codec artifacts. Images and silent videos do not gain an audio track.">播放视频后启用试听，可即时比较音效；编码损伤请通过试导出检查。图片与无音轨视频不生成音轨。</p>
       <div class="control">
         <label><span>Audio Preset / 音频预设</span></label>
         <select id="audioPresetInput" data-config="audioPreset">
@@ -427,14 +441,6 @@
       <div class="control">
         <label><span>Output Volume / 输出音量</span><span id="audioVolumeValue">1.00</span></label>
         <input id="audioVolumeInput" data-config="audioVolume" type="range" min="0" max="2" step="0.01" value="1" />
-      </div>
-      <div class="control">
-        <label><span>Channel Mode / 声道模式</span></label>
-        <select id="audioChannelsInput" data-config="audioChannels">
-          <option value="stereo" selected>Stereo / 立体声</option>
-          <option value="mono">Mono / 单声道</option>
-          <option value="narrow">Narrow Stereo / 窄立体声</option>
-        </select>
       </div>
       <div class="control">
         <label><span>Bandwidth / 带宽限制</span><span id="audioBandwidthValue">18000Hz</span></label>
@@ -585,6 +591,7 @@
 
   <!-- Mediabunny 1.61.3, MPL-2.0; see vendor/MEDIABUNNY-LICENSE.txt -->
   <script src="vendor/mediabunny.min.cjs"></script>
+  <script src="vendor/mediabunny-aac-encoder.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/crt.js"></script>
   <script src="js/controls.js"></script>

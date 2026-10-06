@@ -140,12 +140,24 @@ Long/high-resolution outputs consume memory. Check the resulting file before use
 #### Retro audio
 
 Select a preset in **Retro audio**, then adjust export gain, bandwidth, hiss,
-distortion, wow/reverb and channels. These effects apply to offline export, not live
-listening. Silent sources remain silent. Preview-volume zero does not mute export;
+distortion and wow/reverb. Mono/stereo source channel counts are retained on export;
+multichannel sources are downmixed to stereo. Choose **Original / Processed** and press
+**Enable audition** while playing a video to hear changes live. This audition shares
+the export processing graph but does not simulate codec compression. Silent sources remain silent. Preview-volume zero does not mute export;
 adjust export audio gain separately.
 
-Known limitations: “narrow stereo” currently attenuates channels rather than mixing
-stereo width. Audio is processed in decoded chunks, which can limit reverb tails and
+Use **Test current segment** to encode up to three seconds from the playback cursor
+with the current video/audio settings, then play the result in the panel. Regenerate
+after changing settings. The test does not replace or download the full export.
+Audio encoding support is checked before video rendering; supported sample rates
+and bitrates are selected without removing the track or changing channel count.
+If native AAC is unavailable, the bundled official Mediabunny AAC extension
+automatically uses its software encoder. It needs no external download, including
+in the standalone file. If initialization fails, try WebM/Opus. Browser video
+decoding/encoding support is still required. Video export reads decoded frames in
+timestamp order using a bounded canvas pool instead of seeking the player per frame.
+
+Known limitations: Audio is processed in decoded chunks, which can limit reverb tails and
 modulation continuity at boundaries. The compatibility recorder does not provide
 the same offline audio processing. Decoder/encoder support varies by browser.
 
@@ -325,11 +337,21 @@ WebM 使用 VP9／Opus，声音取决于源音轨及解码支持。图片也能�
 
 #### 复古音频
 
-选择音频预设，再调导出音量、带宽、底噪、失真、音调抖动、混响及声道。
-这些效果仅用于离线导出，不用于实时试听。无音轨的源不会自动生成声音。
+选择音频预设，再调导出音量、带宽、底噪、失真、音调抖动和混响。
+导出保留源音轨的单声道／双声道；多声道源自动混合为双声道，不再提供声道模式选项。
+播放视频后选择“原声／处理后”，点击“启用试听”，即可即时比较音效。试听与导出共用
+音效处理链，但不模拟编码压缩。无音轨的源不会自动生成声音。
 试听音量为零不代表导出静音，需单独调整导出音量。
 
-已知限制：“窄立体声”目前为声道衰减，不是完整声场混合；音频按解码块处理，块边界
+在“媒体与导出”点击“试导出当前片段”，会从当前播放位置按现有视频／音频参数编码
+最多 3 秒，可直接在面板内播放。修改参数后请重新生成；试导出不会替代完整导出。
+音轨编码兼容性会在画面渲染前检查，自动选用受支持的采样率和码率，不会擅自移除
+音轨或改变声道数量。原生 AAC 不可用时，自动调用随附的官方 Mediabunny 软件 AAC
+编码器；独立 HTML 也包含该扩展，无需联网下载。如初始化失败，可选择 WebM／Opus。
+视频编解码仍取决于浏览器支持。导出按时间顺序读取解码帧，复用有限数量的画布，
+不再为每一帧跳转播放器。
+
+已知限制：音频按解码块处理，块边界
 可能限制混响尾音及调制连续性；兼容录制不提供相同的离线音频处理。编解码支持因浏览器而异。
 
 ### 本地运行、结构和 Pages

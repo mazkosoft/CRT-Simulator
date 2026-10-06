@@ -759,12 +759,13 @@ function uploadSource(source, w, h) {
   return true;
 }
 
+let exportDecodedCanvas = null;
 function uploadVideoFrame() {
   if (currentMediaType !== "video") return;
-  if (sourceVideo.readyState < 2) return;
+  if (!exportDecodedCanvas && sourceVideo.readyState < 2) return;
 
-  const vw = sourceVideo.videoWidth || sourceWidth;
-  const vh = sourceVideo.videoHeight || sourceHeight;
+  const vw = exportDecodedCanvas ? exportDecodedCanvas.width : sourceVideo.videoWidth || sourceWidth;
+  const vh = exportDecodedCanvas ? exportDecodedCanvas.height : sourceVideo.videoHeight || sourceHeight;
   sourceWidth = vw;
   sourceHeight = vh;
   sourceAspect = vw / vh;
@@ -773,7 +774,7 @@ function uploadVideoFrame() {
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
   try {
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourceVideo);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, exportDecodedCanvas || sourceVideo);
   } catch (error) {
     // Some browsers throw until the first decodable video frame is ready.
   }
@@ -1174,7 +1175,7 @@ function seekSourceVideo(time) {
 }
 
 async function drawExportFrame(ms) {
-  if (currentMediaType === "video") {
+  if (currentMediaType === "video" && !exportDecodedCanvas) {
     await seekSourceVideo(ms / 1000);
   }
 
@@ -1413,12 +1414,45 @@ function makeDriveCurve(amount) {
   return curve;
 }
 
-async function processRetroAudio(buffer) {
-  const channels = val("audioChannels") === "mono" ? 1 : Math.min(2, buffer.numberOfChannels);
-  const context = new OfflineAudioContext(channels, buffer.length, buffer.sampleRate);
+async function selectAudioEncoding(mb, codec, sampleRate, channels) {
+  for (const rate of [...new Set([sampleRate, 48000, 44100])]) {
+    for (const bitrate of [192000, 128000, 96000, 64000]) {
+      const config = { numberOfChannels: channels, sampleRate: rate, bitrate };
+      if (await mb.canEncodeAudio(codec, config)) return config;
+    }
+  }
+  return null;
+}
+
+// Official software AAC extension is registered only when native probes fail.
+// https://mediabunny.dev/guide/extensions/aac-encoder
+async function prepareAudioEncoding(mb, codec, sampleRate, channels, addon = globalThis.MediabunnyAacEncoder) {
+  const native = await selectAudioEncoding(mb, codec, sampleRate, channels);
+  if (native || codec !== "aac" || !addon) return native;
+  addon.registerAacEncoder();
+  return selectAudioEncoding(mb, codec, sampleRate, channels);
+}
+
+async function processRetroAudio(buffer, encoding) {
+  const channels = Math.min(2, buffer.numberOfChannels);
+  const rate = encoding ? encoding.sampleRate : buffer.sampleRate;
+  const context = new OfflineAudioContext(channels, Math.max(1, Math.round(buffer.duration * rate)), rate);
   const source = context.createBufferSource();
   source.buffer = buffer;
+  const graph = createRetroAudioGraph(context, source, channels, context.destination);
+  source.start();
+  try { return await context.startRendering(); } finally { graph.dispose(); }
+}
 
+function createRetroAudioGraph(context, source, channels, destination) {
+  const generators = [];
+  const noiseLevel = context.createGain();
+  const output = context.createGain();
+  output.connect(destination);
+  const input = context.createGain();
+  input.channelCount = channels;
+  input.channelCountMode = "clamped-max";
+  source.connect(input);
   const highPass = context.createBiquadFilter();
   highPass.type = "highpass";
   highPass.frequency.value = 70;
@@ -1432,21 +1466,11 @@ async function processRetroAudio(buffer) {
   const gain = context.createGain();
   gain.gain.value = num("audioVolume");
 
-  source.connect(highPass).connect(lowPass).connect(drive).connect(gain);
+  const delay = context.createDelay(0.1);
+  delay.delayTime.value = num("audioWow") > 0 ? 0.01 : 0;
+  input.connect(highPass).connect(lowPass).connect(drive).connect(delay).connect(gain);
 
-  let channelOutput = gain;
-  if (val("audioChannels") === "narrow" && channels === 2) {
-    const merger = context.createChannelMerger(2);
-    const splitter = context.createChannelSplitter(2);
-    const left = context.createGain();
-    const right = context.createGain();
-    left.gain.value = 0.78;
-    right.gain.value = 0.78;
-    gain.connect(splitter);
-    splitter.connect(left, 0); splitter.connect(right, 1);
-    left.connect(merger, 0, 0); right.connect(merger, 0, 1);
-    channelOutput = merger;
-  }
+  const channelOutput = gain;
 
   const reverb = num("audioReverb");
   if (reverb > 0) {
@@ -1465,10 +1489,10 @@ async function processRetroAudio(buffer) {
     convolver.buffer = impulse;
     wet.gain.value = reverb * 0.45;
     dry.gain.value = 1 - reverb * 0.22;
-    channelOutput.connect(dry).connect(context.destination);
-    channelOutput.connect(convolver).connect(wet).connect(context.destination);
+    channelOutput.connect(dry).connect(output);
+    channelOutput.connect(convolver).connect(wet).connect(output);
   } else {
-    channelOutput.connect(context.destination);
+    channelOutput.connect(output);
   }
 
   const wow = num("audioWow");
@@ -1476,14 +1500,15 @@ async function processRetroAudio(buffer) {
     const lfo = context.createOscillator();
     const lfoGain = context.createGain();
     lfo.frequency.value = 0.45;
-    lfoGain.gain.value = wow;
-    lfo.connect(lfoGain).connect(source.playbackRate);
+    lfoGain.gain.value = wow * 0.05;
+    lfo.connect(lfoGain).connect(delay.delayTime);
     lfo.start();
+    generators.push(lfo);
   }
 
   const hiss = num("audioHiss");
   if (hiss > 0) {
-    const noiseBuffer = context.createBuffer(channels, buffer.length, buffer.sampleRate);
+    const noiseBuffer = context.createBuffer(channels, context.sampleRate * 2, context.sampleRate);
     for (let channel = 0; channel < channels; channel++) {
       const data = noiseBuffer.getChannelData(channel);
       for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * hiss;
@@ -1494,19 +1519,64 @@ async function processRetroAudio(buffer) {
     noiseFilter.frequency.value = 4600;
     noiseFilter.Q.value = 0.7;
     noise.buffer = noiseBuffer;
-    noise.connect(noiseFilter).connect(context.destination);
+    noise.loop = true;
+    noise.connect(noiseFilter).connect(noiseLevel).connect(gain);
     noise.start();
+    generators.push(noise);
   }
 
-  source.start();
-  return context.startRendering();
+  return {
+    noiseLevel,
+    dispose() {
+      source.disconnect(input);
+      for (const node of generators) { node.stop(); node.disconnect(); }
+      input.disconnect(); noiseLevel.disconnect(); gain.disconnect(); channelOutput.disconnect(); output.disconnect();
+    }
+  };
 }
 
-async function downloadHighQualityVideo() {
+let audioAudition = null;
+function refreshAudioAudition() {
+  if (!audioAudition) return;
+  const a = audioAudition;
+  const signature = ["audioVolume", "audioBandwidth", "audioHiss", "audioDrive", "audioWow", "audioReverb"].map(val).join("|");
+  if (a.signature !== signature) {
+    if (a.graph) a.graph.dispose();
+    a.source.disconnect();
+    a.graph = createRetroAudioGraph(a.context, a.source, 2, a.processed);
+    a.source.connect(a.original);
+    a.signature = signature;
+  }
+  const processed = document.getElementById("audioAuditionInput").value === "processed";
+  a.graph.noiseLevel.gain.value = sourceVideo.volume;
+  const active = currentMediaType === "video" && !sourceVideo.paused && !exportInProgress;
+  a.original.gain.value = active && !processed ? 1 : 0;
+  a.processed.gain.value = active && processed ? 1 : 0;
+}
+async function enableAudioAudition() {
+  try {
+    if (!audioAudition) {
+      const context = new AudioContext();
+      const source = context.createMediaElementSource(sourceVideo);
+      const original = context.createGain();
+      const processed = context.createGain();
+      original.connect(context.destination); processed.connect(context.destination);
+      audioAudition = { context, source, original, processed, graph: null, signature: null };
+    }
+    await audioAudition.context.resume();
+    refreshAudioAudition();
+  } catch (error) { setPresetStatus(currentLang === "zh" ? `无法启用试听：${error.message}` : `Audio audition unavailable: ${error.message}`); }
+}
+sourceVideo.addEventListener("play", refreshAudioAudition);
+sourceVideo.addEventListener("pause", refreshAudioAudition);
+sourceVideo.addEventListener("volumechange", refreshAudioAudition);
+
+let exportPreviewUrl = null;
+async function downloadHighQualityVideo({ preview = false } = {}) {
   const mb = globalThis.Mediabunny;
   const hasWebCodecs = typeof VideoEncoder !== "undefined";
   if (!hasWebCodecs || !mb || !mb.Output || !mb.CanvasSource) {
-    if (currentMediaType === "video") {
+    if (currentMediaType === "video" && !preview) {
       setPresetStatus("Offline encoder unavailable; using compatibility WebM / 离线编码不可用，改用兼容 WebM");
       return downloadProcessedVideo();
     }
@@ -1517,7 +1587,8 @@ async function downloadHighQualityVideo() {
   if (exportInProgress) return;
   exportInProgress = true;
   const fps = Math.max(10, Math.min(60, Math.round(num("exportFps"))));
-  const duration = Math.max(0.001, num("exportDuration"));
+  const startTime = preview && currentMediaType === "video" ? Math.min(sourceVideo.currentTime, Math.max(0, sourceVideo.duration - 0.1)) : 0;
+  const duration = Math.max(0.001, preview ? Math.min(3, currentMediaType === "video" ? sourceVideo.duration - startTime : 3) : num("exportDuration"));
   const bitrate = Math.round(Math.max(0.1, Math.min(120, num("exportBitrate"))) * 1000 * 1000);
   exportRenderScale = Math.max(0.25, Math.min(3, num("exportScale")));
   exportMosaic = num("exportPixelSize") > 0;
@@ -1525,7 +1596,10 @@ async function downloadHighQualityVideo() {
   const originalTime = sourceVideo.currentTime;
   const wasPaused = sourceVideo.paused;
   const unlock = lockExportControls();
+  let input = null;
+  let decodedFrames = null;
   try {
+    document.getElementById("exportPreviewVideo").pause();
     if (currentMediaType === "video") sourceVideo.pause();
     showExportProgress("preparing");
     resize();
@@ -1542,14 +1616,29 @@ async function downloadHighQualityVideo() {
     output.addVideoTrack(videoSource, { frameRate: fps });
     let audioSource = null;
     let audioSamples = null;
+    let audioEncoding = null;
 
     if (currentMediaType === "video" && currentSourceFile && mb.Input && mb.AudioSampleSink) {
-      const input = new mb.Input({ source: new mb.BlobSource(currentSourceFile), formats: mb.ALL_FORMATS });
+      input = new mb.Input({ source: new mb.BlobSource(currentSourceFile), formats: mb.ALL_FORMATS });
+      const videoTrack = await input.getPrimaryVideoTrack();
+      if (!videoTrack || !await videoTrack.canDecode()) throw new Error(currentLang === "zh" ? "无法解码此视频，请转换为浏览器支持的格式。" : "This video cannot be decoded. Convert it to a supported format.");
+      const firstTimestamp = await videoTrack.getFirstTimestamp();
+      // Sorted timestamps decode sequentially, without seeking the HTML video per frame.
+      // The two-canvas pool bounds memory; CanvasSink also applies track rotation.
+      // https://mediabunny.dev/guide/media-sinks
+      const timestamps = (function* () {
+        for (let i = 0; i < Math.max(1, Math.ceil(duration * fps)); i++) yield Math.max(firstTimestamp, startTime + i / fps);
+      })();
+      decodedFrames = new mb.CanvasSink(videoTrack, { poolSize: 2 }).canvasesAtTimestamps(timestamps);
       const audioTrack = await input.getPrimaryAudioTrack();
-      if (audioTrack && await audioTrack.canDecode()) {
-        audioSource = new mb.AudioBufferSource({ codec: useWebm ? "opus" : "aac", bitrate: 192000 });
+      if (audioTrack) {
+        if (!await audioTrack.canDecode()) throw new Error(currentLang === "zh" ? "浏览器无法解码此音轨；未移除音轨，请更换可解码的视频。" : "The audio track cannot be decoded; it has not been removed.");
+        const channels = Math.min(2, await audioTrack.getNumberOfChannels());
+        audioEncoding = await prepareAudioEncoding(mb, useWebm ? "opus" : "aac", await audioTrack.getSampleRate(), channels);
+        if (!audioEncoding) throw new Error(currentLang === "zh" ? "此浏览器不支持所需音频编码；请选择 WebM（Opus）后重试。音轨未被移除。" : "Audio encoding is unsupported. Try WebM (Opus); the audio track has not been removed.");
+        audioSource = new mb.AudioBufferSource({ codec: useWebm ? "opus" : "aac", bitrate: audioEncoding.bitrate });
         output.addAudioTrack(audioSource);
-        audioSamples = new mb.AudioSampleSink(audioTrack).samples(0, duration);
+        audioSamples = new mb.AudioSampleSink(audioTrack).samples(startTime, startTime + duration);
       }
     }
 
@@ -1561,8 +1650,13 @@ async function downloadHighQualityVideo() {
     showExportProgress("video", 0, totalFrames);
 
     for (let i = 0; i < totalFrames; i++) {
+      if (decodedFrames) {
+        const frame = await decodedFrames.next();
+        if (frame.done || !frame.value) throw new Error(currentLang === "zh" ? "未能读取导出视频帧。" : "Could not decode an export frame.");
+        exportDecodedCanvas = frame.value.canvas;
+      }
       const renderStarted = performance.now();
-      await drawExportFrame(i * 1000 / fps);
+      await drawExportFrame((startTime + i / fps) * 1000);
       exportTimings.renderMs += performance.now() - renderStarted;
       const encodeStarted = performance.now();
       await videoSource.add(i / fps, Math.min(1 / fps, duration - i / fps));
@@ -1582,8 +1676,15 @@ async function downloadHighQualityVideo() {
       showExportProgress("audio");
       for await (const sample of audioSamples) {
         try {
-          await audioSource.add(await processRetroAudio(sample.toAudioBuffer()));
-          showExportProgress("audio", sample.timestamp + sample.duration, Math.min(duration, sourceVideo.duration));
+          const decoded = sample.toAudioBuffer();
+          const first = Math.max(0, Math.round((startTime - sample.timestamp) * decoded.sampleRate));
+          const last = Math.min(decoded.length, Math.round((startTime + duration - sample.timestamp) * decoded.sampleRate));
+          if (last > first) {
+            const clipped = new AudioBuffer({ length: last - first, numberOfChannels: decoded.numberOfChannels, sampleRate: decoded.sampleRate });
+            for (let c = 0; c < decoded.numberOfChannels; c++) clipped.copyToChannel(decoded.getChannelData(c).subarray(first, last), c);
+            await audioSource.add(await processRetroAudio(clipped, audioEncoding));
+          }
+          showExportProgress("audio", sample.timestamp + sample.duration - startTime, duration);
         } finally { sample.close(); }
       }
     }
@@ -1593,11 +1694,20 @@ async function downloadHighQualityVideo() {
     console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
     const mime = useWebm ? "video/webm" : "video/mp4";
     const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1600);
+    if (preview) {
+      if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
+      exportPreviewUrl = url;
+      const player = document.getElementById("exportPreviewVideo");
+      player.src = url;
+      player.parentElement.hidden = false;
+      document.getElementById("exportPreviewInfo").textContent = `${exportCanvas.width} × ${exportCanvas.height} · ${fps} fps · ${duration.toFixed(2)} s · ${useWebm ? "WebM" : "MP4"}${audioEncoding ? ` · ${audioEncoding.sampleRate} Hz / ${audioEncoding.bitrate / 1000} kbps` : ""}`;
+    } else {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1600);
+    }
     showExportProgress("done");
     setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
   } catch (error) {
@@ -1606,6 +1716,9 @@ async function downloadHighQualityVideo() {
     showExportProgress("error", 0, 0, detail);
     setPresetStatus(`High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
   } finally {
+    exportDecodedCanvas = null;
+    if (decodedFrames) await decodedFrames.return().catch(() => {});
+    if (input) input.dispose();
     exportInProgress = false;
     exportRenderScale = 1;
     exportMosaic = false;

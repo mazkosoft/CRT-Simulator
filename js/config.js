@@ -72,7 +72,6 @@ const DEFAULT_CONFIG = {
   "effectBoundary": "media",
   "audioPreset": "clean",
   "audioVolume": "1",
-  "audioChannels": "stereo",
   "audioBandwidth": "18000",
   "audioHiss": "0",
   "audioDrive": "0",
@@ -93,10 +92,10 @@ function exportProgressPercent(completed, total) {
 }
 
 const AUDIO_PRESETS = {
-  clean: { audioVolume: "1", audioChannels: "stereo", audioBandwidth: "18000", audioHiss: "0", audioDrive: "0", audioWow: "0", audioReverb: "0" },
-  crt: { audioVolume: "0.92", audioChannels: "mono", audioBandwidth: "6000", audioHiss: "0.025", audioDrive: "0.08", audioWow: "0.01", audioReverb: "0.16" },
-  vhs: { audioVolume: "0.95", audioChannels: "narrow", audioBandwidth: "9000", audioHiss: "0.055", audioDrive: "0.16", audioWow: "0.035", audioReverb: "0.08" },
-  worn: { audioVolume: "0.88", audioChannels: "mono", audioBandwidth: "4200", audioHiss: "0.11", audioDrive: "0.28", audioWow: "0.075", audioReverb: "0.22" }
+  clean: { audioVolume: "1", audioBandwidth: "18000", audioHiss: "0", audioDrive: "0", audioWow: "0", audioReverb: "0" },
+  crt: { audioVolume: "0.92", audioBandwidth: "6000", audioHiss: "0.025", audioDrive: "0.08", audioWow: "0.01", audioReverb: "0.16" },
+  vhs: { audioVolume: "0.95", audioBandwidth: "9000", audioHiss: "0.055", audioDrive: "0.16", audioWow: "0.035", audioReverb: "0.08" },
+  worn: { audioVolume: "0.88", audioBandwidth: "4200", audioHiss: "0.11", audioDrive: "0.28", audioWow: "0.075", audioReverb: "0.22" }
 };
 
 function collectConfig() {
