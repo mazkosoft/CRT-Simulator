@@ -4,330 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🅜 𝙲𝚁𝚃 𝚂𝚒𝚖𝚞𝚕𝚊𝚝𝚘𝚛</title>
-  <style>
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: Consolas, Monaco, "Courier New", monospace;
-      color: #c9f5d6;
-    }
-
-    .screen {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      background: #020303;
-    }
-
-    #glCanvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      background: #020303;
-    }
-
-    .control-panel {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      z-index: 20;
-      width: 310px;
-      max-height: calc(100vh - 48px);
-      overflow: auto;
-      padding: 12px 13px;
-      color: #d6ffe4;
-      background: rgba(0, 0, 0, 0.84);
-      border: 1px solid rgba(180, 255, 205, 0.32);
-      backdrop-filter: blur(10px);
-      font-size: 12.5px;
-      transition:
-        transform 0.22s ease,
-        opacity 0.22s ease;
-    }
-
-    body.panel-collapsed .control-panel {
-      transform: translateX(calc(100% + 32px));
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .panel-toggle {
-      position: fixed;
-      right: 358px;
-      bottom: 16px;
-      z-index: 25;
-      width: 62px;
-      height: 44px;
-      padding: 5px 8px;
-      flex: none;
-      color: #d6ffe4;
-      background: rgba(0, 0, 0, 0.82);
-      border: 1px solid rgba(180, 255, 205, 0.34);
-      backdrop-filter: blur(10px);
-      font-size: 11px;
-      line-height: 1.25;
-      transition:
-        right 0.22s ease,
-        background 0.18s ease;
-    }
-
-    .panel-toggle:hover {
-      background: rgba(158, 255, 197, 0.15);
-    }
-
-    .panel-toggle {
-      pointer-events: auto;
-      touch-action: manipulation;
-      user-select: none;
-    }
-
-    body.panel-collapsed .panel-toggle {
-      right: 16px;
-    }
-
-    .control-panel h2 {
-      margin: 0 0 12px;
-      font-size: 14px;
-      font-weight: normal;
-      letter-spacing: 0.12em;
-    }
-
-    .control-section-title {
-      margin: 18px 0 8px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(180, 255, 205, 0.18);
-      font-size: 12px;
-      letter-spacing: 0.14em;
-      color: rgba(220, 255, 230, 0.58);
-    }
-
-    .control { margin: 12px 0; }
-
-    .control label {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 6px;
-      color: rgba(220, 255, 230, 0.92);
-      font-size: 12.5px;
-    }
-
-    .control input[type="range"],
-    .control select { width: 100%; }
-
-    .control input[type="file"] {
-      width: 100%;
-      color: rgba(220, 255, 230, 0.86);
-    }
-
-    .button-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    button {
-      flex: 1;
-      padding: 6px 7px;
-      color: #d6ffe4;
-      background: rgba(158, 255, 197, 0.08);
-      border: 1px solid rgba(180, 255, 205, 0.28);
-      font-family: inherit;
-      cursor: pointer;
-    }
-
-    button:hover { background: rgba(158, 255, 197, 0.15); }
-
-    .hint {
-      margin: 8px 0 0;
-      font-size: 12px;
-      line-height: 1.45;
-      color: rgba(220, 255, 230, 0.52);
-    }
-
-
-    .control-group {
-      margin: 10px 0;
-      border-top: 1px solid rgba(180, 255, 205, 0.18);
-    }
-
-    .control-group summary {
-      position: sticky;
-      top: -12px;
-      z-index: 1;
-      padding: 11px 0 8px;
-      color: rgba(220, 255, 230, 0.72);
-      background: rgba(0, 0, 0, 0.86);
-      font-size: 12px;
-      letter-spacing: 0.12em;
-      cursor: pointer;
-      user-select: none;
-      list-style: none;
-    }
-
-    .control-group summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .control-group summary::before {
-      content: "▸ ";
-      color: rgba(180, 255, 205, 0.68);
-    }
-
-    .control-group[open] summary::before {
-      content: "▾ ";
-    }
-
-    .credit-text {
-      margin: 8px 0;
-      font-size: 12px;
-      line-height: 1.5;
-      color: rgba(220, 255, 230, 0.62);
-    }
-
-    .credit-text a {
-      color: #d6ffe4;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    .preset-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-      align-items: center;
-    }
-
-    .preset-row input[type="text"],
-    .preset-row select {
-      width: 100%;
-      min-width: 0;
-      padding: 6px 7px;
-      color: #d6ffe4;
-      background: rgba(158, 255, 197, 0.06);
-      border: 1px solid rgba(180, 255, 205, 0.24);
-      font-family: inherit;
-      font-size: 12px;
-    }
-
-    .status-text {
-      margin: 6px 0 0;
-      font-size: 11px;
-      line-height: 1.4;
-      color: rgba(220, 255, 230, 0.46);
-      min-height: 1.4em;
-    }
-
-
-
-    .lang-toggle {
-      right: 412px;
-      width: 48px;
-    }
-
-    body.panel-collapsed .lang-toggle {
-      right: 86px;
-    }
-
-    html[data-lang="en"] .control-panel,
-    html[data-lang="en"] button,
-    html[data-lang="en"] input,
-    html[data-lang="en"] select {
-      font-family: Consolas, Monaco, "Courier New", monospace;
-    }
-
-
-    .control select,
-    .preset-row select,
-    .preset-row input[type="text"] {
-      color: #e8fff0 !important;
-      background: #07120d !important;
-      border: 1px solid rgba(190, 255, 210, 0.58) !important;
-      box-shadow:
-        inset 0 0 0 1px rgba(190, 255, 210, 0.08),
-        0 0 10px rgba(90, 255, 160, 0.06);
-    }
-
-    .control select option,
-    .preset-row select option {
-      color: #111;
-      background: #f4fff8;
-    }
-
-    .preset-row select {
-      min-height: 34px;
-      font-weight: 700;
-    }
-
-    #builtInPresetSelect {
-      border-color: rgba(110, 210, 255, 0.9) !important;
-      color: #ffffff !important;
-      background:
-        linear-gradient(180deg, rgba(28, 62, 76, 0.95), rgba(4, 15, 13, 0.98)) !important;
-    }
-
-    .quick-guide {
-      margin: 8px 0 12px;
-      padding: 10px;
-      border: 1px solid rgba(120, 210, 255, 0.34);
-      background: rgba(50, 120, 155, 0.10);
-      color: rgba(230, 255, 240, 0.84);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .primary-button {
-      border-color: rgba(120, 210, 255, 0.72);
-      background: rgba(80, 160, 210, 0.20);
-      font-weight: 700;
-    }
-
-    .export-panel {
-      padding: 9px;
-      margin: 10px 0;
-      border: 1px solid rgba(190, 255, 210, 0.18);
-      background: rgba(190, 255, 210, 0.04);
-    }
-
-    .status-text.is-active {
-      color: #ffffff;
-      background: rgba(90, 210, 150, 0.13);
-      border: 1px solid rgba(150, 255, 190, 0.22);
-      padding: 6px 7px;
-    }
-
-    .hidden-file { display: none; }
-
-    .fallback {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-      color: #d6ffe4;
-      background: #020303;
-      text-align: center;
-      line-height: 1.8;
-    }
-
-    body.no-webgl .fallback { display: flex; }
-    body.no-webgl .control-panel { display: none; }
-
-    @media (max-width: 900px) {
-      .control-panel {
-        width: calc(100vw - 32px);
-        left: 16px;
-        right: 16px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="css/crt.css" />
+  <link rel="stylesheet" href="css/ui.css" />
 </head>
 
 <body>
@@ -407,7 +85,7 @@
       </div>
       <div class="button-row">
         <button id="downloadImageButton" class="primary-button" type="button">Export PNG<br />导出图片</button>
-        <button id="downloadVideoButton" class="primary-button" type="button">Export WebM<br />导出视频</button>
+        <button id="downloadVideoButton" class="primary-button" type="button">Export Video<br />高质量导出</button>
       </div>
 
       <div class="export-panel">
@@ -434,7 +112,16 @@
         <p class="hint">导出时临时提高 WebGL 后台渲染分辨率。越高越清晰，但越慢。</p>
       </div>
 
-      <p class="hint">图片导出视频时会在后台录制动态 CRT/VHS 效果；视频导出时会逐帧处理当前视频。</p>
+      <div class="control">
+        <label><span>High-quality Export Format / 高质量导出格式</span></label>
+        <select id="exportFormatInput" data-config="exportFormat">
+          <option value="mp4" selected>MP4 · H.264 + AAC</option>
+          <option value="webm">WebM · VP9 + Opus</option>
+        </select>
+        <p class="hint">优先使用本地 WebCodecs/Mediabunny 离线封装；不支持时会提示使用兼容 WebM 导出。</p>
+      </div>
+
+      <p class="hint">图片与视频都会离线逐帧渲染；视频音轨会按“复古音频”参数同步处理。</p>
       </div>
       <p class="hint">这版支持图片和视频。媒体、RGB、点遮罩、光带先合成，再一起桶形变形；光带等待阶段完全隐藏，扫过时是下方平直亮边、上方渐变拖影。</p>
     </div>
@@ -455,6 +142,16 @@
         <option value="cover">cover</option>
         <option value="fill">fill</option>
       </select>
+    </div>
+
+    <div class="control">
+      <label><span>Effect Boundary / 效果范围</span></label>
+      <select id="effectBoundaryInput" data-config="effectBoundary">
+        <option value="stage" selected>Stage / 全画布</option>
+        <option value="media">Media Bounds / 仅媒体范围</option>
+        <option value="source">Source Ratio / 按源媒体比例导出</option>
+      </select>
+      <p class="hint">“按源媒体比例导出”会以导入媒体的宽高比建立输出画布，消除导出文件中的黑边。</p>
     </div>
 
     <div class="control">
@@ -493,7 +190,7 @@
       <input id="finalSaturationInput" data-config="finalSaturation" type="range" min="0" max="3" step="0.01" value="1" />
       <p class="hint">作用在辉光叠加后的最终画面上。0 是黑白，1 是原始饱和度，2 以上会更电子屏。</p>
     </div>
-<p class="hint">图片可直接导出 PNG；视频会把当前 WebGL 处理后的画面实时录制并导出为 WebM。</p>
+<p class="hint">图片可直接导出 PNG；视频优先输出高质量 MP4/WebM，并在浏览器能力不足时回退为兼容 WebM。</p>
     </details>
 
     <details class="control-group" open>
@@ -670,6 +367,52 @@
     </div>
     </details>
 
+    <details class="control-group">
+      <summary>RETRO AUDIO / 复古音频</summary>
+      <p class="hint">仅作用于导出文件的本地音轨；图片与无音轨视频会自动跳过。</p>
+      <div class="control">
+        <label><span>Audio Preset / 音频预设</span></label>
+        <select id="audioPresetInput" data-config="audioPreset">
+          <option value="clean" selected>Clean / 原声</option>
+          <option value="crt">CRT TV / CRT 电视</option>
+          <option value="vhs">VHS Tape / 录像带</option>
+          <option value="worn">Worn Tape / 老化磁带</option>
+        </select>
+      </div>
+      <div class="control">
+        <label><span>Output Volume / 输出音量</span><span id="audioVolumeValue">1.00</span></label>
+        <input id="audioVolumeInput" data-config="audioVolume" type="range" min="0" max="2" step="0.01" value="1" />
+      </div>
+      <div class="control">
+        <label><span>Channel Mode / 声道模式</span></label>
+        <select id="audioChannelsInput" data-config="audioChannels">
+          <option value="stereo" selected>Stereo / 立体声</option>
+          <option value="mono">Mono / 单声道</option>
+          <option value="narrow">Narrow Stereo / 窄立体声</option>
+        </select>
+      </div>
+      <div class="control">
+        <label><span>Bandwidth / 带宽限制</span><span id="audioBandwidthValue">18000Hz</span></label>
+        <input id="audioBandwidthInput" data-config="audioBandwidth" type="range" min="1200" max="18000" step="100" value="18000" />
+      </div>
+      <div class="control">
+        <label><span>Hiss / 磁带底噪</span><span id="audioHissValue">0.00</span></label>
+        <input id="audioHissInput" data-config="audioHiss" type="range" min="0" max="0.18" step="0.005" value="0" />
+      </div>
+      <div class="control">
+        <label><span>Drive / 饱和失真</span><span id="audioDriveValue">0.00</span></label>
+        <input id="audioDriveInput" data-config="audioDrive" type="range" min="0" max="1" step="0.01" value="0" />
+      </div>
+      <div class="control">
+        <label><span>Wow & Flutter / 哇音抖动</span><span id="audioWowValue">0.00</span></label>
+        <input id="audioWowInput" data-config="audioWow" type="range" min="0" max="0.12" step="0.005" value="0" />
+      </div>
+      <div class="control">
+        <label><span>Short Reverb / 短混响</span><span id="audioReverbValue">0.00</span></label>
+        <input id="audioReverbInput" data-config="audioReverb" type="range" min="0" max="1" step="0.01" value="0" />
+      </div>
+    </details>
+
     <details class="control-group" open>
       <summary>VHS LAB / VHS 实验室</summary>
 <p class="hint">这一组负责录像带化处理。色度相关参数现在全部并入 VHS：其中 NTSC Chroma Bleed 会按亮度 / 色度分离思路，只压缩色度带宽，不是简单 RGB 硬分离。</p>
@@ -779,6 +522,8 @@
 
   </aside>
 
+  <!-- Mediabunny 1.61.3, MPL-2.0; see vendor/MEDIABUNNY-LICENSE.txt -->
+  <script src="vendor/mediabunny.min.cjs"></script>
   <script>
     const STORAGE_KEY = "crt-media-multipass-webgl-vhs-export-presets-v1";
     const PANEL_STATE_KEY = "crt-media-panel-collapsed-v1";
@@ -841,7 +586,17 @@
       "exportDuration": "6",
       "exportFps": "30",
       "exportBitrate": "50",
-      "exportScale": "1.5"
+      "exportScale": "1.5",
+      "exportFormat": "mp4",
+      "effectBoundary": "stage",
+      "audioPreset": "clean",
+      "audioVolume": "1",
+      "audioChannels": "stereo",
+      "audioBandwidth": "18000",
+      "audioHiss": "0",
+      "audioDrive": "0",
+      "audioWow": "0",
+      "audioReverb": "0"
 };
 
     const canvas = document.getElementById("glCanvas");
@@ -1171,6 +926,9 @@
       uniform float u_vignetteOpacity;
       uniform float u_vignetteInner;
       uniform float u_vignetteOuter;
+      uniform vec2 u_mediaSize;
+      uniform vec2 u_mediaOffset;
+      uniform float u_clipMedia;
 
       vec3 screenBlend(vec3 base, vec3 top) {
         return 1.0 - (1.0 - base) * (1.0 - top);
@@ -1349,6 +1107,14 @@
       }
 
       void main() {
+        bool outsideMedia = v_uv.x < u_mediaOffset.x || v_uv.x > u_mediaOffset.x + u_mediaSize.x ||
+          v_uv.y < u_mediaOffset.y || v_uv.y > u_mediaOffset.y + u_mediaSize.y;
+
+        if (u_clipMedia > 0.5 && outsideMedia) {
+          gl_FragColor = vec4(0.008, 0.012, 0.012, 1.0);
+          return;
+        }
+
         vec2 signalUv = applyVhsWarp(v_uv);
 
         vec3 color = sampleNtscComposite(signalUv);
@@ -1535,6 +1301,7 @@
     let sourceHeight = 768;
     let sourceAspect = sourceWidth / sourceHeight;
     let currentObjectURL = null;
+    let currentSourceFile = null;
     let currentMediaType = "demo";
     let exportInProgress = false;
     let renderFrameOverrideTime = null;
@@ -1657,6 +1424,12 @@
       exportFps: document.getElementById("exportFpsValue"),
       exportBitrate: document.getElementById("exportBitrateValue"),
       exportScale: document.getElementById("exportScaleValue"),
+      audioVolume: document.getElementById("audioVolumeValue"),
+      audioBandwidth: document.getElementById("audioBandwidthValue"),
+      audioHiss: document.getElementById("audioHissValue"),
+      audioDrive: document.getElementById("audioDriveValue"),
+      audioWow: document.getElementById("audioWowValue"),
+      audioReverb: document.getElementById("audioReverbValue"),
 
       warpDirection: document.getElementById("warpDirectionValue"),
       scale: document.getElementById("scaleValue"),
@@ -1743,8 +1516,16 @@
       const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const dpr = baseDpr * (exportInProgress ? exportRenderScale : 1);
       const rect = canvas.getBoundingClientRect();
-      const w = Math.max(1, Math.round(rect.width * dpr));
-      const h = Math.max(1, Math.round(rect.height * dpr));
+      let w = Math.max(1, Math.round(rect.width * dpr));
+      let h = Math.max(1, Math.round(rect.height * dpr));
+
+      if (exportInProgress && val("effectBoundary") === "source" && sourceAspect > 0) {
+        if (w / h > sourceAspect) {
+          w = Math.round(h * sourceAspect);
+        } else {
+          h = Math.round(w / sourceAspect);
+        }
+      }
 
       if (canvas.width === w && canvas.height === h) return;
 
@@ -1922,6 +1703,10 @@
       gl.uniform1f(u.u_vignetteOpacity, num("vignette"));
       gl.uniform1f(u.u_vignetteInner, num("vignetteInner") / 100);
       gl.uniform1f(u.u_vignetteOuter, num("vignetteOuter") / 100);
+      const placement = computeImagePlacement();
+      gl.uniform2f(u.u_mediaSize, placement.size[0], placement.size[1]);
+      gl.uniform2f(u.u_mediaOffset, placement.offset[0], placement.offset[1]);
+      gl.uniform1f(u.u_clipMedia, val("effectBoundary") === "media" ? 1 : 0);
 
       drawTo(null);
     }
@@ -1970,6 +1755,43 @@
       requestAnimationFrame(render);
     }
 
+    function syncExportCanvasSize() {
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+    }
+
+    function seekSourceVideo(time) {
+      if (currentMediaType !== "video" || !Number.isFinite(sourceVideo.duration)) {
+        return Promise.resolve();
+      }
+
+      const end = Math.max(0, sourceVideo.duration - 0.001);
+      const target = Math.min(Math.max(0, time), end);
+      if (Math.abs(sourceVideo.currentTime - target) < 0.0005) return Promise.resolve();
+
+      return new Promise((resolve) => {
+        const finish = () => {
+          sourceVideo.removeEventListener("seeked", finish);
+          resolve();
+        };
+        sourceVideo.addEventListener("seeked", finish, { once: true });
+        sourceVideo.currentTime = target;
+      });
+    }
+
+    async function drawExportFrame(ms) {
+      if (currentMediaType === "video") {
+        await seekSourceVideo(ms / 1000);
+        uploadVideoFrame();
+      }
+
+      renderFrameOverrideTime = ms;
+      renderFrame(ms);
+      renderFrameOverrideTime = null;
+      syncExportCanvasSize();
+      exportCtx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    }
+
     function updateLabels() {
       labels.imageFit.textContent = val("imageFit");
       labels.imageOpacity.textContent = num("imageOpacity").toFixed(2);
@@ -1982,6 +1804,12 @@
       labels.exportFps.textContent = `${Math.round(num("exportFps"))}fps`;
       labels.exportBitrate.textContent = `${Math.round(num("exportBitrate"))}Mbps`;
       labels.exportScale.textContent = `${num("exportScale").toFixed(2)}x`;
+      labels.audioVolume.textContent = num("audioVolume").toFixed(2);
+      labels.audioBandwidth.textContent = `${Math.round(num("audioBandwidth"))}Hz`;
+      labels.audioHiss.textContent = num("audioHiss").toFixed(2);
+      labels.audioDrive.textContent = num("audioDrive").toFixed(2);
+      labels.audioWow.textContent = num("audioWow").toFixed(2);
+      labels.audioReverb.textContent = num("audioReverb").toFixed(2);
 
       labels.warpDirection.textContent = val("warpDirection");
       labels.scale.textContent = val("scale");
@@ -2040,6 +1868,22 @@
     Object.values(controls).forEach((control) => {
       control.addEventListener("input", updateLabels);
       control.addEventListener("change", updateLabels);
+    });
+
+    const AUDIO_PRESETS = {
+      clean: { audioVolume: "1", audioChannels: "stereo", audioBandwidth: "18000", audioHiss: "0", audioDrive: "0", audioWow: "0", audioReverb: "0" },
+      crt: { audioVolume: "0.92", audioChannels: "mono", audioBandwidth: "6000", audioHiss: "0.025", audioDrive: "0.08", audioWow: "0.01", audioReverb: "0.16" },
+      vhs: { audioVolume: "0.95", audioChannels: "narrow", audioBandwidth: "9000", audioHiss: "0.055", audioDrive: "0.16", audioWow: "0.035", audioReverb: "0.08" },
+      worn: { audioVolume: "0.88", audioChannels: "mono", audioBandwidth: "4200", audioHiss: "0.11", audioDrive: "0.28", audioWow: "0.075", audioReverb: "0.22" }
+    };
+
+    controls.audioPreset.addEventListener("change", () => {
+      const preset = AUDIO_PRESETS[val("audioPreset")];
+      if (!preset) return;
+      Object.entries(preset).forEach(([key, value]) => {
+        if (controls[key]) controls[key].value = value;
+      });
+      updateLabels();
     });
 
     function collectConfig() {
@@ -2115,510 +1959,11 @@
     });
 
     document.getElementById("resetConfigButton").addEventListener("click", () => {
-  
-    function splitBilingual(htmlText) {
-      const normalized = htmlText.trim();
-      const brMatch = normalized.match(/^(.*?)<br\s*\/?>(.*)$/i);
-      if (brMatch) {
-        return {
-          en: brMatch[1].trim(),
-          zh: brMatch[2].trim()
-        };
-      }
-
-      const textOnly = normalized.replace(/<[^>]+>/g, "");
-      const parts = textOnly.split(" / ");
-
-      if (parts.length >= 2) {
-        return {
-          en: parts.slice(0, -1).join(" / ").trim(),
-          zh: parts[parts.length - 1].trim()
-        };
-      }
-
-      return null;
-    }
-
-    function prepareI18nElement(el) {
-      if (el.dataset.i18nReady === "1") return;
-      const split = splitBilingual(el.innerHTML);
-      if (!split) return;
-
-      el.dataset.i18nReady = "1";
-      el.dataset.i18nEn = split.en;
-      el.dataset.i18nZh = split.zh;
-    }
-
-    function applyLanguage(lang) {
-      currentLang = lang;
-      document.documentElement.dataset.lang = lang;
-      localStorage.setItem("crt-ui-lang", lang);
-
-      document.querySelectorAll(
-        ".control-group summary, .control label span:first-child, .button-row button, .control-panel h2"
-      ).forEach((el) => {
-        if (el.id === "languageToggleButton") return;
-        prepareI18nElement(el);
-        if (el.dataset.i18nReady === "1") {
-          el.innerHTML = lang === "zh" ? el.dataset.i18nZh : el.dataset.i18nEn;
-        }
-      });
-
-      const langButton = document.getElementById("languageToggleButton");
-      langButton.textContent = lang === "zh" ? "EN" : "中";
-
-      const collapsed = document.body.classList.contains("panel-collapsed");
-      document.getElementById("panelToggleButton").innerHTML = collapsed
-        ? (lang === "zh" ? "展开" : "Show")
-        : (lang === "zh" ? "收起" : "Hide");
-
-      updateLabels();
-    }
-
-    document.getElementById("languageToggleButton").addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      applyLanguage(currentLang === "zh" ? "en" : "zh");
+      applyConfig(DEFAULT_CONFIG);
+      setPresetStatus("Reset to default settings / 已恢复默认参数");
     });
 
-    const panelToggleButton = document.getElementById("panelToggleButton");
 
-    function setPanelCollapsed(collapsed) {
-      document.body.classList.toggle("panel-collapsed", collapsed);
-      panelToggleButton.innerHTML = collapsed
-        ? (currentLang === "zh" ? "展开" : "Show")
-        : (currentLang === "zh" ? "收起" : "Hide");
-      localStorage.setItem(PANEL_STATE_KEY, collapsed ? "1" : "0");
-    }
-
-    panelToggleButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setPanelCollapsed(!document.body.classList.contains("panel-collapsed"));
-    });
-
-    panelToggleButton.addEventListener("pointerup", (event) => {
-      event.preventDefault();
-    });
-
-    setPanelCollapsed(localStorage.getItem(PANEL_STATE_KEY) === "1");
-
-
-    const PRESET_LIBRARY = {
-      "default": DEFAULT_CONFIG,
-      "soft-crt": {
-        ...DEFAULT_CONFIG,
-        imageBlurX: "0.35",
-        imageBlurY: "0.35",
-        warpBlurX: "1.2",
-        warpBlurY: "1.0",
-        glowOpacity: "0.26",
-        glowBlurX: "14",
-        glowBlurY: "14",
-        rgbOpacity: "0.30",
-        vhsNoise: "0",
-        vhsInterlace: "0"
-      },
-      "clean-vhs": {
-        ...DEFAULT_CONFIG,
-        vhsNoise: "0.06",
-        vhsJitter: "5.0",
-        vhsTracking: "0.10",
-        vhsChromaBleed: "8.0",
-        vhsLineWeave: "2.0",
-        chromaSoftness: "10",
-        vhsSharpen: "1.35",
-        vhsSharpenWidth: "2.0",
-        vhsThickRinging: "1",
-        vhsInterlace: "0.18",
-        vhsHeadSwitch: "0.08",
-        vhsDropout: "0.05"
-      },
-      "vhs": {
-              "exportDuration": "6",
-              "exportFps": "30",
-              "imageFit": "contain",
-              "imageOpacity": "1",
-              "imagePosX": "50",
-              "imagePosY": "50",
-              "pixelate": "0",
-              "imageBlurX": "7.29",
-              "imageBlurY": "2.91",
-              "finalSaturation": "1.04",
-              "warpDirection": "barrel",
-              "scale": "80",
-              "mapZoom": "0.3",
-              "warpBlurX": "7.5",
-              "warpBlurY": "0",
-              "brightness": "1",
-              "contrast": "1.46",
-              "flickerAmount": "0.07",
-              "flickerSpeed": "30",
-              "vignette": "1",
-              "vignetteInner": "55",
-              "vignetteOuter": "120",
-              "rgbOpacity": "0.54",
-              "rgbRedBias": "1",
-              "rgbGreenBias": "1",
-              "rgbBlueBias": "1",
-              "rgbPeriod": "6",
-              "rgbBlurX": "3.08",
-              "rgbBlurY": "2.92",
-              "maskOpacity": "0.43",
-              "maskX": "2",
-              "maskY": "2",
-              "maskBlurX": "3.53",
-              "maskBlurY": "3.59",
-              "beamBlend": "color-dodge",
-              "beamOpacity": "0.29",
-              "beamHeight": "272",
-              "beamSpeed": "20.5",
-              "glowOpacity": "0.4",
-              "glowBlurX": "16.9",
-              "glowBlurY": "17.5",
-              "vhsNoise": "0.21",
-              "vhsJitter": "4.2",
-              "vhsLineWeave": "1.1",
-              "vhsTracking": "0.59",
-              "vhsChromaBleed": "20.5",
-              "vhsThickRinging": "0",
-              "vhsSharpen": "2",
-              "vhsSharpenWidth": "7.85",
-              "vhsInterlace": "0",
-              "vhsHeadSwitch": "0",
-              "vhsDropout": "0",
-              "chromaOffsetX": "18.38",
-              "chromaOffsetY": "-11.88",
-              "chromaSoftness": "0"
-      },
-      "damaged-vhs": {
-        ...DEFAULT_CONFIG,
-        vhsNoise: "0.16",
-        vhsJitter: "18.0",
-        vhsTracking: "0.22",
-        vhsChromaBleed: "18.0",
-        vhsLineWeave: "6.0",
-        chromaOffsetX: "2.5",
-        chromaSoftness: "18",
-        vhsSharpen: "0.42",
-        vhsInterlace: "0.34",
-        vhsHeadSwitch: "0.36",
-        vhsDropout: "0.28"
-      },
-      "vaporwave": {
-        ...DEFAULT_CONFIG,
-        finalSaturation: "1.45",
-        rgbRedBias: "1.18",
-        rgbGreenBias: "0.92",
-        rgbBlueBias: "1.28",
-        vhsChromaBleed: "12.0",
-        chromaOffsetX: "1.5",
-        chromaSoftness: "12",
-        vhsNoise: "0.05",
-        glowOpacity: "0.34"
-      }
-    };
-
-    function setPresetStatus(message) {
-      const el = document.getElementById("presetStatusText");
-      if (el) {
-        el.textContent = message || "";
-        el.classList.toggle("is-active", Boolean(message));
-      }
-    }
-
-    function getUserPresets() {
-      try {
-        return JSON.parse(localStorage.getItem(USER_PRESETS_KEY) || "{}");
-      } catch (error) {
-        return {};
-      }
-    }
-
-    function saveUserPresets(data) {
-      localStorage.setItem(USER_PRESETS_KEY, JSON.stringify(data));
-    }
-
-    function refreshUserPresetSelect() {
-      const select = document.getElementById("userPresetSelect");
-      const presets = getUserPresets();
-      const names = Object.keys(presets);
-
-      select.innerHTML = "";
-
-      if (!names.length) {
-        select.innerHTML = '<option value="">No saved presets / 暂无预设</option>';
-        return;
-      }
-
-      names.sort().forEach((name) => {
-        const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
-        select.appendChild(option);
-      });
-    }
-
-    function sanitizePresetConfig(source) {
-      const result = {};
-      Object.keys(DEFAULT_CONFIG).forEach((key) => {
-        result[key] = source[key] ?? DEFAULT_CONFIG[key];
-      });
-      return result;
-    }
-
-    function saveCurrentUserPreset() {
-      const input = document.getElementById("userPresetNameInput");
-      const name = input.value.trim();
-
-      if (!name) {
-        setPresetStatus("Please enter a preset name / 请输入预设名");
-        return;
-      }
-
-      const presets = getUserPresets();
-      presets[name] = sanitizePresetConfig(collectConfig());
-      saveUserPresets(presets);
-      refreshUserPresetSelect();
-      document.getElementById("userPresetSelect").value = name;
-      setPresetStatus(`Saved preset: ${name}`);
-    }
-
-    function loadSelectedUserPreset() {
-      const name = document.getElementById("userPresetSelect").value;
-      const presets = getUserPresets();
-      if (!name || !presets[name]) {
-        setPresetStatus("No preset selected / 未选择预设");
-        return;
-      }
-      applyConfig(sanitizePresetConfig(presets[name]));
-      setPresetStatus(`Loaded preset: ${name}`);
-    }
-
-    function deleteSelectedUserPreset() {
-      const name = document.getElementById("userPresetSelect").value;
-      const presets = getUserPresets();
-      if (!name || !presets[name]) {
-        setPresetStatus("No preset selected / 未选择预设");
-        return;
-      }
-      delete presets[name];
-      saveUserPresets(presets);
-      refreshUserPresetSelect();
-      setPresetStatus(`Deleted preset: ${name}`);
-    }
-
-    function applyBuiltInPreset() {
-      const key = document.getElementById("builtInPresetSelect").value;
-      const preset = PRESET_LIBRARY[key];
-      if (!preset) return;
-      applyConfig(sanitizePresetConfig(preset));
-      setPresetStatus(key === "vhs" ? "Applied system preset: VHS / 已应用系统预设：VHS" : `Applied built-in preset: ${key}`);
-    }
-
-    function wait(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    function syncExportCanvasSize() {
-      if (exportCanvas.width !== canvas.width || exportCanvas.height !== canvas.height) {
-        exportCanvas.width = canvas.width;
-        exportCanvas.height = canvas.height;
-      }
-    }
-
-    async function drawExportFrame(ms) {
-      renderFrameOverrideTime = ms;
-      renderFrame(ms);
-      renderFrameOverrideTime = null;
-
-      syncExportCanvasSize();
-      exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
-      exportCtx.drawImage(canvas, 0, 0);
-      await wait(0);
-    }
-
-    async function downloadCurrentFrame() {
-      try {
-        await drawExportFrame(performance.now());
-
-        exportCanvas.toBlob((blob) => {
-          if (!blob) {
-            setPresetStatus("PNG export failed / 图片导出失败");
-            return;
-          }
-
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "crt-processed-frame.png";
-          link.click();
-          setTimeout(() => URL.revokeObjectURL(url), 1200);
-          setPresetStatus("PNG exported / 图片已导出");
-        }, "image/png");
-      } catch (error) {
-        console.error(error);
-        setPresetStatus("PNG export failed / 图片导出失败");
-      }
-    }
-
-    async function downloadProcessedVideo() {
-      if (exportInProgress) {
-        setPresetStatus("Export already running / 正在导出，请稍等");
-        return;
-      }
-
-      if (typeof MediaRecorder === "undefined" || !exportCanvas.captureStream) {
-        setPresetStatus("MediaRecorder unsupported / 浏览器不支持视频导出");
-        return;
-      }
-
-      exportInProgress = true;
-
-      const fps = Math.max(10, Math.min(60, Math.round(num("exportFps"))));
-      const duration = Math.max(1, num("exportDuration"));
-      const durationMs = duration * 1000;
-      const frameStep = 1000 / fps;
-      const bitrate = Math.max(4, Math.min(120, Math.round(num("exportBitrate")))) * 1000 * 1000;
-      exportRenderScale = Math.max(1, Math.min(3, num("exportScale")));
-
-      const mimeCandidates = [
-        "video/webm;codecs=vp9",
-        "video/webm;codecs=vp8",
-        "video/webm"
-      ];
-
-      let mimeType = "";
-      for (const m of mimeCandidates) {
-        if (MediaRecorder.isTypeSupported(m)) {
-          mimeType = m;
-          break;
-        }
-      }
-
-      try {
-        syncExportCanvasSize();
-
-        const stream = exportCanvas.captureStream(0);
-        const track = stream.getVideoTracks()[0];
-        const recorderOptions = mimeType
-          ? { mimeType, videoBitsPerSecond: bitrate }
-          : { videoBitsPerSecond: bitrate };
-        const recorder = new MediaRecorder(stream, recorderOptions);
-        const chunks = [];
-
-        recorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) chunks.push(event.data);
-        };
-
-        const originalLoop = sourceVideo.loop;
-        const originalMuted = sourceVideo.muted;
-        const originalTime = sourceVideo.currentTime || 0;
-        const wasPaused = sourceVideo.paused;
-
-        if (currentMediaType === "video") {
-          sourceVideo.pause();
-          sourceVideo.loop = true;
-          sourceVideo.muted = true;
-          try {
-            sourceVideo.currentTime = 0;
-          } catch (error) {}
-          await sourceVideo.play().catch(() => {});
-          await wait(120);
-        }
-
-        const done = new Promise((resolve) => {
-          recorder.onstop = resolve;
-        });
-
-        recorder.start(100);
-        setPresetStatus(`Exporting ${duration.toFixed(1)}s · ${fps}fps · ${Math.round(bitrate / 1000000)}Mbps · ${exportRenderScale.toFixed(2)}x / 正在导出…`);
-
-        const startMs = performance.now();
-        const totalFrames = Math.max(1, Math.round(duration * fps));
-
-        for (let i = 0; i < totalFrames; i++) {
-          const syntheticMs = startMs + i * frameStep;
-
-          if (currentMediaType === "video" && sourceVideo.duration && isFinite(sourceVideo.duration)) {
-            const targetTime = (i / fps) % sourceVideo.duration;
-            if (Math.abs(sourceVideo.currentTime - targetTime) > 0.06) {
-              try {
-                sourceVideo.currentTime = targetTime;
-                await wait(20);
-              } catch (error) {}
-            }
-            uploadVideoFrame();
-          }
-
-          await drawExportFrame(syntheticMs);
-
-          if (track && typeof track.requestFrame === "function") {
-            track.requestFrame();
-          }
-
-          /*
-            给 MediaRecorder 一个事件循环机会。否则某些浏览器会录到空白或极短视频。
-          */
-          await wait(1000 / fps);
-        }
-
-        if (recorder.state !== "inactive") {
-          recorder.stop();
-        }
-
-        await done;
-
-        const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-        if (!blob.size) {
-          setPresetStatus("Video export failed: empty file / 视频导出失败：空文件");
-          return;
-        }
-
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = currentMediaType === "video"
-          ? "crt-processed-video.webm"
-          : "crt-processed-image-animation.webm";
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1600);
-
-        if (currentMediaType === "video") {
-          sourceVideo.loop = originalLoop;
-          sourceVideo.muted = originalMuted;
-          try {
-            sourceVideo.currentTime = originalTime;
-          } catch (error) {}
-          if (!wasPaused) {
-            sourceVideo.play().catch(() => {});
-          } else {
-            sourceVideo.pause();
-          }
-        }
-
-        setPresetStatus(`Video export complete · ${Math.round(bitrate / 1000000)}Mbps / 视频导出完成`);
-      } catch (error) {
-        console.error(error);
-        setPresetStatus("Video export failed / 视频导出失败");
-      } finally {
-        exportInProgress = false;
-        exportRenderScale = 1;
-        resize();
-      }
-    }
-
-    document.getElementById("applyBuiltInPresetButton").addEventListener("click", applyBuiltInPreset);
-    document.getElementById("saveUserPresetButton").addEventListener("click", saveCurrentUserPreset);
-    document.getElementById("loadUserPresetButton").addEventListener("click", loadSelectedUserPreset);
-    document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
-    document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
-    document.getElementById("downloadVideoButton").addEventListener("click", downloadProcessedVideo);
-
-    refreshUserPresetSelect();
-
-    applyConfig(DEFAULT_CONFIG);
-    });
 
     function resetToDemo() {
       currentMediaType = "demo";
@@ -2632,6 +1977,8 @@
     document.getElementById("imageUpload").addEventListener("change", (event) => {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
+
+      currentSourceFile = file;
 
       if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
       currentObjectURL = URL.createObjectURL(file);
@@ -2677,6 +2024,7 @@
         currentObjectURL = null;
       }
       document.getElementById("imageUpload").value = "";
+      currentSourceFile = null;
       resetToDemo();
     });
 
@@ -3088,12 +2436,203 @@
       setPresetStatus("Video export complete / 视频导出完成");
     }
 
+    function makeDriveCurve(amount) {
+      const size = 2048;
+      const curve = new Float32Array(size);
+      const drive = 1 + Math.max(0, amount) * 28;
+      for (let i = 0; i < size; i++) {
+        const x = (i * 2) / (size - 1) - 1;
+        curve[i] = Math.tanh(x * drive) / Math.tanh(drive);
+      }
+      return curve;
+    }
+
+    async function processRetroAudio(buffer) {
+      const channels = val("audioChannels") === "mono" ? 1 : Math.min(2, buffer.numberOfChannels);
+      const context = new OfflineAudioContext(channels, buffer.length, buffer.sampleRate);
+      const source = context.createBufferSource();
+      source.buffer = buffer;
+
+      const highPass = context.createBiquadFilter();
+      highPass.type = "highpass";
+      highPass.frequency.value = 70;
+      const lowPass = context.createBiquadFilter();
+      lowPass.type = "lowpass";
+      lowPass.frequency.value = Math.max(1200, num("audioBandwidth"));
+      lowPass.Q.value = 0.45;
+      const drive = context.createWaveShaper();
+      drive.curve = makeDriveCurve(num("audioDrive"));
+      drive.oversample = "2x";
+      const gain = context.createGain();
+      gain.gain.value = num("audioVolume");
+
+      source.connect(highPass).connect(lowPass).connect(drive).connect(gain);
+
+      let channelOutput = gain;
+      if (val("audioChannels") === "narrow" && channels === 2) {
+        const merger = context.createChannelMerger(2);
+        const splitter = context.createChannelSplitter(2);
+        const left = context.createGain();
+        const right = context.createGain();
+        left.gain.value = 0.78;
+        right.gain.value = 0.78;
+        gain.connect(splitter);
+        splitter.connect(left, 0); splitter.connect(right, 1);
+        left.connect(merger, 0, 0); right.connect(merger, 0, 1);
+        channelOutput = merger;
+      }
+
+      const reverb = num("audioReverb");
+      if (reverb > 0) {
+        const impulseSeconds = 0.045 + reverb * 0.28;
+        const impulse = context.createBuffer(channels, Math.ceil(context.sampleRate * impulseSeconds), context.sampleRate);
+        for (let channel = 0; channel < channels; channel++) {
+          const data = impulse.getChannelData(channel);
+          for (let i = 0; i < data.length; i++) {
+            const decay = Math.pow(1 - i / data.length, 2.4);
+            data[i] = (Math.random() * 2 - 1) * decay;
+          }
+        }
+        const convolver = context.createConvolver();
+        const wet = context.createGain();
+        const dry = context.createGain();
+        convolver.buffer = impulse;
+        wet.gain.value = reverb * 0.45;
+        dry.gain.value = 1 - reverb * 0.22;
+        channelOutput.connect(dry).connect(context.destination);
+        channelOutput.connect(convolver).connect(wet).connect(context.destination);
+      } else {
+        channelOutput.connect(context.destination);
+      }
+
+      const wow = num("audioWow");
+      if (wow > 0) {
+        const lfo = context.createOscillator();
+        const lfoGain = context.createGain();
+        lfo.frequency.value = 0.45;
+        lfoGain.gain.value = wow;
+        lfo.connect(lfoGain).connect(source.playbackRate);
+        lfo.start();
+      }
+
+      const hiss = num("audioHiss");
+      if (hiss > 0) {
+        const noiseBuffer = context.createBuffer(channels, buffer.length, buffer.sampleRate);
+        for (let channel = 0; channel < channels; channel++) {
+          const data = noiseBuffer.getChannelData(channel);
+          for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * hiss;
+        }
+        const noise = context.createBufferSource();
+        const noiseFilter = context.createBiquadFilter();
+        noiseFilter.type = "bandpass";
+        noiseFilter.frequency.value = 4600;
+        noiseFilter.Q.value = 0.7;
+        noise.buffer = noiseBuffer;
+        noise.connect(noiseFilter).connect(context.destination);
+        noise.start();
+      }
+
+      source.start();
+      return context.startRendering();
+    }
+
+    async function downloadHighQualityVideo() {
+      const mb = globalThis.Mediabunny;
+      const hasWebCodecs = typeof VideoEncoder !== "undefined";
+      if (!hasWebCodecs || !mb || !mb.Output || !mb.CanvasSource) {
+        if (currentMediaType === "video") {
+          setPresetStatus("Offline encoder unavailable; using compatibility WebM / 离线编码不可用，改用兼容 WebM");
+          return downloadProcessedVideo();
+        }
+        setPresetStatus("Offline encoder requires a current Chrome or Edge browser / 高质量导出需要新版 Chrome 或 Edge");
+        return;
+      }
+
+      if (exportInProgress) return;
+      exportInProgress = true;
+      const fps = Math.max(10, Math.min(60, Math.round(num("exportFps"))));
+      const duration = Math.max(1, num("exportDuration"));
+      const bitrate = Math.max(4, Math.min(120, Math.round(num("exportBitrate")))) * 1000 * 1000;
+      exportRenderScale = Math.max(1, Math.min(3, num("exportScale")));
+      const useWebm = val("exportFormat") === "webm";
+      const originalTime = sourceVideo.currentTime;
+      const wasPaused = sourceVideo.paused;
+
+      try {
+        if (currentMediaType === "video") sourceVideo.pause();
+        resize();
+        syncExportCanvasSize();
+        const output = new mb.Output({
+          format: useWebm ? new mb.WebMOutputFormat() : new mb.Mp4OutputFormat(),
+          target: new mb.BufferTarget()
+        });
+        const videoSource = new mb.CanvasSource(exportCanvas, {
+          codec: useWebm ? "vp9" : "avc",
+          bitrate,
+          frameRate: fps
+        });
+        output.addVideoTrack(videoSource);
+        let audioSource = null;
+        let audioSamples = null;
+
+        if (currentMediaType === "video" && currentSourceFile && mb.Input && mb.AudioSampleSink) {
+          const input = new mb.Input({ source: new mb.BlobSource(currentSourceFile), formats: mb.ALL_FORMATS });
+          const audioTrack = await input.getPrimaryAudioTrack();
+          if (audioTrack && await audioTrack.canDecode()) {
+            audioSource = new mb.AudioBufferSource({ codec: useWebm ? "opus" : "aac", bitrate: 192000 });
+            output.addAudioTrack(audioSource);
+            audioSamples = new mb.AudioSampleSink(audioTrack).samples(0, duration);
+          }
+        }
+
+        await output.start();
+        const totalFrames = Math.max(1, Math.round(duration * fps));
+        setPresetStatus(`Offline ${useWebm ? "WebM" : "MP4"} render: 0% / 正在离线高质量渲染…`);
+
+        for (let i = 0; i < totalFrames; i++) {
+          await drawExportFrame(i * 1000 / fps);
+          await videoSource.add(i / fps, 1 / fps);
+          if (i % Math.max(1, Math.floor(totalFrames / 20)) === 0) {
+            setPresetStatus(`Offline ${useWebm ? "WebM" : "MP4"} render: ${Math.round(i / totalFrames * 100)}% / 正在离线高质量渲染…`);
+          }
+        }
+
+        if (audioSource && audioSamples) {
+          for await (const sample of audioSamples) {
+            await audioSource.add(await processRetroAudio(sample.toAudioBuffer()));
+          }
+        }
+
+        await output.finalize();
+        const mime = useWebm ? "video/webm" : "video/mp4";
+        const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1600);
+        setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
+      } catch (error) {
+        console.error(error);
+        const detail = error && error.message ? `: ${error.message}` : "";
+        setPresetStatus(`High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
+      } finally {
+        exportInProgress = false;
+        exportRenderScale = 1;
+        if (currentMediaType === "video") {
+          sourceVideo.currentTime = originalTime;
+          if (!wasPaused) sourceVideo.play().catch(() => {});
+        }
+        resize();
+      }
+    }
+
     document.getElementById("applyBuiltInPresetButton").addEventListener("click", applyBuiltInPreset);
     document.getElementById("saveUserPresetButton").addEventListener("click", saveCurrentUserPreset);
     document.getElementById("loadUserPresetButton").addEventListener("click", loadSelectedUserPreset);
     document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
     document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
-    document.getElementById("downloadVideoButton").addEventListener("click", downloadProcessedVideo);
+    document.getElementById("downloadVideoButton").addEventListener("click", downloadHighQualityVideo);
 
     refreshUserPresetSelect();
 
