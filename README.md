@@ -11,7 +11,7 @@ WebGL · CRT / VHS · PNG / MP4 / WebM · Local processing
 
 [**在线体验 · Live demo**](https://mazkosoft.github.io/CRT-Simulator/) · [**单文件版 · Standalone**](dist/crt-simulator-standalone.html) · [**English**](#english) · [**简体中文**](#简体中文)
 
-![CRT Simulator — Max-OS 1998 terminal interface](assets/readme-preview.jpg)
+![CRT Simulator — Max-OS 1998 terminal workspace](assets/readme-preview.png)
 
 *Project credit: ㄢ誌慖（mazko）*
 
@@ -60,6 +60,29 @@ export/storage on your browser, use the live site or serve the HTML over localho
 
 ### Online user guide
 
+#### Find settings without scrolling through everything
+
+The physical operating keys open **Presets / Adjust / Export**. Presets display
+thumbnail renders of your current media; select one to apply it. On desktop, the
+CRT stays beside a category rail and a separately scrolling parameter well.
+Drag the divider (or use its arrow keys) to resize the screen and controls.
+Common settings appear first; **Fine adjustment** reveals the remaining controls.
+Search across categories by name, then clear the search to return.
+
+Use **☆** to collect favorite parameters and **Modified** to see changes since
+the last loaded preset/configuration. **Reset** restores a single parameter to
+that baseline. Loading a preset starts a new baseline; it does not erase favorites.
+On phones, the 4:3 screen stays above the work area. Swipe the category and
+parameter-name strips horizontally, then edit one parameter with its slider,
+number field or ± keys. Only the work area scrolls; it never covers the screen.
+The preview status remains at the bottom. **Preview settings** opens mode/quality
+options; **Hold for original** compares the unprocessed media while held.
+Import, Guide, About and the configuration button remain available in every workspace.
+
+Two supplied looks are available: **Worn low-bitrate VHS** and **Glowing pixel CRT**.
+Applying a built-in look preserves the current export duration. The default output
+scope is **Source Ratio**, matching the source media's aspect ratio.
+
 #### Load media and choose a look
 
 Open the [live demo](https://mazkosoft.github.io/CRT-Simulator/). The supplied image
@@ -67,8 +90,8 @@ loads automatically. In **Media import**, choose an image/video. **Load default
 image** and **Clear** both return to the sample; neither deletes your local file.
 Input format support depends on browser decoders.
 
-Preview mode, performance, automatic updating, refresh and status are directly
-visible above every group. The eleven groups are ordered as follows:
+Preview status stays in the operating strip; **Preview settings** opens mode,
+performance, automatic updating and refresh controls. The eleven categories are:
 
 1. Media import
 2. Effect presets
@@ -82,7 +105,7 @@ visible above every group. The eleven groups are ordered as follows:
 10. User guide
 11. About & credits
 
-Media import is expanded initially; other groups open as needed. **Pixel
+Effect presets open initially; import media with the shortcut above the category rail. **Pixel
 resolution** controls live pixelation, the linked RGB cell period and the mask.
 **CRT screen** contains curvature, flicker, vignette, beam and glow; **Color
 settings** contains brightness, contrast, saturation and media blur. **Video
@@ -98,17 +121,16 @@ Ranges spanning one unit or less retain fractional control. Typed values,
 keyboard adjustments and presets do not trigger integer attraction.
 
 Use `contain` for the full source, `cover` to fill/crop, or `fill` to stretch.
-The default **Media Bounds** limits effects to the displayed media footprint; it
-does not crop the exported file to the source aspect ratio. Choose **Source aspect
-ratio** separately when you want source-shaped output without letterbox bars.
+The default **Source Ratio** follows the imported media's aspect ratio.
+Choose **Media Bounds** to limit effects to its displayed footprint instead.
 **Source aspect ratio** makes exported dimensions follow the source instead of
 adding letterbox bars. Curvature/vignette may still create intentional dark edges.
 The preview screen ratio can differ from the export ratio.
 
 In **Presets**, select a built-in look and press **Apply**, then adjust CRT,
 phosphor/mask, beam/glow and VHS groups. Save your current settings before replacing
-them with a preset. On phones use number fields and `−`/`+` for precision; the panel
-scrolls independently. **Fine/Smooth** changes preview refresh rate, not export quality.
+them with a preset. On phones use number fields and `−`/`+` for precision and normal
+page scrolling. **Fine/Smooth** changes preview refresh rate, not export quality.
 
 #### Playback and inspection
 
@@ -234,6 +256,7 @@ js/config.js               Defaults, presets and configuration
 js/preview.js              Cancellable, latest-settings-only preview scheduling
 js/crt.js                  WebGL, media and image/video/audio export
 js/controls.js             UI, language, transport and startup
+js/navigation.js           Terminal workspaces, favorites, mobile editor and preview thumbnails
 assets/demo-desktop.png    Supplied default image
 assets/readme-preview.jpg  Actual application screenshot
 vendor/                    Mediabunny bundle and its license
@@ -348,7 +371,7 @@ PNG、离线逐帧 MP4／WebM 和导出音轨处理；中英文界面及独立�
 10. 使用说明
 11. 关于鸣谢
 
-默认只展开“媒体导入”，其他组按需展开。“像素分辨率”调整实时像素化、联动的
+默认选中“媒体导入”，其他分类通过固定操作条切换。“像素分辨率”调整实时像素化、联动的
 RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、光带和辉光；
 “色彩设置”调整亮度、对比度、饱和度和媒体模糊。“视频设置”调整画质、马赛克、
 时长及编码参数，“媒体导出”提供导出按钮和真实进度。导出马赛克可通过编码预览查看。
@@ -362,11 +385,11 @@ RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、�
 `contain` 保留完整画面，`cover` 填满并裁切，`fill` 拉伸。“按源媒体比例导出”让输出
 尺寸跟随源媒体，避免比例黑边；曲率和暗角仍可能形成刻意暗边。预览与导出比例可以不同。
 
-默认效果范围为**仅媒体范围**：效果局限于媒体显示区域，但不会自动把输出文件裁成源比例。
-需要消除比例黑边时，请另外选择“按源媒体比例导出”。两者用途不同。
+默认效果范围为**按源媒体比例导出**：输出画布匹配导入媒体的宽高比。
+“仅媒体范围”则把效果限制在媒体显示区域，不改变输出画布比例。
 
-在“效果预设”选内置效果并点击应用，再展开 CRT、荧光粉／遮罩、光带／辉光、VHS 分组微调。
-应用预设会替换参数，重要设置请先保存。手机可用数字框及 `−`／`+` 精调，面板独立滚动。
+在“效果预设”选内置效果并点击应用，再切换像素、CRT、色彩或 VHS 分类微调。
+应用预设会替换参数，重要设置请先保存。手机可用数字框及 `−`／`+` 精调，页面正常滚动。
 “精细／流畅”只改变预览刷新率，不改变导出质量。
 
 #### 播放与查看细节
@@ -380,6 +403,23 @@ RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、�
 电源键隐藏预览，不卸载媒体，也不停止视频播放。
 
 #### 保存配置
+
+#### 不再反复翻找参数
+
+通过机身上的“预设／调整／导出”切换工作区。预设使用当前媒体生成缩略图，点击即可应用。
+电脑屏幕固定在左侧，右侧分类键直接切换参数；只有参数槽内部滚动。
+拖动中间分隔线可以调整两侧宽度；分隔线也支持方向键调整、Home 恢复默认。
+常用参数优先显示，其余参数放在该分类的“精细调整”里。搜索可跨分类查找，清空后返回。
+
+点击 ☆ 收藏参数，在“常用”中集中调节；“已修改”显示与最近载入的预设／配置不同的参数。
+“还原”只恢复这一项。载入预设会更新比较基准，不删除收藏；收藏仅保存在当前浏览器。
+手机上方保持完整的 4:3 屏幕，下方横向选择分类和参数名称，一次调节一个参数。
+数字输入、± 和滑条仍然可用，工作区独立滚动，不遮挡屏幕，也不用整页来回翻找。
+底部保留预览状态，“预览设置”展开编码选项，“按住对比原图”临时查看未处理媒体。
+导入媒体、使用说明、关于鸣谢和屏幕下方的配置按钮始终保留。
+
+新增“低码率磨损 VHS”和“高辉光像素 CRT”预设。应用内置预设不覆盖当前导出时长。
+默认效果范围为“按源媒体比例导出”，输出画布使用源媒体宽高比。
 
 默认选择编码预览。完整 JSON 预设包含所有效果、音频与导出参数，以及预览内容、
 预览性能、自动更新、音频试听和屏幕音量；通过屏幕下方“配置”导入或导出。
@@ -463,8 +503,9 @@ Windows 有 Python 启动器时可用 `py -m http.server 8080 --bind 127.0.0.1`�
 完整源码建议通过 localhost HTTP 或 HTTPS 运行。单文件版可单独打开；
 本地文件的编码和存储支持仍取决于浏览器。Node.js 仅用于检查与重新生成单文件版。
 
-文件结构见英文段落。两份 CSS 分别负责机壳和参数界面；三个脚本分别负责配置、
-渲染／媒体导出、界面初始化，按 `config → crt → controls` 加载并共享作用域，不是独立 ES 模块。
+文件结构见英文段落。两份 CSS 分别负责机壳和参数界面；应用脚本依次为
+`config → preview → crt → controls → navigation`，负责配置、预览调度、渲染／导出、
+界面初始化及参数导航，共享作用域，不是独立 ES 模块。
 请修改拆分源码，不要手改 `dist` 里的生成文件。修改后运行：
 
 ```sh

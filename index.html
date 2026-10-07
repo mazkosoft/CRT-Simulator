@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🅜 𝙲𝚁𝚃 𝚂𝚒𝚖𝚞𝚕𝚊𝚝𝚘𝚛</title>
-  <link rel="stylesheet" href="css/crt.css?v=case-15" />
-  <link rel="stylesheet" href="css/ui.css?v=case-15" />
+  <link rel="stylesheet" href="css/crt.css?v=workspace-3" />
+  <link rel="stylesheet" href="css/ui.css?v=workspace-3" />
 </head>
 
 <body>
@@ -63,6 +63,12 @@
       <div class="dos-tools language-control"><span id="languageLabel" class="knob-label">语言</span><button id="languageToggleButton" class="language-toggle monitor-oval" type="button" aria-label="切换为英文"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.5" ry="8"/><path d="M4 12h16M6 7.5h12M6 16.5h12"/></svg></button></div>
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
+<div id="parameterToolbar" class="parameter-toolbar">
+  <nav class="workspace-modes"><button type="button" data-page="presets" data-i18n-zh="预设" data-i18n-en="Presets">预设</button><button type="button" data-page="adjust" data-i18n-zh="调整" data-i18n-en="Adjust">调整</button><button type="button" data-page="export" data-i18n-zh="导出" data-i18n-en="Export">导出</button></nav>
+  <div class="workspace-utilities"><button type="button" data-group="mediaGroup" data-i18n-zh="导入媒体" data-i18n-en="Import media">导入媒体</button><button type="button" data-group="userGuideGroup" data-i18n-zh="使用说明" data-i18n-en="Guide">使用说明</button><button type="button" data-group="aboutGroup" data-i18n-zh="关于鸣谢" data-i18n-en="About & credits">关于鸣谢</button></div>
+  <label class="parameter-search"><span data-i18n-zh="查找参数" data-i18n-en="Find a setting">查找参数</span><input id="parameterSearch" type="search" autocomplete="off" /></label>
+  <p id="navigationStatus" class="hint" role="status" aria-live="polite"></p>
+</div>
 <div class="preview-console">
 <div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
     <div class="preview-quality-control"><label for="previewMode" data-i18n-zh="预览内容" data-i18n-en="Preview content">预览内容</label><select id="previewMode"><option value="effect" data-i18n-zh="效果预览" data-i18n-en="Live effects">效果预览</option><option value="encoded" selected data-i18n-zh="编码预览" data-i18n-en="Encoded preview">编码预览</option></select></div>
@@ -72,6 +78,7 @@
       <p id="exportPreviewInfo" class="hint" hidden></p>
     </div>
 <button id="previewExportButton" type="button" data-i18n-zh="刷新编码预览" data-i18n-en="Refresh encoded preview">刷新编码预览</button>
+<button id="compareOriginalButton" type="button" aria-pressed="false" data-i18n-zh="按住对比原图" data-i18n-en="Hold for original">按住对比原图</button>
 </div>
 
     <details id="mediaGroup" class="control-group" open>
@@ -138,6 +145,8 @@
           <option value="vhs">VHS - Latest / 最新 VHS</option>
           <option value="damaged-vhs">Damaged VHS / 受损磁带</option>
           <option value="vaporwave">Vaporwave / 蒸汽波偏色</option>
+          <option value="worn-network-vhs" data-i18n-zh="低码率磨损 VHS" data-i18n-en="Worn low-bitrate VHS">低码率磨损 VHS</option>
+          <option value="glowing-pixel-crt" data-i18n-zh="高辉光像素 CRT" data-i18n-en="Glowing pixel CRT">高辉光像素 CRT</option>
         </select>
         <button id="applyBuiltInPresetButton" type="button">Apply<br />应用</button>
       </div>
@@ -569,6 +578,7 @@
 <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
 <p class="hint" data-i18n-zh="5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。" data-i18n-en="5. Choose quality, duration, frame rate, bitrate and format in Video settings, then save an image or video in Media export. Export mosaic affects encoded output, unlike live pixelation.">5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。</p>
 <p class="hint" data-i18n-zh="6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。" data-i18n-en="6. Use the configuration button below the screen to import, export or save settings. Media is processed locally and is not uploaded.">6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。</p>
+<p class="hint" data-i18n-zh="基础模式显示常用参数，高级模式提供完整调整。通过顶部分类直接切换，或搜索参数；手机可用“查看画面／返回参数”保留调整位置。" data-i18n-en="Basic shows common settings; Advanced provides all controls. Switch categories or search at the top. On phones, View screen / Back to settings preserves your position.">基础模式显示常用参数，高级模式提供完整调整。通过顶部分类直接切换，或搜索参数；手机可用“查看画面／返回参数”保留调整位置。</p>
 <p class="credit-text"><a id="userGuideLink" href="https://github.com/mazkosoft/CRT-Simulator#简体中文" target="_blank" rel="noopener noreferrer" data-i18n-zh="完整使用说明书" data-i18n-en="Complete user guide">完整使用说明书</a></p>
     </details>
 
@@ -621,5 +631,6 @@
   <script src="js/preview.js"></script>
   <script src="js/crt.js"></script>
   <script src="js/controls.js"></script>
+  <script src="js/navigation.js"></script>
 </body>
 </html>

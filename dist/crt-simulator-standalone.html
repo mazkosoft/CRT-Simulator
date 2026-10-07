@@ -277,6 +277,125 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 .export-progress-panel progress::-moz-progress-bar { background:linear-gradient(#94a278,#5e704c); }
 .export-progress-panel p { margin:0; font-size:14px; overflow-wrap:anywhere; }
 
+/* Unified terminal workspace: only the parameter well scrolls. */
+[hidden] { display:none !important; }
+.navigation-hidden { display:none !important; }
+.terminal-workspace { display:flex; flex-direction:column; overflow:hidden; padding:12px; }
+.terminal-workspace .dos-header { padding:0 0 8px; flex:none; }
+.terminal-workspace .dos-caption { display:none; }
+.parameter-toolbar { flex:none; padding:0 0 12px; border-bottom:1px solid #a79b85; box-shadow:0 1px #eee5d4; display:grid; gap:10px; }
+.workspace-modes,.workspace-utilities { display:flex; gap:8px; }
+.workspace-modes button { flex:1; font-size:15px; min-height:42px; }
+.workspace-utilities button { flex:1; padding:5px 8px; min-height:30px; font-size:12px; }
+.terminal-workspace button[aria-pressed=true] { background:linear-gradient(#bdb49f,#d8cfbc); box-shadow:inset 1px 2px 3px #65583d66,0 1px #fff5df; }
+.parameter-search { display:flex; align-items:center; gap:8px; font-size:12px; min-width:0; }
+.parameter-search span { flex:none; }
+.parameter-search input { width:100%; min-width:0; min-height:40px; padding:8px; font:inherit; border:1px solid #a69b87; border-radius:4px; background:#e1d9c9; box-shadow:inset 1px 2px 3px #776a5144,0 1px #fff5df; }
+.parameter-search input { min-height:32px; padding:6px 8px; }
+.parameter-toolbar .hint { margin:0; }
+.workspace-body { display:grid; grid-template-columns:100px minmax(0,1fr); gap:12px; min-height:0; flex:1; padding:12px 0; }
+.category-rail { display:flex; flex-direction:column; gap:10px; overflow:auto; padding:2px 4px 8px 0; border-right:1px solid #aaa08c; box-shadow:1px 0 #ede5d4; }
+.category-rail button { flex:none; padding:9px 5px; font-size:12px; min-height:42px; border-radius:8px; }
+.workspace-editor { display:flex; flex-direction:column; min-width:0; min-height:0; }
+.parameter-content { overflow:auto; overscroll-behavior:contain; min-height:0; padding:2px 6px 8px 2px; flex:1; scrollbar-width:thin; }
+.terminal-workspace .control-group { margin:0 0 12px; }
+.terminal-workspace .control-group > summary { padding:0 0 8px; min-height:24px; border:0; background:none; box-shadow:none; border-radius:0; margin:0 0 8px; cursor:default; font-size:15px; }
+.terminal-workspace .control-group > summary::after { content:none; }
+.terminal-workspace .group-body { display:block; padding:10px; margin:0 0 8px; }
+.terminal-workspace .control { position:relative; margin:4px 0 18px; }
+.terminal-workspace .control:has(.parameter-stepper) { display:grid; grid-template-columns:minmax(0,1fr) 124px; gap:4px 8px; align-items:center; }
+.terminal-workspace .control:has(.parameter-stepper) > label { margin:0; font-size:13px; }
+.terminal-workspace .control:has(.parameter-stepper) > label span:last-child:not(:first-child) { display:none; }
+.terminal-workspace .control:has(.parameter-stepper) > input[type=range] { grid-column:1 / -1; grid-row:2; margin:0; }
+.terminal-workspace .parameter-stepper { grid-column:2; grid-row:1; margin:0; gap:4px; }
+.terminal-workspace .parameter-stepper input { padding:4px; text-align:center; }
+.terminal-workspace .parameter-stepper button { padding:0; min-width:26px; width:26px; border-radius:8px; }
+.parameter-tools { display:flex; gap:6px; justify-content:flex-end; grid-column:1 / -1; }
+.terminal-workspace .parameter-tools button { min-height:24px; padding:2px 8px; font-size:11px; box-shadow:inset 0 1px #fff9eb,0 1px #a49c8c; }
+.terminal-workspace .parameter-tools button:disabled { opacity:.45; cursor:default; }
+.terminal-workspace .control > .hint { grid-column:1 / -1; margin:0; }
+.fine-settings { margin-top:14px; }
+.fine-settings > summary { padding:8px; min-height:36px; font-size:12px; border-radius:8px; }
+.fine-body { padding:12px 0 0; }
+.preview-console { flex:none; margin:0; padding:10px 0 0; border-top:1px solid #a69a83; box-shadow:0 -1px #eee6d5; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.preview-console > .hint { grid-column:1 / -1; margin:0; font-size:11px; max-height:36px; overflow:auto; }
+.preview-console > button { min-height:32px; padding:6px; font-size:12px; }
+.preview-options { grid-column:1 / -1; }
+.preview-options summary { font-size:12px; cursor:pointer; }
+.preview-options[open] { max-height:180px; overflow:auto; }
+.preview-options .preview-quality-control { margin:8px 0; }
+.workspace-empty { font-size:14px; line-height:1.6; }
+.preset-gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.terminal-workspace .preset-tile { padding:5px 5px 8px; border-radius:8px; min-width:0; }
+.preset-tile canvas { display:block; width:100%; aspect-ratio:4 / 3; background:#20221e; border:1px solid #7d7668; border-radius:4px; margin-bottom:8px; }
+.preset-tile span { display:block; font-size:12px; }
+.workspace-splitter { position:absolute; top:70px; bottom:130px; left:calc(var(--screen-share,60) * 1%); width:12px; margin-left:-6px; cursor:col-resize; border:0; background:none; touch-action:none; }
+.workspace-splitter::after { content:''; position:absolute; width:2px; height:36px; top:50%; left:5px; background:#a49b88; border-right:1px solid #f9f0df; }
+.workspace-splitter:focus-visible { outline:2px solid #8d7d5c; }
+.original-screen { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; border-radius:inherit; }
+.machine-off .original-screen { opacity:0; }
+@media(min-width:901px) { .machine { grid-template-columns:minmax(0,var(--screen-weight,60fr)) minmax(0,var(--panel-weight,40fr)); } }
+@media(min-width:1600px) { .terminal-workspace .group-body,.fine-body { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; } .fine-settings { grid-column:1 / -1; } }
+@media(max-width:900px) {
+  html,body { height:100%; overflow:hidden; }
+  body { padding:6px; }
+  .machine { height:calc(100dvh - 12px); min-height:0; padding:10px; gap:8px; grid-template-rows:auto minmax(0,1fr); }
+  .crt-cabinet { align-items:center; gap:2px; }
+  .cabinet-brand { width:100%; min-height:20px; }
+  .screen-well { width:min(100%,calc((100dvh * .46 - 116px) * 4 / 3 + 24px)); max-width:none; padding:10px 12px 14px; flex:none; }
+  .screen { width:100%; height:auto; aspect-ratio:4 / 3; }
+  .playback-transport,.cabinet-controls { width:100%; }
+  .playback-transport,.transport-slider { height:28px; min-height:28px; }
+  /* Reserve the complete hardware assembly, including the dial scale and relief. */
+  .cabinet-controls { height:auto; min-height:74px; flex:none; }
+  .cabinet-controls > .monitor-view-control { height:66px; grid-template-rows:14px 52px; }
+  .cabinet-controls > .volume-control,.cabinet-controls > .power-assembly { height:66px; }
+  .cabinet-controls .volume-control { grid-template-rows:14px 52px; }
+  .cabinet-controls .volume-dial { height:52px; }
+  .cabinet-controls .volume-scale { width:64px; height:64px; left:-6px; top:-6px; }
+  aside.terminal-workspace { padding:8px; min-height:0; overflow:hidden; scrollbar-gutter:auto; }
+  .terminal-workspace .dos-header { display:none; }
+  .parameter-toolbar { gap:8px; padding-bottom:8px; }
+  .workspace-modes button { min-height:36px; font-size:14px; padding:6px; }
+  .workspace-utilities button { min-height:28px; padding:4px; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .workspace-utilities .language-control { display:flex; flex-direction:column; gap:0; margin-top:-5px; }
+  .workspace-utilities .language-control span { font-size:9px; }
+  .workspace-utilities .language-toggle { width:36px; min-width:36px; height:24px; min-height:24px; }
+  .workspace-utilities .language-toggle svg { width:16px; height:16px; }
+  .parameter-search { display:none; }
+  .workspace-body { display:flex; flex-direction:column; gap:4px; padding:6px 0; overflow:auto; overscroll-behavior:contain; }
+  .category-rail,.parameter-strip { flex-direction:row; display:flex; gap:8px; overflow:auto; flex:none; padding:0 2px 5px; scrollbar-width:none; border:0; box-shadow:none; }
+  .category-rail button,.parameter-strip button { min-height:34px; padding:6px 10px; white-space:nowrap; font-size:12px; flex:none; }
+  .workspace-editor { flex:1; min-height:144px; flex-shrink:0; }
+  .parameter-strip { margin-bottom:2px; }
+  .terminal-workspace .group-body { padding:8px; }
+  .terminal-workspace .control-group > summary { display:none; }
+  .terminal-workspace .control { margin:4px 0 12px; }
+  .terminal-workspace .control:has(.parameter-stepper) { grid-template-columns:minmax(0,1fr) 142px; }
+  .terminal-workspace .control label { font-size:14px; }
+  .terminal-workspace .parameter-stepper input { height:36px; font-size:16px; }
+  .terminal-workspace .parameter-stepper button { min-height:36px; min-width:30px; }
+  .terminal-workspace .fine-settings { margin:0; }
+  .terminal-workspace .fine-settings > summary { display:none; }
+  .terminal-workspace .fine-body { padding:0; }
+  .preview-console { padding-top:6px; gap:6px; grid-template-columns:1fr 1fr 1fr; }
+  .preview-console > .hint { max-height:18px; font-size:10px; }
+  .preview-console > button { white-space:nowrap; min-height:28px; font-size:10px; overflow:hidden; text-overflow:ellipsis; }
+  .preview-console #exportPreviewInfo { display:none; }
+  .preview-options[open] #exportPreviewInfo { display:block; }
+  .preview-options summary { font-size:11px; }
+  .preview-options:not([open]) { grid-column:3; grid-row:2; }
+  .preview-options summary { min-height:28px; padding:6px 4px; border:1px solid #aaa08c; border-radius:10px; background:linear-gradient(#f6f0e1,#ded6c4); box-shadow:inset 0 1px #fffaf0,0 2px #a49c8c; list-style:none; text-align:center; }
+  .preview-options[open] { grid-column:1 / -1; grid-row:3; }
+  .preview-options[open] { max-height:108px; }
+  .terminal-workspace .group-section-title { display:none; }
+  .workspace-splitter { display:none; }
+  .preset-gallery { gap:8px; }
+}
+@media(max-width:900px) and (max-height:740px) {
+  .screen-well { width:min(100%,calc((100dvh * .4 - 120px) * 4 / 3 + 24px)); }
+}
+
 </style>
 </head>
 
@@ -335,6 +454,12 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
       <div class="dos-tools language-control"><span id="languageLabel" class="knob-label">语言</span><button id="languageToggleButton" class="language-toggle monitor-oval" type="button" aria-label="切换为英文"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.5" ry="8"/><path d="M4 12h16M6 7.5h12M6 16.5h12"/></svg></button></div>
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
+<div id="parameterToolbar" class="parameter-toolbar">
+  <nav class="workspace-modes"><button type="button" data-page="presets" data-i18n-zh="预设" data-i18n-en="Presets">预设</button><button type="button" data-page="adjust" data-i18n-zh="调整" data-i18n-en="Adjust">调整</button><button type="button" data-page="export" data-i18n-zh="导出" data-i18n-en="Export">导出</button></nav>
+  <div class="workspace-utilities"><button type="button" data-group="mediaGroup" data-i18n-zh="导入媒体" data-i18n-en="Import media">导入媒体</button><button type="button" data-group="userGuideGroup" data-i18n-zh="使用说明" data-i18n-en="Guide">使用说明</button><button type="button" data-group="aboutGroup" data-i18n-zh="关于鸣谢" data-i18n-en="About & credits">关于鸣谢</button></div>
+  <label class="parameter-search"><span data-i18n-zh="查找参数" data-i18n-en="Find a setting">查找参数</span><input id="parameterSearch" type="search" autocomplete="off" /></label>
+  <p id="navigationStatus" class="hint" role="status" aria-live="polite"></p>
+</div>
 <div class="preview-console">
 <div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
     <div class="preview-quality-control"><label for="previewMode" data-i18n-zh="预览内容" data-i18n-en="Preview content">预览内容</label><select id="previewMode"><option value="effect" data-i18n-zh="效果预览" data-i18n-en="Live effects">效果预览</option><option value="encoded" selected data-i18n-zh="编码预览" data-i18n-en="Encoded preview">编码预览</option></select></div>
@@ -344,6 +469,7 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
       <p id="exportPreviewInfo" class="hint" hidden></p>
     </div>
 <button id="previewExportButton" type="button" data-i18n-zh="刷新编码预览" data-i18n-en="Refresh encoded preview">刷新编码预览</button>
+<button id="compareOriginalButton" type="button" aria-pressed="false" data-i18n-zh="按住对比原图" data-i18n-en="Hold for original">按住对比原图</button>
 </div>
 
     <details id="mediaGroup" class="control-group" open>
@@ -410,6 +536,8 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
           <option value="vhs">VHS - Latest / 最新 VHS</option>
           <option value="damaged-vhs">Damaged VHS / 受损磁带</option>
           <option value="vaporwave">Vaporwave / 蒸汽波偏色</option>
+          <option value="worn-network-vhs" data-i18n-zh="低码率磨损 VHS" data-i18n-en="Worn low-bitrate VHS">低码率磨损 VHS</option>
+          <option value="glowing-pixel-crt" data-i18n-zh="高辉光像素 CRT" data-i18n-en="Glowing pixel CRT">高辉光像素 CRT</option>
         </select>
         <button id="applyBuiltInPresetButton" type="button">Apply<br />应用</button>
       </div>
@@ -841,6 +969,7 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
 <p class="hint" data-i18n-zh="5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。" data-i18n-en="5. Choose quality, duration, frame rate, bitrate and format in Video settings, then save an image or video in Media export. Export mosaic affects encoded output, unlike live pixelation.">5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。</p>
 <p class="hint" data-i18n-zh="6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。" data-i18n-en="6. Use the configuration button below the screen to import, export or save settings. Media is processed locally and is not uploaded.">6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。</p>
+<p class="hint" data-i18n-zh="基础模式显示常用参数，高级模式提供完整调整。通过顶部分类直接切换，或搜索参数；手机可用“查看画面／返回参数”保留调整位置。" data-i18n-en="Basic shows common settings; Advanced provides all controls. Switch categories or search at the top. On phones, View screen / Back to settings preserves your position.">基础模式显示常用参数，高级模式提供完整调整。通过顶部分类直接切换，或搜索参数；手机可用“查看画面／返回参数”保留调整位置。</p>
 <p class="credit-text"><a id="userGuideLink" href="https://github.com/mazkosoft/CRT-Simulator#简体中文" target="_blank" rel="noopener noreferrer" data-i18n-zh="完整使用说明书" data-i18n-en="Complete user guide">完整使用说明书</a></p>
     </details>
 
@@ -2582,7 +2711,7 @@ const DEFAULT_CONFIG = {
   "exportScale": "1",
   "exportPixelSize": "0",
   "exportFormat": "mp4",
-  "effectBoundary": "media",
+  "effectBoundary": "source",
   "audioPreset": "clean",
   "audioVolume": "1",
   "audioBandwidth": "18000",
@@ -2649,6 +2778,7 @@ function applyConfig(config) {
     enableAudioAudition();
   }
   updateLabels();
+  document.dispatchEvent(new Event('crt-config-applied'));
 }
 
 function downloadConfig() {
@@ -2876,9 +3006,158 @@ function applyBuiltInPreset() {
   const key = document.getElementById("builtInPresetSelect").value;
   const preset = PRESET_LIBRARY[key];
   if (!preset) return;
-  applyConfig(sanitizePresetConfig(preset));
+  const config = sanitizePresetConfig(preset);
+  config.exportDuration = controls.exportDuration.value;
+  applyConfig(config);
   setPresetStatus(key === "vhs" ? "Applied system preset: VHS / 已应用系统预设：VHS" : `Applied built-in preset: ${key}`);
 }
+
+// User-supplied looks; original clip durations are deliberately excluded.
+Object.assign(PRESET_LIBRARY, {
+  "worn-network-vhs": {
+    "imageFit": "contain",
+    "effectBoundary": "source",
+    "imageOpacity": "1",
+    "imagePosX": "50",
+    "imagePosY": "50",
+    "pixelate": "0",
+    "rgbOpacity": "0",
+    "rgbRedBias": "1",
+    "rgbGreenBias": "1",
+    "rgbBlueBias": "1",
+    "rgbPeriod": "1",
+    "rgbBlurX": "3.27",
+    "rgbBlurY": "2.92",
+    "maskOpacity": "0",
+    "maskX": "0",
+    "maskY": "0",
+    "maskBlurX": "0",
+    "maskBlurY": "3.59",
+    "warpDirection": "barrel",
+    "scale": "52",
+    "mapZoom": "0.3",
+    "warpBlurX": "0",
+    "warpBlurY": "0",
+    "flickerAmount": "0",
+    "flickerSpeed": "30",
+    "vignette": "0",
+    "vignetteInner": "55",
+    "vignetteOuter": "120",
+    "beamBlend": "color-dodge",
+    "beamOpacity": "0.29",
+    "beamHeight": "272",
+    "beamSpeed": "20.5",
+    "glowOpacity": "0.49",
+    "glowBlurX": "20.7",
+    "glowBlurY": "17.5",
+    "brightness": "1",
+    "contrast": "1",
+    "finalSaturation": "1.37",
+    "imageBlurX": "0",
+    "imageBlurY": "0",
+    "vhsNoise": "0.19",
+    "vhsJitter": "1.7",
+    "vhsLineWeave": "0",
+    "vhsTracking": "0",
+    "vhsChromaBleed": "25.3",
+    "vhsThickRinging": "1",
+    "vhsSharpen": "2.84",
+    "vhsSharpenWidth": "4",
+    "vhsInterlace": "0",
+    "vhsHeadSwitch": "0.2",
+    "vhsDropout": "0",
+    "chromaOffsetX": "9.4",
+    "chromaOffsetY": "-23",
+    "chromaSoftness": "0",
+    "audioPreset": "crt",
+    "audioVolume": "1",
+    "audioBandwidth": "7900",
+    "audioHiss": "0",
+    "audioDrive": "0.08",
+    "audioWow": "0",
+    "audioReverb": "0",
+    "exportPixelSize": "3",
+    "exportFps": "24",
+    "exportBitrate": "1",
+    "exportScale": "0.5",
+    "exportFormat": "mp4"
+  },
+  "glowing-pixel-crt": {
+    "imageFit": "contain",
+    "effectBoundary": "source",
+    "imageOpacity": "1",
+    "imagePosX": "50",
+    "imagePosY": "50",
+    "pixelate": "1",
+    "rgbOpacity": "0.46",
+    "rgbRedBias": "0.89",
+    "rgbGreenBias": "1.03",
+    "rgbBlueBias": "1",
+    "rgbPeriod": "6",
+    "rgbBlurX": "2",
+    "rgbBlurY": "0",
+    "maskOpacity": "0.43",
+    "maskX": "1",
+    "maskY": "1",
+    "maskBlurX": "2.94",
+    "maskBlurY": "2.9",
+    "warpDirection": "barrel",
+    "scale": "61",
+    "mapZoom": "0.3",
+    "warpBlurX": "1",
+    "warpBlurY": "0",
+    "flickerAmount": "0.1",
+    "flickerSpeed": "30",
+    "vignette": "0",
+    "vignetteInner": "55",
+    "vignetteOuter": "117",
+    "beamBlend": "color-dodge",
+    "beamOpacity": "0.57",
+    "beamHeight": "272",
+    "beamSpeed": "6.5",
+    "glowOpacity": "0.66",
+    "glowBlurX": "35.3",
+    "glowBlurY": "16.5",
+    "brightness": "1",
+    "contrast": "1.51",
+    "finalSaturation": "1",
+    "imageBlurX": "0",
+    "imageBlurY": "0",
+    "vhsNoise": "0",
+    "vhsJitter": "0",
+    "vhsLineWeave": "0",
+    "vhsTracking": "0",
+    "vhsChromaBleed": "0",
+    "vhsThickRinging": "0",
+    "vhsSharpen": "0",
+    "vhsSharpenWidth": "2",
+    "vhsInterlace": "0",
+    "vhsHeadSwitch": "0",
+    "vhsDropout": "0",
+    "chromaOffsetX": "0",
+    "chromaOffsetY": "0",
+    "chromaSoftness": "2.5",
+    "audioPreset": "clean",
+    "audioVolume": "1",
+    "audioBandwidth": "18000",
+    "audioHiss": "0",
+    "audioDrive": "0",
+    "audioWow": "0",
+    "audioReverb": "0",
+    "exportPixelSize": "0",
+    "exportFps": "30",
+    "exportBitrate": "50",
+    "exportScale": "1",
+    "exportFormat": "mp4",
+    "previewSettings": {
+      "previewMode": "encoded",
+      "previewQuality": "fine",
+      "autoEncodedPreview": true,
+      "audioAuditionInput": "original",
+      "playbackVolume": 1
+    }
+  }
+});
 
 </script>
   <script data-source="js/preview.js">
@@ -4907,7 +5186,7 @@ function notifyMediaPreviewChanged() {
   hideEncodedPreview({ restore:false });
   sourceDrawable = null;
 }
-function notifyMediaPreviewReady() { invalidateEncodedPreview(true); }
+function notifyMediaPreviewReady() { invalidateEncodedPreview(true); document.dispatchEvent(new Event('crt-media-ready')); }
 previewModeControl.addEventListener("change", () => {
   if (previewModeControl.value === "encoded") encodedWantsPlayback = true;
   invalidateEncodedPreview(true);
@@ -5324,6 +5603,7 @@ function applyLanguage(lang) {
   document.getElementById("aboutGuideLink").href = `https://github.com/mazkosoft/CRT-Simulator#${lang === "zh" ? "简体中文" : "english"}`;
   document.getElementById("userGuideLink").href = document.getElementById("aboutGuideLink").href;
   document.getElementById("languageLabel").textContent = lang === "zh" ? "语言" : "Language";
+  document.getElementById("userPresetNameInput").placeholder = lang === "zh" ? "预设名称" : "Preset name";
   document.getElementById("languageToggleButton").setAttribute("aria-label", lang === "zh" ? "切换为英文" : "Switch to Chinese");
   document.getElementById("dosCaption").textContent = lang === "zh" ? "本地媒体处理控制台" : "LOCAL MEDIA PROCESSING CONSOLE";
   document.querySelector(".control-panel h2").textContent = lang === "zh" ? "显像控制台" : "CRT CONTROL";
@@ -5474,6 +5754,202 @@ document.querySelectorAll(".control-group").forEach(group => {
 applyConfig(DEFAULT_CONFIG);
 resetToDemo();
 requestAnimationFrame(render);
+
+</script>
+  <script data-source="js/navigation.js">
+// All navigation uses the original inputs: no duplicate parameter state.
+function matchesParameterSearch(text, query) {
+  return query.trim().toLocaleLowerCase().split(/\s+/).every(token => text.toLocaleLowerCase().includes(token));
+}
+function parameterChanged(value, baseline) {
+  return String(value) !== String(baseline) && !(value !== '' && baseline !== '' && Number(value) === Number(baseline));
+}
+if (typeof module !== 'undefined') module.exports = { matchesParameterSearch, parameterChanged };
+if (typeof document !== 'undefined') initializeParameterNavigation();
+
+function initializeParameterNavigation() {
+  const panel = document.querySelector('aside.control-panel');
+  const toolbar = document.getElementById('parameterToolbar');
+  const groups = [...panel.querySelectorAll('.control-group')];
+  const search = document.getElementById('parameterSearch');
+  const status = document.getElementById('navigationStatus');
+  const language=document.querySelector('.dos-tools');
+  const header=language.parentElement;
+  const mobile = matchMedia('(max-width:900px)');
+  const pages = { presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','displayGroup','colorGroup','tapeGroup','audioGroup'], export:['videoSettingsGroup','exportGroup'] };
+  const common = new Set(['imageFit','effectBoundary','rgbPeriod','pixelate','rgbOpacity','maskOpacity','scale','glowOpacity','vignette','brightness','contrast','finalSaturation','vhsNoise','vhsJitter','vhsChromaBleed','audioVolume','audioBandwidth','audioHiss','audioReverb','exportScale','exportFps','exportBitrate','exportDuration','exportFormat','exportPixelSize']);
+  const workspace = document.createElement('div'); workspace.className = 'workspace-body';
+  const rail = document.createElement('nav'); rail.className = 'category-rail';
+  const editor = document.createElement('div'); editor.className = 'workspace-editor';
+  const strip = document.createElement('nav'); strip.className = 'parameter-strip';
+  const content = document.createElement('div'); content.className = 'parameter-content';
+  const empty = document.createElement('p'); empty.className = 'workspace-empty';
+  workspace.append(rail,editor); editor.append(strip,content); content.append(...groups,empty);toolbar.after(workspace);
+  const preview = panel.querySelector('.preview-console'); panel.append(preview);
+  const disclosure = document.createElement('details'); disclosure.className = 'preview-options';
+  const title = document.createElement('summary');title.dataset.i18nZh='预览设置';title.dataset.i18nEn='Preview settings';disclosure.append(title);
+  const previewStatus=document.getElementById('encodedPreviewStatus'), info=document.getElementById('exportPreviewInfo');
+  preview.prepend(previewStatus,info);
+  disclosure.append(...[...preview.children].filter(el=>!['encodedPreviewStatus','exportPreviewInfo','previewExportButton','compareOriginalButton'].includes(el.id)));
+  preview.append(disclosure);
+  let page='presets', active='presetsGroup', selected='', baseline=collectConfig();
+  let favorites=new Set();
+  try {favorites=new Set(JSON.parse(localStorage.getItem('crt-favorite-parameters')||'[]').filter(key=>key in DEFAULT_CONFIG));}catch { /* Storage optional. */ }
+  const entries=[...panel.querySelectorAll('[data-config]')].map(input=>({input,key:input.dataset.config,item:input.closest('.control'),group:input.closest('.control-group')}));
+  const label=entry=>entry.item.querySelector('label span')?.textContent||entry.key;
+  const value=entry=>entry.input.type==='checkbox'?(entry.input.checked?'1':'0'):entry.input.value;
+  const changed=entry=>parameterChanged(value(entry),baseline[entry.key]);
+  function button(zh,en,action) {
+    const el=document.createElement('button');el.type='button';el.dataset.i18nZh=zh;el.dataset.i18nEn=en;
+    el.textContent=currentLang==='zh'?zh:en;el.addEventListener('click',action);return el;
+  }
+  const categoryButtons=new Map();
+  for(const group of groups) {
+    const summary=group.querySelector('summary');summary.addEventListener('click',event=>event.preventDefault());
+    const btn=button(summary.dataset.i18nZh,summary.dataset.i18nEn,()=>{active=group.id;selected='';search.value='';content.scrollTop=0;refresh();});
+    categoryButtons.set(group.id,btn);rail.append(btn);
+    if(pages.adjust.includes(group.id)||['mediaGroup','videoSettingsGroup'].includes(group.id)) {
+      const detail=document.createElement('details');detail.className='fine-settings';
+      const heading=document.createElement('summary');heading.dataset.i18nZh='精细调整';heading.dataset.i18nEn='Fine adjustment';heading.textContent='精细调整';detail.append(heading);
+      const body=document.createElement('div');body.className='fine-body';detail.append(body);
+      for(const item of [...group.querySelector('.group-body').children]) {
+        const input=item.querySelector('[data-config]');if(input&&!common.has(input.dataset.config))body.append(item);
+      }
+      if(body.children.length)group.querySelector('.group-body').append(detail);
+    }
+  }
+  const favoriteButton=button('常用','Favorites',()=>{active='favorites';selected='';search.value='';refresh();});
+  const modifiedButton=button('已修改','Modified',()=>{active='modified';selected='';search.value='';refresh();});
+  rail.prepend(favoriteButton,modifiedButton);
+  for(const entry of entries) {
+    const tools=document.createElement('div');tools.className='parameter-tools';
+    const star=button('☆','☆',()=>{
+      favorites.has(entry.key)?favorites.delete(entry.key):favorites.add(entry.key);
+      try {localStorage.setItem('crt-favorite-parameters',JSON.stringify([...favorites]));}catch { /* Optional. */ }
+      refresh();
+    });
+    const reset=button('还原','Reset',()=>{
+      if(entry.input.type==='checkbox')entry.input.checked=['1',1,true].includes(baseline[entry.key]);else entry.input.value=baseline[entry.key];
+      entry.input.dispatchEvent(new Event('input',{bubbles:true}));entry.input.dispatchEvent(new Event('change',{bubbles:true}));
+    });
+    tools.append(star,reset);entry.item.append(tools);entry.star=star;entry.reset=reset;
+  }
+  function refresh() {
+    (mobile.matches?toolbar.querySelector('.workspace-utilities'):header).append(language);
+    if(mobile.matches)disclosure.append(info);else previewStatus.after(info);
+    document.getElementById('previewExportButton').textContent=currentLang==='zh'?(mobile.matches?'刷新预览':'刷新编码预览'):(mobile.matches?'Refresh':'Refresh encoded preview');
+    document.getElementById('compareOriginalButton').textContent=currentLang==='zh'?(mobile.matches?'按住对比':'按住对比原图'):(mobile.matches?'Hold original':'Hold for original');
+    const query=search.value.trim(), filtered=!!query||['favorites','modified'].includes(active);
+    const candidates=entries.filter(entry=>query?matchesParameterSearch(`${label(entry)} ${entry.key} ${entry.item.querySelector('label span')?.dataset.i18nZh||''} ${entry.item.querySelector('label span')?.dataset.i18nEn||''}`,query):active==='favorites'?favorites.has(entry.key):active==='modified'?changed(entry):entry.group.id===active);
+    if(!candidates.some(entry=>entry.key===selected))selected=candidates[0]?.key||'';
+    for(const group of groups) {
+      group.hidden=filtered?!candidates.some(entry=>entry.group===group):group.id!==active;group.open=!group.hidden;
+      for(const item of group.querySelectorAll('.control')) {
+        const entry=entries.find(entry=>entry.item===item);
+        // A wrapper containing nested controls must stay mounted (export controls).
+        item.classList.toggle('navigation-hidden',entry?!candidates.includes(entry)||(mobile.matches&&entry.key!==selected):filtered&&!item.querySelector('[data-config]'));
+      }
+      for(const detail of group.querySelectorAll('.fine-settings')) {
+        if(mobile.matches||filtered)detail.open=true;
+        detail.hidden=(mobile.matches||filtered)&&!detail.querySelector('.control:not(.navigation-hidden)');
+      }
+      for(const heading of group.querySelectorAll('.group-section-title'))heading.hidden=filtered;
+    }
+    strip.replaceChildren();
+    if(mobile.matches)for(const entry of candidates) {
+      const tab=button(label(entry),label(entry),()=>{selected=entry.key;content.scrollTop=0;refresh();});
+      tab.setAttribute('aria-pressed',String(entry.key===selected));strip.append(tab);
+    }
+    strip.hidden=!mobile.matches||!candidates.length;
+    for(const [id,btn]of categoryButtons){btn.hidden=!pages[page].includes(id)&&id!==active;btn.setAttribute('aria-pressed',String(id===active&&!query));}
+    favoriteButton.hidden=modifiedButton.hidden=page!=='adjust';favoriteButton.setAttribute('aria-pressed',String(active==='favorites'));modifiedButton.setAttribute('aria-pressed',String(active==='modified'));
+    for(const btn of toolbar.querySelectorAll('[data-page]'))btn.setAttribute('aria-pressed',String(btn.dataset.page===page));
+    for(const entry of entries) {
+      entry.star.textContent=favorites.has(entry.key)?'★':'☆';entry.star.setAttribute('aria-pressed',String(favorites.has(entry.key)));
+      entry.star.setAttribute('aria-label',`${currentLang==='zh'?'常用':'Favorite'}: ${label(entry)}`);entry.reset.disabled=!changed(entry);
+    }
+    empty.hidden=!filtered||!!candidates.length;empty.textContent=currentLang==='zh'?'这里还没有参数。可用 ☆ 收藏参数，或搜索参数名称。':'No settings yet. Use ☆ to save favorites, or search by name.';
+    status.textContent=query?(currentLang==='zh'?`找到 ${candidates.length} 个参数`:`${candidates.length} settings found`):'';status.hidden=!query;
+    search.setAttribute('aria-label',currentLang==='zh'?'查找参数':'Find a setting');title.textContent=currentLang==='zh'?'预览设置':'Preview settings';
+  }
+  for(const btn of toolbar.querySelectorAll('[data-page]'))btn.addEventListener('click',()=>{page=btn.dataset.page;active=pages[page][0];selected='';search.value='';content.scrollTop=0;refresh();});
+  for(const btn of toolbar.querySelectorAll('[data-group]'))btn.addEventListener('click',()=>{active=btn.dataset.group;selected='';search.value='';content.scrollTop=0;refresh();});
+  search.addEventListener('input',refresh);
+  panel.addEventListener('input',event=>{if(event.target.closest('.control'))refreshValues();});
+  panel.addEventListener('change',event=>{if(event.target.closest('.control'))refreshValues();});
+  function refreshValues(){for(const entry of entries)entry.reset.disabled=!changed(entry);if(active==='modified')refresh();}
+  document.addEventListener('crt-config-applied',()=>{baseline=collectConfig();refresh();});
+  document.getElementById('languageToggleButton').addEventListener('click',refresh);mobile.addEventListener('change',refresh);
+  panel.classList.add('terminal-workspace');refresh();initializeTerminalPreview();
+}
+
+// Small synchronous preview passes reuse the renderer and never change live controls.
+function initializeTerminalPreview() {
+  const machine=document.querySelector('.machine');
+  const splitter=document.createElement('div');splitter.className='workspace-splitter';splitter.tabIndex=0;
+  splitter.setAttribute('role','separator');splitter.setAttribute('aria-orientation','vertical');
+  splitter.setAttribute('aria-valuemin','48');splitter.setAttribute('aria-valuemax','70');
+  let share=60;
+  function resize(next){share=Math.max(48,Math.min(70,next));machine.style.setProperty('--screen-share',share);machine.style.setProperty('--screen-weight',`${share}fr`);machine.style.setProperty('--panel-weight',`${100-share}fr`);splitter.setAttribute('aria-valuenow',String(Math.round(share)));}
+  resize(share);machine.append(splitter);
+  splitter.addEventListener('pointerdown',event=>{splitter.setPointerCapture(event.pointerId);});
+  splitter.addEventListener('pointermove',event=>{if(splitter.hasPointerCapture(event.pointerId)){const rect=machine.getBoundingClientRect();resize((event.clientX-rect.left)/rect.width*100);}});
+  splitter.addEventListener('pointerup',event=>{if(splitter.hasPointerCapture(event.pointerId))splitter.releasePointerCapture(event.pointerId);});
+  splitter.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home'].includes(event.key)){event.preventDefault();resize(event.key==='Home'?60:share+(event.key==='ArrowLeft'?-2:2));}});
+  const screen=document.querySelector('.screen'), original=document.createElement('canvas');original.className='original-screen';original.hidden=true;screen.append(original);
+  const compare=document.getElementById('compareOriginalButton');let comparing=false,frameId=0;
+  function drawOriginal(){
+    if(!comparing)return;
+    const drawable=currentMediaType==='video'?sourceVideo:sourceDrawable;
+    if(drawable&&sourceWidth&&sourceHeight){
+      original.width=Math.max(2,Math.round(screen.clientWidth*(devicePixelRatio||1)));original.height=Math.max(2,Math.round(screen.clientHeight*(devicePixelRatio||1)));
+      const ctx=original.getContext('2d');ctx.fillStyle='#050605';ctx.fillRect(0,0,original.width,original.height);
+      const ratio=Math.min(original.width/sourceWidth,original.height/sourceHeight),w=sourceWidth*ratio,h=sourceHeight*ratio;
+      ctx.drawImage(drawable,(original.width-w)/2,(original.height-h)/2,w,h);
+    }
+    frameId=requestAnimationFrame(drawOriginal);
+  }
+  function compareState(on){comparing=on;original.hidden=!on;compare.setAttribute('aria-pressed',String(on));cancelAnimationFrame(frameId);if(on)drawOriginal();}
+  compare.addEventListener('pointerdown',event=>{compare.setPointerCapture(event.pointerId);compareState(true);});
+  for(const event of ['pointerup','pointercancel','lostpointercapture','blur'])compare.addEventListener(event,()=>compareState(false));
+  compare.addEventListener('keydown',event=>{if([' ','Enter'].includes(event.key)){event.preventDefault();compareState(true);}});
+  compare.addEventListener('keyup',()=>compareState(false));window.addEventListener('blur',()=>compareState(false));
+  const gallery=document.createElement('div');gallery.className='preset-gallery';
+  document.querySelector('#presetsGroup .group-body').prepend(gallery);
+  const tiles=[];
+  for(const option of document.querySelectorAll('#builtInPresetSelect option')){
+    const tile=document.createElement('button');tile.type='button';tile.className='preset-tile';
+    const thumb=document.createElement('canvas');thumb.width=240;thumb.height=180;
+    const caption=document.createElement('span');caption.dataset.i18nZh=option.dataset.i18nZh;caption.dataset.i18nEn=option.dataset.i18nEn;caption.textContent=option.textContent;
+    tile.append(thumb,caption);gallery.append(tile);tiles.push({tile,thumb,caption,option});
+    tile.addEventListener('click',()=>{document.getElementById('builtInPresetSelect').value=option.value;applyBuiltInPreset();for(const t of tiles)t.tile.setAttribute('aria-pressed',String(t.tile===tile));});
+  }
+  let generation=0;
+  function thumbnails(){
+    const token=++generation;let i=0;
+    function next(){
+      if(token!==generation||!sourceDrawable||i>=tiles.length)return;
+      if(previewRenderBusy||exportInProgress){setTimeout(next,250);return;}
+      const {thumb,option}=tiles[i++];
+      try {
+        const settings=sanitizePresetConfig(PRESET_LIBRARY[option.value]);
+        const surface=preparePreviewSurface(currentMediaType,sourceDrawable,sourceWidth,sourceHeight);
+        withRenderSurface(surface,settings,{width:640,height:480},currentMediaType==='video'?sourceVideo:null,()=>{
+          renderFrame(0);thumb.getContext('2d').drawImage(surface.canvas,0,0,thumb.width,thumb.height);
+        });
+      }catch(error){console.warn('Preset thumbnail unavailable',error.message);}
+      setTimeout(next,20);
+    }
+    next();
+  }
+  document.addEventListener('crt-media-ready',thumbnails);
+  document.getElementById('languageToggleButton').addEventListener('click',()=>{
+    for(const {caption,option}of tiles)caption.textContent=option.textContent;
+    splitter.setAttribute('aria-label',currentLang==='zh'?'调节屏幕与控制台宽度':'Resize monitor and controls');
+  });
+  splitter.setAttribute('aria-label',currentLang==='zh'?'调节屏幕与控制台宽度':'Resize monitor and controls');
+  thumbnails();
+}
 
 </script>
 </body>

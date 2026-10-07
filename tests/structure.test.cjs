@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const html = read('index.html');
 const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(match => match[1]);
-assert.deepEqual(scripts, ['vendor/mediabunny.min.cjs', 'vendor/mediabunny-aac-encoder.min.js', 'js/config.js', 'js/preview.js', 'js/crt.js', 'js/controls.js']);
+assert.deepEqual(scripts, ['vendor/mediabunny.min.cjs', 'vendor/mediabunny-aac-encoder.min.js', 'js/config.js', 'js/preview.js', 'js/crt.js', 'js/controls.js', 'js/navigation.js']);
 assert.ok(!/<script>/.test(html), 'Application code should be external');
 for (const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)) {
   if (/^(https?:|data:)/.test(match[1])) continue;
@@ -21,9 +21,11 @@ vm.runInContext(sources[0] + '\nthis.defaults = DEFAULT_CONFIG; this.presets = P
 const keys = [...html.matchAll(/data-config="([^"]+)"/g)].map(match => match[1]);
 assert.deepEqual(new Set(Object.keys(context.defaults)), new Set(keys), 'Config keys must match controls');
 assert.ok(context.presets['soft-crt']);
-assert.equal(context.defaults.effectBoundary, 'media');
+assert.equal(context.defaults.effectBoundary, 'source');
 assert.equal(context.defaults.scale, '38');
-for (const preset of Object.values(context.presets)) assert.equal(preset.scale, '38');
+for (const [name,preset] of Object.entries(context.presets)) {
+  if (!['worn-network-vhs','glowing-pixel-crt'].includes(name)) assert.equal(preset.scale, '38');
+}
 assert.ok(html.includes('id="scaleValue">38</span>'));
 assert.ok(/id="scaleInput"[^>]*value="38"/.test(html));
 assert.equal(context.readUiLanguage(), 'zh', 'Startup must tolerate unavailable browser storage');

@@ -74,7 +74,7 @@ function notifyMediaPreviewChanged() {
   hideEncodedPreview({ restore:false });
   sourceDrawable = null;
 }
-function notifyMediaPreviewReady() { invalidateEncodedPreview(true); }
+function notifyMediaPreviewReady() { invalidateEncodedPreview(true); document.dispatchEvent(new Event('crt-media-ready')); }
 previewModeControl.addEventListener("change", () => {
   if (previewModeControl.value === "encoded") encodedWantsPlayback = true;
   invalidateEncodedPreview(true);
@@ -491,6 +491,7 @@ function applyLanguage(lang) {
   document.getElementById("aboutGuideLink").href = `https://github.com/mazkosoft/CRT-Simulator#${lang === "zh" ? "简体中文" : "english"}`;
   document.getElementById("userGuideLink").href = document.getElementById("aboutGuideLink").href;
   document.getElementById("languageLabel").textContent = lang === "zh" ? "语言" : "Language";
+  document.getElementById("userPresetNameInput").placeholder = lang === "zh" ? "预设名称" : "Preset name";
   document.getElementById("languageToggleButton").setAttribute("aria-label", lang === "zh" ? "切换为英文" : "Switch to Chinese");
   document.getElementById("dosCaption").textContent = lang === "zh" ? "本地媒体处理控制台" : "LOCAL MEDIA PROCESSING CONSOLE";
   document.querySelector(".control-panel h2").textContent = lang === "zh" ? "显像控制台" : "CRT CONTROL";
