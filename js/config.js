@@ -105,10 +105,17 @@ function collectConfig() {
       ? (controls[key].checked ? "1" : "0")
       : controls[key].value;
   });
+  config.previewSettings = {};
+  for (const id of ['previewMode', 'previewQuality', 'autoEncodedPreview', 'audioAuditionInput']) {
+    const control = document.getElementById(id);
+    config.previewSettings[id] = control.type === 'checkbox' ? control.checked : control.value;
+  }
+  config.previewSettings.playbackVolume = sourceVideo.volume;
   return config;
 }
 
 function applyConfig(config) {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) throw new Error('Invalid configuration');
   Object.keys(DEFAULT_CONFIG).forEach((key) => {
     if (!controls[key]) return;
     const nextValue = config[key] ?? DEFAULT_CONFIG[key];
@@ -118,6 +125,16 @@ function applyConfig(config) {
       controls[key].value = nextValue;
     }
   });
+  const preview = config.previewSettings;
+  if (preview && typeof preview === 'object') {
+    const options = { previewMode:['effect','encoded'], previewQuality:['fine','smooth'], audioAuditionInput:['original','processed'] };
+    for (const [id, allowed] of Object.entries(options)) {
+      if (allowed.includes(preview[id])) document.getElementById(id).value = preview[id];
+    }
+    if (typeof preview.autoEncodedPreview === 'boolean') document.getElementById('autoEncodedPreview').checked = preview.autoEncodedPreview;
+    if (typeof preview.playbackVolume === 'number' && Number.isFinite(preview.playbackVolume)) setPlaybackVolume(preview.playbackVolume);
+    enableAudioAudition();
+  }
   updateLabels();
 }
 
@@ -294,6 +311,7 @@ function refreshUserPresetSelect() {
 
 function sanitizePresetConfig(source) {
   const result = {};
+  if (source.previewSettings && typeof source.previewSettings === 'object') result.previewSettings = { ...source.previewSettings };
   Object.keys(DEFAULT_CONFIG).forEach((key) => {
     result[key] = source[key] ?? DEFAULT_CONFIG[key];
   });

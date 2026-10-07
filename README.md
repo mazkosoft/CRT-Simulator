@@ -124,6 +124,11 @@ media or stop video playback.
 
 #### Configuration
 
+Encoded preview is selected by default. JSON presets include every effect, audio
+and export parameter, plus preview mode/quality, automatic updates, audio audition
+and playback volume. Import/export them through **Config** below the screen.
+Older parameter-only JSON files remain compatible. Media files are not embedded.
+
 **Config** opens JSON import/export, local save/load and reset. Named presets and
 local settings belong to the current browser/origin, not other devices. Export JSON
 for backup/sharing; it contains settings, not media. Keep existing configuration keys.
@@ -375,6 +380,10 @@ RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、�
 电源键隐藏预览，不卸载媒体，也不停止视频播放。
 
 #### 保存配置
+
+默认选择编码预览。完整 JSON 预设包含所有效果、音频与导出参数，以及预览内容、
+预览性能、自动更新、音频试听和屏幕音量；通过屏幕下方“配置”导入或导出。
+旧版仅包含参数的 JSON 仍可导入，预设不包含图片或视频文件本身。
 
 “配置”打开 JSON 导入导出、本地保存／读取和恢复默认。命名预设及配置属于当前浏览器和
 网址，不跨设备同步；导出 JSON 便于备份或分享。配置只含参数，不含媒体，保留已有键名。
