@@ -63,9 +63,39 @@ export/storage on your browser, use the live site or serve the HTML over localho
 #### Load media and choose a look
 
 Open the [live demo](https://mazkosoft.github.io/CRT-Simulator/). The supplied image
-loads automatically. In **Media & Export**, choose an image/video. **Load default
+loads automatically. In **Media import**, choose an image/video. **Load default
 image** and **Clear** both return to the sample; neither deletes your local file.
 Input format support depends on browser decoders.
+
+Preview mode, performance, automatic updating, refresh and status are directly
+visible above every group. The eleven groups are ordered as follows:
+
+1. Media import
+2. Effect presets
+3. Pixel resolution
+4. CRT screen
+5. Color settings
+6. VHS settings
+7. Audio settings
+8. Video settings
+9. Media export
+10. User guide
+11. About & credits
+
+Media import is expanded initially; other groups open as needed. **Pixel
+resolution** controls live pixelation, the linked RGB cell period and the mask.
+**CRT screen** contains curvature, flicker, vignette, beam and glow; **Color
+settings** contains brightness, contrast, saturation and media blur. **Video
+settings** contains quality, mosaic blocks, duration and encoding parameters;
+**Media export** contains save actions and progress. Use encoded preview to
+inspect export-only mosaic. Configuration remains below the screen.
+
+Every numeric parameter has an editable number field on desktop and mobile.
+Use the adjacent minus/plus buttons to adjust by the parameter step.
+Press Enter or leave the field to apply it; values follow the parameter's limits
+and step size. Dragging a slider attracts values within 0.12 of a valid integer.
+Ranges spanning one unit or less retain fractional control. Typed values,
+keyboard adjustments and presets do not trigger integer attraction.
 
 Use `contain` for the full source, `cover` to fill/crop, or `fill` to stretch.
 The default **Media Bounds** limits effects to the displayed media footprint; it
@@ -295,8 +325,34 @@ PNG、离线逐帧 MP4／WebM 和导出音轨处理；中英文界面及独立�
 #### 载入媒体与选择效果
 
 打开[在线体验](https://mazkosoft.github.io/CRT-Simulator/)，默认图自动载入。
-在“媒体与导出”选择图片或视频。“载入默认图”和“清除”都会恢复示例，不删除本地文件。
+在“媒体导入”选择图片或视频。“载入默认图”和“清除”都会恢复示例，不删除本地文件。
 输入格式支持取决于浏览器解码器。
+
+预览内容、预览性能、自动更新、刷新按钮和预览状态在所有分组上方直接显示。
+下面依次为 11 个分组：
+
+1. 媒体导入
+2. 效果预设
+3. 像素分辨率
+4. CRT屏幕
+5. 色彩设置
+6. VHS设置
+7. 音频设置
+8. 视频设置
+9. 媒体导出
+10. 使用说明
+11. 关于鸣谢
+
+默认只展开“媒体导入”，其他组按需展开。“像素分辨率”调整实时像素化、联动的
+RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、光带和辉光；
+“色彩设置”调整亮度、对比度、饱和度和媒体模糊。“视频设置”调整画质、马赛克、
+时长及编码参数，“媒体导出”提供导出按钮和真实进度。导出马赛克可通过编码预览查看。
+配置管理仍位于屏幕下方。
+
+所有数值参数在电脑和手机上都提供数字输入框，旁边的减号、加号按参数精度微调。
+输入后按回车或离开输入框即可应用，
+数值遵循参数范围和步进精度。拖动滑杆时，距离有效整数不超过 0.12 会吸附；
+跨度不超过 1 的参数保留小数调节。手动输入、键盘微调和预设不会触发整数吸附。
 
 `contain` 保留完整画面，`cover` 填满并裁切，`fill` 拉伸。“按源媒体比例导出”让输出
 尺寸跟随源媒体，避免比例黑边；曲率和暗角仍可能形成刻意暗边。预览与导出比例可以不同。

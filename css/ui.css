@@ -57,10 +57,17 @@
 @media(max-width:500px) { .group-body,.export-panel { grid-template-columns:1fr; } }
 .preview-quality-control { display:flex; align-items:center; gap:12px; margin:0 2px 16px; font-size:13px; }
 .preview-quality-control select { width:auto; flex:1; }
+.preview-console { margin:0 2px 20px; }
+.preview-console .preview-quality-control { margin:0 0 12px; }
+.preview-console > button { width:100%; }
 .parameter-stepper { display:flex; align-items:center; gap:8px; margin:4px 0 8px; }
 .parameter-stepper button { flex:none; min-width:40px; min-height:40px; padding:4px; }
 .parameter-stepper input { min-width:0; width:100%; height:40px; padding:6px 10px; font:400 16px "Segoe UI","Microsoft YaHei",sans-serif; color:#494238; border:1px solid #b1a58e; border-radius:5px; background:#d4cbb7; box-shadow:inset 1px 2px 3px #8f806455,0 1px #fff3dc; font-variant-numeric:tabular-nums; }
-@media(min-width:901px) { .parameter-stepper { display:none; } }
+@media(min-width:901px) {
+  .parameter-stepper { gap:6px; }
+  .parameter-stepper button { min-width:32px; min-height:32px; }
+  .parameter-stepper input { height:32px; font-size:14px; }
+}
 @media(max-width:900px) {
   .control-panel { min-height:0; overflow-y:auto; overscroll-behavior-y:contain; padding:12px 10px 24px; scrollbar-gutter:stable; border:1px solid #aea38d; }
   .dos-caption { margin-bottom:12px; }
@@ -74,6 +81,7 @@
 .config-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
 .config-header h2 { font-size:18px; font-weight:400; margin:0; }
 .group-body { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin:0 2px 8px; padding:12px; border:1px solid #978e7d; box-shadow:inset 1px 1px 0 #fff5df,1px 1px 0 #fff5df; }
+.group-section-title { grid-column:1 / -1; margin:8px 0 16px; padding:0 0 8px; border-bottom:1px solid #b2a68e; box-shadow:0 1px 0 #fff5df; font-size:15px; font-weight:400; color:#5a5142; }
 .group-body > :not(.control),.group-body > .control:has(input[type=file],select,.button-row,.preset-row,.export-panel),.group-body > .media-controls { grid-column:1 / -1; }
 @media(max-width:500px) { .group-body { grid-template-columns:1fr; padding:10px; } }
 /* One physical slider design for both transport and parameter controls. */

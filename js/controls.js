@@ -168,13 +168,36 @@ function updateLabels() {
   labels.vignetteInner.textContent = `${val("vignetteInner")}%`;
   labels.vignetteOuter.textContent = `${val("vignetteOuter")}%`;
   document.querySelectorAll(".parameter-value-input").forEach(input => {
-    if (document.activeElement !== input) input.value = controls[input.dataset.rangeKey].value;
+    const range = controls[input.dataset.rangeKey];
+    input.min = range.min; input.max = range.max; input.step = range.step;
+    input.disabled = range.disabled;
+    if (document.activeElement !== input) input.value = range.value;
   });
   invalidateEncodedPreview();
 }
 
+function snapParameterToInteger(value, min, max, step) {
+  if (!Number.isFinite(value) || max - min <= 1 || Math.abs(value - Math.round(value)) > 0.12) return value;
+  const integer = Math.round(value);
+  if (integer < min || integer > max) return value;
+  if (step !== "any") {
+    const increment = Number(step);
+    if (!Number.isFinite(increment) || increment <= 0) return value;
+    const aligned = min + Math.round((integer - min) / increment) * increment;
+    if (Math.abs(aligned - integer) > 1e-7) return value;
+  }
+  return integer;
+}
+let draggedParameter = null;
+for (const eventName of ["pointerup", "pointercancel", "blur"]) window.addEventListener(eventName, () => { draggedParameter = null; });
 Object.values(controls).forEach((control) => {
-  control.addEventListener("input", updateLabels);
+  if (control.type === "range") control.addEventListener("pointerdown", () => { draggedParameter = control; });
+  control.addEventListener("input", event => {
+    if (event.isTrusted && draggedParameter === control) {
+      control.value = String(snapParameterToInteger(Number(control.value), Number(control.min), Number(control.max), control.step));
+    }
+    updateLabels();
+  });
   control.addEventListener("change", updateLabels);
 });
 
@@ -300,11 +323,14 @@ function syncPlaybackControls() {
   const media = getPlaybackMedia();
   const available = !encodedPlayer.hidden || currentMediaType === "video";
   const playing = available && !media.paused;
-  const play = document.getElementById("monitorPlayButton");
+  const play = document.getElementById("playPauseButton");
   play.classList.toggle("is-playing", playing);
   play.setAttribute("aria-label", currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play"));
   document.getElementById("playbackLabel").textContent = currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play");
   play.disabled = !available || exportInProgress;
+  const restart = document.getElementById("restartVideoButton");
+  restart.disabled = !available || exportInProgress;
+  restart.setAttribute("aria-label", currentLang === "zh" ? "重播" : "Restart");
   syncPlaybackProgress();
   if (currentMediaType !== "video" && encodedPlayer.hidden) document.getElementById("playbackStatusText").hidden = true;
 }
@@ -316,7 +342,6 @@ function startPlayback() {
   });
 }
 for (const name of ["play", "pause", "volumechange", "ended"]) sourceVideo.addEventListener(name, syncPlaybackControls);
-document.getElementById("monitorPlayButton").addEventListener("click", () => document.getElementById("playPauseButton").click());
 function formatPlaybackTime(seconds) {
   const time = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
   return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`;
@@ -402,7 +427,7 @@ document.getElementById("playPauseButton").addEventListener("click", () => {
 });
 
 document.getElementById("restartVideoButton").addEventListener("click", () => {
-  if (!encodedPlayer.hidden) { encodedPlayer.currentTime = 0; startPlayback(); return; }
+  if (!encodedPlayer.hidden) { encodedWantsPlayback = true; encodedPlayer.currentTime = 0; startPlayback(); return; }
   if (currentMediaType !== "video") return;
   sourceVideo.currentTime = 0;
   startPlayback();
@@ -464,6 +489,7 @@ function applyLanguage(lang) {
     el.textContent = lang === "zh" ? el.dataset.i18nZh : el.dataset.i18nEn;
   });
   document.getElementById("aboutGuideLink").href = `https://github.com/mazkosoft/CRT-Simulator#${lang === "zh" ? "简体中文" : "english"}`;
+  document.getElementById("userGuideLink").href = document.getElementById("aboutGuideLink").href;
   document.getElementById("languageLabel").textContent = lang === "zh" ? "语言" : "Language";
   document.getElementById("languageToggleButton").setAttribute("aria-label", lang === "zh" ? "切换为英文" : "Switch to Chinese");
   document.getElementById("dosCaption").textContent = lang === "zh" ? "本地媒体处理控制台" : "LOCAL MEDIA PROCESSING CONSOLE";

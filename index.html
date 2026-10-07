@@ -31,7 +31,7 @@
                 <stop offset="1" stop-color="#dcebe5" stop-opacity=".06" />
               </linearGradient>
             </defs>
-            <path fill="url(#glassLight)" d="M38 40 C210 26 438 27 637 39 C592 145 556 262 531 374 C511 462 499 538 494 596 C352 623 184 621 43 591 C30 426 29 216 38 40 Z" />
+            <path transform="translate(38 40) scale(0.9) translate(-38 -40)" fill="url(#glassLight)" d="M38 40 C210 26 438 27 637 39 C592 145 556 262 531 374 C511 462 499 538 494 596 C352 623 184 621 43 591 C30 426 29 216 38 40 Z" />
           </svg>
           <div class="fallback">
       <div>
@@ -40,11 +40,13 @@
       </div>
           </div>
         </div>
+        <small class="cabinet-copyright">© 2026 Mazko</small>
       </div>
       <div class="playback-transport"><output id="playbackCurrentTime">0:00</output><input id="playbackProgress" class="transport-slider" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="播放进度" /><output id="playbackDuration">0:00</output></div>
       <div class="cabinet-controls">
         <div class="monitor-view-control"><span id="fullscreenLabel" class="knob-label">放大查看</span><button id="fullscreenPreview" class="monitor-oval" type="button" aria-label="放大查看"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg></button></div>
-        <div class="monitor-view-control"><span id="playbackLabel" class="knob-label">播放</span><button id="monitorPlayButton" class="monitor-oval" type="button" aria-label="播放暂停"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="play-symbol" d="m8 5 11 7-11 7Z"/><path class="pause-symbol" d="M8 5v14M16 5v14"/></svg></button></div>
+        <div class="monitor-view-control"><span id="playbackLabel" class="knob-label">播放</span><button id="playPauseButton" class="monitor-oval" type="button" aria-label="播放暂停"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="play-symbol" d="m8 5 11 7-11 7Z"/><path class="pause-symbol" d="M8 5v14M16 5v14"/></svg></button></div>
+        <div class="restart-control monitor-view-control"><span class="knob-label" data-i18n-zh="重播" data-i18n-en="Restart">重播</span><button id="restartVideoButton" class="monitor-oval" type="button" aria-label="重播"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8a8 8 0 1 1-1 7M5 3v5h5"/></svg></button></div>
         <div class="volume-control"><span id="volumeLabel" class="knob-label">音量</span><div class="volume-dial"><svg class="volume-scale" viewBox="0 0 76 76" aria-hidden="true"><g id="volumeTicks"></g></svg><div id="playbackVolumeKnob" class="volume-knob" role="slider" tabindex="0" aria-label="播放音量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="volume-pointer"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4Z"/><path d="M16 8a6 6 0 0 1 0 8"/></svg></div></div><output id="playbackVolumeValue">100%</output></div>
         <div class="config-control monitor-view-control"><span id="diskLabel" class="knob-label">配置</span><button id="diskSaveButton" class="monitor-oval" type="button" aria-label="配置" aria-haspopup="dialog" aria-controls="configDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 3v6M16 9v6M10 15v6"/></svg></button></div>
         <div class="power-assembly"><button id="powerButton" class="power-button" type="button" aria-label="Toggle monitor power" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v9M7 5.5a8 8 0 1 0 10 0" /></svg></button></div>
@@ -61,53 +63,19 @@
       <div class="dos-tools language-control"><span id="languageLabel" class="knob-label">语言</span><button id="languageToggleButton" class="language-toggle monitor-oval" type="button" aria-label="切换为英文"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.5" ry="8"/><path d="M4 12h16M6 7.5h12M6 16.5h12"/></svg></button></div>
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
-    <div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
+<div class="preview-console">
+<div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
     <div class="preview-quality-control"><label for="previewMode" data-i18n-zh="预览内容" data-i18n-en="Preview content">预览内容</label><select id="previewMode"><option value="effect" data-i18n-zh="效果预览" data-i18n-en="Live effects">效果预览</option><option value="encoded" data-i18n-zh="编码预览" data-i18n-en="Encoded preview">编码预览</option></select></div>
     <div class="encoded-preview-settings">
       <label><input id="autoEncodedPreview" type="checkbox" checked /><span data-i18n-zh="自动更新编码预览" data-i18n-en="Update encoded preview automatically">自动更新编码预览</span></label>
       <p id="encodedPreviewStatus" class="hint" role="status" aria-live="polite"></p>
       <p id="exportPreviewInfo" class="hint" hidden></p>
     </div>
+<button id="previewExportButton" type="button" data-i18n-zh="刷新编码预览" data-i18n-en="Refresh encoded preview">刷新编码预览</button>
+</div>
 
-    <details class="control-group">
-      <summary>PRESETS / 效果预设</summary>
-<div class="quick-guide">1. Upload media / 上传媒体 → 2. Choose preset / 选择预设 → 3. Fine tune / 微调 → 4. Export / 导出。<br />内置预设下拉菜单已高亮，选择后点击 Apply / 应用。</div>
-
-    <div class="control">
-      <label><span>Built-in Presets / 内置预设</span></label>
-      <div class="preset-row">
-        <select id="builtInPresetSelect">
-          <option value="default">Current Default / 当前默认</option>
-          <option value="soft-crt">Soft CRT / 柔和显像</option>
-          <option value="clean-vhs">Clean VHS / 干净录像带</option>
-          <option value="vhs">VHS - Latest / 最新 VHS</option>
-          <option value="damaged-vhs">Damaged VHS / 受损磁带</option>
-          <option value="vaporwave">Vaporwave / 蒸汽波偏色</option>
-        </select>
-        <button id="applyBuiltInPresetButton" type="button">Apply<br />应用</button>
-      </div>
-    </div>
-
-    <div class="control">
-      <label><span>Save User Preset / 保存用户预设</span></label>
-      <div class="preset-row">
-        <input id="userPresetNameInput" type="text" maxlength="32" placeholder="Preset name / 预设名" />
-        <button id="saveUserPresetButton" type="button">Save<br />保存</button>
-      </div>
-      <div class="preset-row">
-        <select id="userPresetSelect">
-          <option value="">No saved presets / 暂无预设</option>
-        </select>
-        <button id="loadUserPresetButton" type="button">Load<br />读取</button>
-        <button id="deleteUserPresetButton" type="button">Delete<br />删除</button>
-      </div>
-      <p id="presetStatusText" class="status-text"></p>
-    </div>
-<p class="hint">配置文件和本地保存位于屏幕下方的软盘按钮中。</p>
-    </details>
-
-    <details class="control-group" open>
-      <summary>MEDIA & EXPORT / 媒体与导出</summary>
+    <details id="mediaGroup" class="control-group" open>
+      <summary data-i18n-zh="媒体导入" data-i18n-en="Media import">媒体导入</summary>
 <div class="control media-controls">
       <label><span>Upload Image / Video<br />上传图片或视频</span></label>
       <input id="imageUpload" type="file" accept="image/*,video/*" />
@@ -115,77 +83,9 @@
         <button id="clearImageButton" type="button">Clear<br />清除</button>
         <button id="showDemoButton" type="button">Load default<br />载入默认图</button>
       </div>
-      <div class="button-row">
-        <button id="downloadImageButton" class="primary-button" type="button">Export PNG<br />导出图片</button>
-        <button id="downloadVideoButton" class="primary-button" type="button">Export Video<br />高质量导出</button>
-      </div>
-
-      <div class="export-panel">
-      <div class="control">
-        <label for="exportQualityPreset"><span>Export quality / 导出画质</span></label>
-        <select id="exportQualityPreset">
-          <option value="original">Original quality / 原始质量</option>
-          <option value="low">Low quality / 低画质</option>
-          <option value="network">Network patina / 网络包浆</option>
-          <option value="mosaic">Mosaic / 马赛克画质</option>
-          <option value="custom">Custom / 自定义</option>
-        </select>
-        <p class="hint" data-i18n-zh="预设只调整导出参数，不改变 CRT 效果。马赛克仅在导出视频中生效。" data-i18n-en="Presets change export settings only. Mosaic pixel blocks apply only to exported video.">预设只调整导出参数，不改变 CRT 效果。马赛克仅在导出视频中生效。</p>
-      </div>
-      <div id="exportProgressPanel" class="export-progress-panel" hidden>
-        <label for="exportProgress" id="exportProgressLabel">导出进度</label>
-        <progress id="exportProgress" max="100" value="0"></progress>
-        <p id="exportProgressStatus" role="status" aria-live="polite"></p>
-      </div>
-      <div class="control">
-        <label><span>Export pixel block size / 导出像素块大小</span><span id="exportPixelSizeValue">0px</span></label>
-        <input id="exportPixelSizeInput" data-config="exportPixelSize" type="range" min="0" max="32" step="1" value="0" />
-        <p class="hint" data-i18n-zh="0 为关闭；仅影响离线导出视频，可在选择预设后继续调整。" data-i18n-en="0 disables pixel blocks. Applies only to offline video export; adjustable after selecting a preset.">0 为关闭；仅影响离线导出视频，可在选择预设后继续调整。</p>
-      </div>
-      <div class="control">
-        <label><span>Export Duration / 导出时长</span><span id="exportDurationValue">6.0s</span></label>
-        <input id="exportDurationInput" data-config="exportDuration" type="range" min="0.001" max="60" step="any" value="6" />
-        <p class="hint">图片也可以导出成视频，会按当前动态闪烁、光带、VHS 抖动录制这段时长。</p>
-      </div>
-
-      <div class="control">
-        <label><span>Export FPS / 导出帧率</span><span id="exportFpsValue">30fps</span></label>
-        <input id="exportFpsInput" data-config="exportFps" type="range" min="10" max="60" step="1" value="30" />
-      </div>
-
-      <div class="control">
-        <label><span>Export Bitrate / 导出码率</span><span id="exportBitrateValue">50Mbps</span></label>
-        <input id="exportBitrateInput" data-config="exportBitrate" type="range" min="0.1" max="120" step="0.05" value="50" />
-        <p class="hint">视频质量主要受码率限制。建议 1080p 用 30–60Mbps，2K 以上用 60–120Mbps。</p>
-      </div>
-
-      <div class="control">
-        <label><span>Export Resolution Scale / 导出分辨率倍率</span><span id="exportScaleValue">1x</span></label>
-        <input id="exportScaleInput" data-config="exportScale" type="range" min="0.25" max="3" step="0.25" value="1" />
-        <p class="hint">导出时临时提高 WebGL 后台渲染分辨率。越高越清晰，但越慢。</p>
-      </div>
-
-      <div class="control">
-        <label><span>High-quality Export Format / 高质量导出格式</span></label>
-        <select id="exportFormatInput" data-config="exportFormat">
-          <option value="mp4" selected>MP4 · H.264 + AAC</option>
-          <option value="webm">WebM · VP9 + Opus</option>
-        </select>
-        <p class="hint">优先使用本地 WebCodecs/Mediabunny 离线封装；不支持时会提示使用兼容 WebM 导出。</p>
-      </div>
-
-      <button id="previewExportButton" type="button" data-i18n-zh="刷新编码预览" data-i18n-en="Refresh encoded preview">刷新编码预览</button>
-      <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
-      <p class="hint">图片与视频都会离线逐帧渲染；视频音轨会按“复古音频”参数同步处理。</p>
-      </div>
-      <p class="hint">这版支持图片和视频。媒体、RGB、点遮罩、光带先合成，再一起桶形变形；光带等待阶段完全隐藏，扫过时是下方平直亮边、上方渐变拖影。</p>
     </div>
 
     <div class="control">
-      <div class="button-row">
-        <button id="playPauseButton" type="button">Play / Pause<br />播放暂停</button>
-        <button id="restartVideoButton" type="button">Restart<br />重播</button>
-      </div>
       <p class="hint">视频默认有声循环播放；如浏览器阻止自动播放，请按屏幕下方的播放按钮。旋钮只控制试听音量，不影响导出。</p>
     </div>
 
@@ -222,99 +122,52 @@
       <label><span>Media Position Y / 垂直位置</span><span id="imagePosYValue">50%</span></label>
       <input id="imagePosYInput" data-config="imagePosY" type="range" min="0" max="100" step="1" value="50" />
     </div>
+    </details>
+
+    <details id="presetsGroup" class="control-group">
+      <summary data-i18n-zh="效果预设" data-i18n-en="Effect presets">效果预设</summary>
+<div class="quick-guide" data-i18n-zh="上传媒体 → 选择预设 → 微调效果 → 预览与导出。选择内置预设后点击“应用”。" data-i18n-en="Load media → Choose a preset → Fine-tune effects → Preview & export. Select a built-in preset, then click Apply.">上传媒体 → 选择预设 → 微调效果 → 预览与导出。选择内置预设后点击“应用”。</div>
 
     <div class="control">
+      <label><span>Built-in Presets / 内置预设</span></label>
+      <div class="preset-row">
+        <select id="builtInPresetSelect">
+          <option value="default">Current Default / 当前默认</option>
+          <option value="soft-crt">Soft CRT / 柔和显像</option>
+          <option value="clean-vhs">Clean VHS / 干净录像带</option>
+          <option value="vhs">VHS - Latest / 最新 VHS</option>
+          <option value="damaged-vhs">Damaged VHS / 受损磁带</option>
+          <option value="vaporwave">Vaporwave / 蒸汽波偏色</option>
+        </select>
+        <button id="applyBuiltInPresetButton" type="button">Apply<br />应用</button>
+      </div>
+    </div>
+
+    <div class="control">
+      <label><span>Save User Preset / 保存用户预设</span></label>
+      <div class="preset-row">
+        <input id="userPresetNameInput" type="text" maxlength="32" placeholder="Preset name / 预设名" />
+        <button id="saveUserPresetButton" type="button">Save<br />保存</button>
+      </div>
+      <div class="preset-row">
+        <select id="userPresetSelect">
+          <option value="">No saved presets / 暂无预设</option>
+        </select>
+        <button id="loadUserPresetButton" type="button">Load<br />读取</button>
+        <button id="deleteUserPresetButton" type="button">Delete<br />删除</button>
+      </div>
+      <p id="presetStatusText" class="status-text"></p>
+    </div>
+<p class="hint" data-i18n-zh="配置文件和本地保存位于屏幕下方的配置按钮中。" data-i18n-en="Use the configuration button below the screen to manage files and local settings.">配置文件和本地保存位于屏幕下方的配置按钮中。</p>
+    </details>
+
+    <details id="phosphorGroup" class="control-group">
+      <summary data-i18n-zh="像素分辨率" data-i18n-en="Pixel resolution">像素分辨率</summary>
+<div class="control">
       <label><span>Pixelate / 像素化强度</span><span id="pixelateValue">0.00</span></label>
       <input id="pixelateInput" data-config="pixelate" type="range" min="0" max="1" step="0.01" value="0" />
-      <p class="hint">像素块大小自动锁定 RGB / Cell Period，因此会和 RGB 荧光粉、点遮罩分辨率保持一致。</p>
+      <p class="hint" data-i18n-zh="像素块大小与下方的 RGB 像素周期联动；此处调整影响效果预览与导出，不同于导出马赛克。" data-i18n-en="Pixel block size follows the RGB cell period below. This affects both live effects and exports, unlike export-only mosaic blocks.">像素块大小与下方的 RGB 像素周期联动；此处调整影响效果预览与导出，不同于导出马赛克。</p>
     </div>
-
-<div class="control">
-      <label><span>Media Blur X / 媒体模糊 X</span><span id="imageBlurXValue">0.00</span></label>
-      <input id="imageBlurXInput" data-config="imageBlurX" type="range" min="0" max="12" step="0.01" value="0" />
-    </div>
-
-    <div class="control">
-      <label><span>Media Blur Y / 媒体模糊 Y</span><span id="imageBlurYValue">0.00</span></label>
-      <input id="imageBlurYInput" data-config="imageBlurY" type="range" min="0" max="12" step="0.01" value="0" />
-    </div>
-
-<div class="control">
-      <label><span>Final Saturation / 最终饱和度</span><span id="finalSaturationValue">1.00</span></label>
-      <input id="finalSaturationInput" data-config="finalSaturation" type="range" min="0" max="3" step="0.01" value="1" />
-      <p class="hint">作用在辉光叠加后的最终画面上。0 是黑白，1 是原始饱和度，2 以上会更电子屏。</p>
-    </div>
-<p class="hint">图片可直接导出 PNG；视频优先输出高质量 MP4/WebM，并在浏览器能力不足时回退为兼容 WebM。</p>
-    </details>
-
-    <details class="control-group">
-      <summary>CRT CORE / CRT 核心</summary>
-<div class="control">
-      <label><span>Warp Direction / 畸变方向</span><span id="warpDirectionValue">barrel</span></label>
-      <select id="warpDirectionInput" data-config="warpDirection">
-        <option value="barrel" selected>barrel / 桶形凸出</option>
-        <option value="pincushion">pincushion / 枕形内收</option>
-      </select>
-    </div>
-
-    <div class="control">
-      <label><span>Warp Scale / 桶形强度</span><span id="scaleValue">38</span></label>
-      <input id="scaleInput" data-config="scale" type="range" min="0" max="480" step="1" value="38" />
-    </div>
-
-    <div class="control">
-      <label><span>Displacement Map Zoom / 位移贴图缩放</span><span id="mapZoomValue">1.00</span></label>
-      <input id="mapZoomInput" data-config="mapZoom" type="range" min="0.3" max="4" step="0.01" value="1" />
-    </div>
-
-    <div class="control">
-      <label><span>Post-Warp Blur X / 变形后模糊 X</span><span id="warpBlurXValue">0.65</span></label>
-      <input id="warpBlurXInput" data-config="warpBlurX" type="range" min="0" max="30" step="0.01" value="0.65" />
-    </div>
-
-    <div class="control">
-      <label><span>Post-Warp Blur Y / 变形后模糊 Y</span><span id="warpBlurYValue">0.45</span></label>
-      <input id="warpBlurYInput" data-config="warpBlurY" type="range" min="0" max="30" step="0.01" value="0.45" />
-    </div>
-
-    <div class="control">
-      <label><span>Brightness / 亮度</span><span id="brightnessValue">1.48</span></label>
-      <input id="brightnessInput" data-config="brightness" type="range" min="0.3" max="3" step="0.01" value="1.48" />
-    </div>
-
-    <div class="control">
-      <label><span>Contrast / 对比度</span><span id="contrastValue">1.18</span></label>
-      <input id="contrastInput" data-config="contrast" type="range" min="0.3" max="3.5" step="0.01" value="1.18" />
-    </div>
-
-    <div class="control">
-      <label><span>Flicker Amount / 闪烁强度</span><span id="flickerAmountValue">0.27</span></label>
-      <input id="flickerAmountInput" data-config="flickerAmount" type="range" min="0" max="0.8" step="0.01" value="0.27" />
-    </div>
-
-    <div class="control">
-      <label><span>Flicker Speed / 闪烁速度</span><span id="flickerSpeedValue">4.30</span></label>
-      <input id="flickerSpeedInput" data-config="flickerSpeed" type="range" min="0.2" max="30" step="0.1" value="4.3" />
-    </div>
-
-<div class="control">
-      <label><span>Vignette Opacity / 暗角透明度</span><span id="vignetteValue">1.00</span></label>
-      <input id="vignetteInput" data-config="vignette" type="range" min="0" max="1" step="0.01" value="1" />
-    </div>
-
-    <div class="control">
-      <label><span>Vignette Inner / 暗角内圈</span><span id="vignetteInnerValue">11%</span></label>
-      <input id="vignetteInnerInput" data-config="vignetteInner" type="range" min="0" max="90" step="1" value="11" />
-    </div>
-
-    <div class="control">
-      <label><span>Vignette Outer / 暗角外圈</span><span id="vignetteOuterValue">59%</span></label>
-      <input id="vignetteOuterInput" data-config="vignetteOuter" type="range" min="20" max="120" step="1" value="59" />
-    </div>
-    </details>
-
-    <details class="control-group">
-      <summary>PHOSPHOR & MASK / 荧光粉与遮罩</summary>
 <div class="control">
       <label><span>RGB Opacity / RGB 透明度</span><span id="rgbOpacityValue">0.25</span></label>
       <input id="rgbOpacityInput" data-config="rgbOpacity" type="range" min="0" max="1" step="0.01" value="0.25" />
@@ -337,7 +190,7 @@
 
     <div class="control">
       <label><span>RGB / Cell Period / RGB 像素周期</span><span id="rgbPeriodValue">6px</span></label>
-      <input id="rgbPeriodInput" data-config="rgbPeriod" type="range" min="3" max="48" step="1" value="6" />
+      <input id="rgbPeriodInput" data-config="rgbPeriod" type="range" min="1" max="48" step="0.1" value="6" />
       <p class="hint">RGB 周期和点遮罩周期完全一致，并且会一起参与桶形变形。</p>
     </div>
 
@@ -377,8 +230,69 @@
     </div>
     </details>
 
-    <details class="control-group">
-      <summary>BEAM & GLOW / 光带与辉光</summary>
+    <details id="displayGroup" class="control-group">
+      <summary data-i18n-zh="CRT屏幕" data-i18n-en="CRT screen">CRT屏幕</summary>
+<div class="control">
+      <label><span>Warp Direction / 畸变方向</span><span id="warpDirectionValue">barrel</span></label>
+      <select id="warpDirectionInput" data-config="warpDirection">
+        <option value="barrel" selected>barrel / 桶形凸出</option>
+        <option value="pincushion">pincushion / 枕形内收</option>
+      </select>
+    </div>
+
+    <div class="control">
+      <label><span>Warp Scale / 桶形强度</span><span id="scaleValue">38</span></label>
+      <input id="scaleInput" data-config="scale" type="range" min="0" max="480" step="1" value="38" />
+    </div>
+
+    <div class="control">
+      <label><span>Displacement Map Zoom / 位移贴图缩放</span><span id="mapZoomValue">1.00</span></label>
+      <input id="mapZoomInput" data-config="mapZoom" type="range" min="0.3" max="4" step="0.01" value="1" />
+    </div>
+
+    <div class="control">
+      <label><span>Post-Warp Blur X / 变形后模糊 X</span><span id="warpBlurXValue">0.65</span></label>
+      <input id="warpBlurXInput" data-config="warpBlurX" type="range" min="0" max="30" step="0.01" value="0.65" />
+    </div>
+
+    <div class="control">
+      <label><span>Post-Warp Blur Y / 变形后模糊 Y</span><span id="warpBlurYValue">0.45</span></label>
+      <input id="warpBlurYInput" data-config="warpBlurY" type="range" min="0" max="30" step="0.01" value="0.45" />
+    </div>
+
+
+
+
+
+    <div class="control">
+      <label><span>Flicker Amount / 闪烁强度</span><span id="flickerAmountValue">0.27</span></label>
+      <input id="flickerAmountInput" data-config="flickerAmount" type="range" min="0" max="0.8" step="0.01" value="0.27" />
+    </div>
+
+    <div class="control">
+      <label><span>Flicker Speed / 闪烁速度</span><span id="flickerSpeedValue">4.30</span></label>
+      <input id="flickerSpeedInput" data-config="flickerSpeed" type="range" min="0.2" max="30" step="0.1" value="4.3" />
+    </div>
+
+<div class="control">
+      <label><span>Vignette Opacity / 暗角透明度</span><span id="vignetteValue">1.00</span></label>
+      <input id="vignetteInput" data-config="vignette" type="range" min="0" max="1" step="0.01" value="1" />
+    </div>
+
+    <div class="control">
+      <label><span>Vignette Inner / 暗角内圈</span><span id="vignetteInnerValue">11%</span></label>
+      <input id="vignetteInnerInput" data-config="vignetteInner" type="range" min="0" max="90" step="1" value="11" />
+    </div>
+
+    <div class="control">
+      <label><span>Vignette Outer / 暗角外圈</span><span id="vignetteOuterValue">59%</span></label>
+      <input id="vignetteOuterInput" data-config="vignetteOuter" type="range" min="20" max="120" step="1" value="59" />
+    </div>
+
+
+
+
+<h3 class="group-section-title" data-i18n-zh="光带与辉光" data-i18n-en="Beam & glow">光带与辉光</h3>
 <div class="control">
       <label><span>Beam Blend / 光带混合模式</span><span id="beamBlendValue">lighter</span></label>
       <select id="beamBlendInput" data-config="beamBlend">
@@ -421,54 +335,33 @@
     </div>
     </details>
 
-    <details class="control-group">
-      <summary>RETRO AUDIO / 复古音频</summary>
-      <div class="control">
-        <label><span data-i18n-zh="实时音频试听" data-i18n-en="Live audio audition">实时音频试听</span></label>
-        <select id="audioAuditionInput">
-          <option value="original">Original / 原声</option>
-          <option value="processed">Processed / 处理后</option>
-        </select>
-        <button id="enableAudioAuditionButton" type="button" data-i18n-zh="启用试听" data-i18n-en="Enable audition">启用试听</button>
-      </div>
-      <p class="hint" data-i18n-zh="播放视频后启用试听，可即时比较音效；编码损伤请通过试导出检查。图片与无音轨视频不生成音轨。" data-i18n-en="Enable audition while playing video to compare effects live. Use a test export for codec artifacts. Images and silent videos do not gain an audio track.">播放视频后启用试听，可即时比较音效；编码损伤请通过试导出检查。图片与无音轨视频不生成音轨。</p>
-      <div class="control">
-        <label><span>Audio Preset / 音频预设</span></label>
-        <select id="audioPresetInput" data-config="audioPreset">
-          <option value="clean" selected>Clean / 原声</option>
-          <option value="crt">CRT TV / CRT 电视</option>
-          <option value="vhs">VHS Tape / 录像带</option>
-          <option value="worn">Worn Tape / 老化磁带</option>
-        </select>
-      </div>
-      <div class="control">
-        <label><span>Output Volume / 输出音量</span><span id="audioVolumeValue">1.00</span></label>
-        <input id="audioVolumeInput" data-config="audioVolume" type="range" min="0" max="2" step="0.01" value="1" />
-      </div>
-      <div class="control">
-        <label><span>Bandwidth / 带宽限制</span><span id="audioBandwidthValue">18000Hz</span></label>
-        <input id="audioBandwidthInput" data-config="audioBandwidth" type="range" min="1200" max="18000" step="100" value="18000" />
-      </div>
-      <div class="control">
-        <label><span>Hiss / 磁带底噪</span><span id="audioHissValue">0.00</span></label>
-        <input id="audioHissInput" data-config="audioHiss" type="range" min="0" max="0.18" step="0.005" value="0" />
-      </div>
-      <div class="control">
-        <label><span>Drive / 饱和失真</span><span id="audioDriveValue">0.00</span></label>
-        <input id="audioDriveInput" data-config="audioDrive" type="range" min="0" max="1" step="0.01" value="0" />
-      </div>
-      <div class="control">
-        <label><span>Wow & Flutter / 哇音抖动</span><span id="audioWowValue">0.00</span></label>
-        <input id="audioWowInput" data-config="audioWow" type="range" min="0" max="0.12" step="0.005" value="0" />
-      </div>
-      <div class="control">
-        <label><span>Short Reverb / 短混响</span><span id="audioReverbValue">0.00</span></label>
-        <input id="audioReverbInput" data-config="audioReverb" type="range" min="0" max="1" step="0.01" value="0" />
-      </div>
+    <details id="colorGroup" class="control-group">
+      <summary data-i18n-zh="色彩设置" data-i18n-en="Color settings">色彩设置</summary>
+<div class="control">
+      <label><span>Brightness / 亮度</span><span id="brightnessValue">1.48</span></label>
+      <input id="brightnessInput" data-config="brightness" type="range" min="0.3" max="3" step="0.01" value="1.48" />
+    </div>
+<div class="control">
+      <label><span>Contrast / 对比度</span><span id="contrastValue">1.18</span></label>
+      <input id="contrastInput" data-config="contrast" type="range" min="0.3" max="3.5" step="0.01" value="1.18" />
+    </div>
+<div class="control">
+      <label><span>Final Saturation / 最终饱和度</span><span id="finalSaturationValue">1.00</span></label>
+      <input id="finalSaturationInput" data-config="finalSaturation" type="range" min="0" max="3" step="0.01" value="1" />
+      <p class="hint">作用在辉光叠加后的最终画面上。0 是黑白，1 是原始饱和度，2 以上会更电子屏。</p>
+    </div>
+<div class="control">
+      <label><span>Media Blur X / 媒体模糊 X</span><span id="imageBlurXValue">0.00</span></label>
+      <input id="imageBlurXInput" data-config="imageBlurX" type="range" min="0" max="12" step="0.01" value="0" />
+    </div>
+<div class="control">
+      <label><span>Media Blur Y / 媒体模糊 Y</span><span id="imageBlurYValue">0.00</span></label>
+      <input id="imageBlurYInput" data-config="imageBlurY" type="range" min="0" max="12" step="0.01" value="0" />
+    </div>
     </details>
 
-    <details class="control-group">
-      <summary>VHS LAB / VHS 实验室</summary>
+    <details id="tapeGroup" class="control-group">
+      <summary data-i18n-zh="VHS设置" data-i18n-en="VHS settings">VHS设置</summary>
 <p class="hint">这一组负责录像带化处理。色度相关参数现在全部并入 VHS：其中 NTSC Chroma Bleed 会按亮度 / 色度分离思路，只压缩色度带宽，不是简单 RGB 硬分离。</p>
 
 <div class="control">
@@ -549,15 +442,143 @@
 <p class="hint">这一组是录像带化重点：NTSC 色度渗色、家用录像机锐化、隔行、切换噪声、掉磁横线都在这里。</p>
     </details>
 
+    <details id="audioGroup" class="control-group">
+      <summary data-i18n-zh="音频设置" data-i18n-en="Audio settings">音频设置</summary>
+<div class="control">
+        <label><span data-i18n-zh="实时音频试听" data-i18n-en="Live audio audition">实时音频试听</span></label>
+        <select id="audioAuditionInput">
+          <option value="original">Original / 原声</option>
+          <option value="processed">Processed / 处理后</option>
+        </select>
+        <button id="enableAudioAuditionButton" type="button" data-i18n-zh="启用试听" data-i18n-en="Enable audition">启用试听</button>
+      </div>
+      <p class="hint" data-i18n-zh="播放视频后启用试听，可即时比较音效；编码损伤请通过试导出检查。图片与无音轨视频不生成音轨。" data-i18n-en="Enable audition while playing video to compare effects live. Use a test export for codec artifacts. Images and silent videos do not gain an audio track.">播放视频后启用试听，可即时比较音效；编码损伤请通过试导出检查。图片与无音轨视频不生成音轨。</p>
+      <div class="control">
+        <label><span>Audio Preset / 音频预设</span></label>
+        <select id="audioPresetInput" data-config="audioPreset">
+          <option value="clean" selected>Clean / 原声</option>
+          <option value="crt">CRT TV / CRT 电视</option>
+          <option value="vhs">VHS Tape / 录像带</option>
+          <option value="worn">Worn Tape / 老化磁带</option>
+        </select>
+      </div>
+      <div class="control">
+        <label><span>Output Volume / 输出音量</span><span id="audioVolumeValue">1.00</span></label>
+        <input id="audioVolumeInput" data-config="audioVolume" type="range" min="0" max="2" step="0.01" value="1" />
+      </div>
+      <div class="control">
+        <label><span>Bandwidth / 带宽限制</span><span id="audioBandwidthValue">18000Hz</span></label>
+        <input id="audioBandwidthInput" data-config="audioBandwidth" type="range" min="1200" max="18000" step="100" value="18000" />
+      </div>
+      <div class="control">
+        <label><span>Hiss / 磁带底噪</span><span id="audioHissValue">0.00</span></label>
+        <input id="audioHissInput" data-config="audioHiss" type="range" min="0" max="0.18" step="0.005" value="0" />
+      </div>
+      <div class="control">
+        <label><span>Drive / 饱和失真</span><span id="audioDriveValue">0.00</span></label>
+        <input id="audioDriveInput" data-config="audioDrive" type="range" min="0" max="1" step="0.01" value="0" />
+      </div>
+      <div class="control">
+        <label><span>Wow & Flutter / 哇音抖动</span><span id="audioWowValue">0.00</span></label>
+        <input id="audioWowInput" data-config="audioWow" type="range" min="0" max="0.12" step="0.005" value="0" />
+      </div>
+      <div class="control">
+        <label><span>Short Reverb / 短混响</span><span id="audioReverbValue">0.00</span></label>
+        <input id="audioReverbInput" data-config="audioReverb" type="range" min="0" max="1" step="0.01" value="0" />
+      </div>
+    </details>
+
+    <details id="videoSettingsGroup" class="control-group">
+      <summary data-i18n-zh="视频设置" data-i18n-en="Video settings">视频设置</summary>
+<div class="export-panel">
+      <div class="control">
+        <label for="exportQualityPreset"><span>Export quality / 导出画质</span></label>
+        <select id="exportQualityPreset">
+          <option value="original">Original quality / 原始质量</option>
+          <option value="low">Low quality / 低画质</option>
+          <option value="network">Network patina / 网络包浆</option>
+          <option value="mosaic">Mosaic / 马赛克画质</option>
+          <option value="custom">Custom / 自定义</option>
+        </select>
+        <p class="hint" data-i18n-zh="预设只调整导出参数，不改变 CRT 效果。马赛克仅在导出视频中生效。" data-i18n-en="Presets change export settings only. Mosaic pixel blocks apply only to exported video.">预设只调整导出参数，不改变 CRT 效果。马赛克仅在导出视频中生效。</p>
+      </div>
+
+      <div class="control">
+        <label><span>Export pixel block size / 导出像素块大小</span><span id="exportPixelSizeValue">0px</span></label>
+        <input id="exportPixelSizeInput" data-config="exportPixelSize" type="range" min="0" max="32" step="1" value="0" />
+        <p class="hint" data-i18n-zh="0 为关闭；仅影响离线导出视频，可在选择预设后继续调整。" data-i18n-en="0 disables pixel blocks. Applies only to offline video export; adjustable after selecting a preset.">0 为关闭；仅影响离线导出视频，可在选择预设后继续调整。</p>
+      </div>
+      <div class="control">
+        <label><span>Export Duration / 导出时长</span><span id="exportDurationValue">6.0s</span></label>
+        <input id="exportDurationInput" data-config="exportDuration" type="range" min="0.001" max="60" step="any" value="6" />
+        <p class="hint">图片也可以导出成视频，会按当前动态闪烁、光带、VHS 抖动录制这段时长。</p>
+      </div>
+
+      <div class="control">
+        <label><span>Export FPS / 导出帧率</span><span id="exportFpsValue">30fps</span></label>
+        <input id="exportFpsInput" data-config="exportFps" type="range" min="10" max="60" step="1" value="30" />
+      </div>
+
+      <div class="control">
+        <label><span>Export Bitrate / 导出码率</span><span id="exportBitrateValue">50Mbps</span></label>
+        <input id="exportBitrateInput" data-config="exportBitrate" type="range" min="0.1" max="120" step="0.05" value="50" />
+        <p class="hint">视频质量主要受码率限制。建议 1080p 用 30–60Mbps，2K 以上用 60–120Mbps。</p>
+      </div>
+
+      <div class="control">
+        <label><span>Export Resolution Scale / 导出分辨率倍率</span><span id="exportScaleValue">1x</span></label>
+        <input id="exportScaleInput" data-config="exportScale" type="range" min="0.25" max="3" step="0.25" value="1" />
+        <p class="hint">导出时临时提高 WebGL 后台渲染分辨率。越高越清晰，但越慢。</p>
+      </div>
+
+      <div class="control">
+        <label><span>High-quality Export Format / 高质量导出格式</span></label>
+        <select id="exportFormatInput" data-config="exportFormat">
+          <option value="mp4" selected>MP4 · H.264 + AAC</option>
+          <option value="webm">WebM · VP9 + Opus</option>
+        </select>
+        <p class="hint">优先使用本地 WebCodecs/Mediabunny 离线封装；不支持时会提示使用兼容 WebM 导出。</p>
+      </div>
+
+
+
+
+      </div>
+    </details>
+
+    <details id="exportGroup" class="control-group">
+      <summary data-i18n-zh="媒体导出" data-i18n-en="Media export">媒体导出</summary>
+<div class="button-row">
+        <button id="downloadImageButton" class="primary-button" type="button">Export PNG<br />导出图片</button>
+        <button id="downloadVideoButton" class="primary-button" type="button">Export Video<br />高质量导出</button>
+      </div>
+<div id="exportProgressPanel" class="export-progress-panel" hidden>
+        <label for="exportProgress" id="exportProgressLabel">导出进度</label>
+        <progress id="exportProgress" max="100" value="0"></progress>
+        <p id="exportProgressStatus" role="status" aria-live="polite"></p>
+      </div>
+<p class="hint">图片可直接导出 PNG；视频优先输出高质量 MP4/WebM，并在浏览器能力不足时回退为兼容 WebM。</p>
+    </details>
+
+    <details id="userGuideGroup" class="control-group">
+      <summary data-i18n-zh="使用说明" data-i18n-en="User guide">使用说明</summary>
+<p class="hint" data-i18n-zh="1. 在“媒体导入”选择图片或视频，再在“效果预设”选择并应用效果。" data-i18n-en="1. Load an image or video in Media import, then choose and apply an Effect preset.">1. 在“媒体导入”选择图片或视频，再在“效果预设”选择并应用效果。</p>
+<p class="hint" data-i18n-zh="2. 像素化与点阵在“像素分辨率”；曲面、闪烁、暗角和辉光在“CRT屏幕”；亮度、对比度和模糊在“色彩设置”。" data-i18n-en="2. Pixel resolution controls pixelation and the mask. CRT screen controls curvature, flicker, vignette and glow. Color settings controls brightness, contrast and blur.">2. 像素化与点阵在“像素分辨率”；曲面、闪烁、暗角和辉光在“CRT屏幕”；亮度、对比度和模糊在“色彩设置”。</p>
+<p class="hint" data-i18n-zh="3. 数值可以直接输入，按回车或离开输入框应用；旁边的减号和加号按参数精度微调。滑杆接近有效整数时吸附，0～1 参数保留小数。" data-i18n-en="3. Enter a number and press Enter or leave the field to apply it. Minus and plus adjust by the parameter step. Sliders attract valid integers; ranges from zero to one retain fractional control.">3. 数值可以直接输入，按回车或离开输入框应用；旁边的减号和加号按参数精度微调。滑杆接近有效整数时吸附，0～1 参数保留小数。</p>
+<p class="hint" data-i18n-zh="4. 顶部切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。" data-i18n-en="4. Switch between live effects and encoded preview at the top. On slower devices, turn off automatic updates and refresh manually. Use the controls below the screen to play, pause, restart, adjust volume or zoom.">4. 顶部切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。</p>
+<p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
+<p class="hint" data-i18n-zh="5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。" data-i18n-en="5. Choose quality, duration, frame rate, bitrate and format in Video settings, then save an image or video in Media export. Export mosaic affects encoded output, unlike live pixelation.">5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。</p>
+<p class="hint" data-i18n-zh="6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。" data-i18n-en="6. Use the configuration button below the screen to import, export or save settings. Media is processed locally and is not uploaded.">6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。</p>
+<p class="credit-text"><a id="userGuideLink" href="https://github.com/mazkosoft/CRT-Simulator#简体中文" target="_blank" rel="noopener noreferrer" data-i18n-zh="完整使用说明书" data-i18n-en="Complete user guide">完整使用说明书</a></p>
+    </details>
+
     <details id="aboutGroup" class="control-group">
-      <summary>About / 关于</summary>
-      <p class="credit-text" data-i18n-zh="CRT Simulator 是一款在浏览器本地处理图片与视频的复古效果工具，使用多通道 WebGL 模拟显像管和录像带画面。" data-i18n-en="CRT Simulator is a browser-local image and video effects tool using multipass WebGL to recreate CRT and videotape looks."></p>
+      <summary data-i18n-zh="关于鸣谢" data-i18n-en="About & credits">关于鸣谢</summary>
+<p class="credit-text" data-i18n-zh="CRT Simulator 是一款在浏览器本地处理图片与视频的复古效果工具，使用多通道 WebGL 模拟显像管和录像带画面。" data-i18n-en="CRT Simulator is a browser-local image and video effects tool using multipass WebGL to recreate CRT and videotape looks."></p>
       <p class="credit-text"><a href="https://github.com/mazkosoft/CRT-Simulator" target="_blank" rel="noopener noreferrer" data-i18n-zh="开源仓库" data-i18n-en="Source repository"></a> · <a href="https://mazkosoft.github.io/CRT-Simulator/" target="_blank" rel="noopener noreferrer" data-i18n-zh="在线体验" data-i18n-en="Live demo"></a></p>
       <p class="credit-text"><a href="https://github.com/mazkosoft/CRT-Simulator#简体中文" target="_blank" rel="noopener noreferrer" data-i18n-zh="使用说明书" data-i18n-en="User guide" id="aboutGuideLink"></a> · <a href="https://github.com/mazkosoft/CRT-Simulator/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" data-i18n-zh="许可证" data-i18n-en="License"></a></p>
       <p class="credit-text" data-i18n-zh="选择的媒体不会上传到服务器；配置保存在当前浏览器。导出能力取决于浏览器编码器和设备性能。原创代码采用 MIT；第三方依赖保留各自协议。" data-i18n-en="Selected media is not uploaded; settings are stored in this browser. Export support depends on browser codecs and device performance. Original code is MIT; third-party dependencies retain their own licenses."></p>
-    </details>
-    <details class="control-group">
-      <summary>Credits / 鸣谢</summary>
+<div id="creditsGroup">
 <div class="control">
       <p class="credit-text">
         Project credit: ㄢ誌慖（mazko）<br />
@@ -579,6 +600,7 @@
         <span data-i18n-zh="媒体封装与编解码使用 Mediabunny（MPL-2.0）。第三方来源及协议见仓库的 THIRD_PARTY_NOTICES.md。" data-i18n-en="Media encoding, decoding and muxing use Mediabunny (MPL-2.0). See THIRD_PARTY_NOTICES.md for sources and licenses."></span>
       </p>
     </div>
+</div>
     </details>
 
   </aside>
