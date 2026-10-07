@@ -7,3 +7,4 @@ console.log('Unified mobile panel and contextual help passed');
 const mobile=read('css/ui.css').slice(read('css/ui.css').lastIndexOf('@media(max-width:900px) {'));
 assert.match(mobile,/--panel-control-height:32px/,'mobile controls share category-tab proportions');
 assert.match(mobile,/\.parameter-stepper input \{ height:var\(--panel-control-height\); font-size:15px/,'mobile numeric input is compact');
+assert.match(mobile,/\.terminal-workspace select,\.config-console select \{[^}]*background:#fff;/,'all mobile dropdowns share white surfaces');
