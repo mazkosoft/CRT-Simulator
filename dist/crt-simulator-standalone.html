@@ -25,6 +25,9 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 #glCanvas { display:block; width:100%; height:100%; background:#050806; border-radius:18px 18px 27px 27px; clip-path:inset(0 round 18px 18px 27px 27px); }
 /* A single reflected light source; no perimeter highlight. */
 .glass-reflection { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
+.encoded-screen { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#050806; z-index:1; pointer-events:none; }
+.encoded-screen[hidden] { display:none; }
+.machine-off .encoded-screen { opacity:0; }
 .screen::before { content:""; position:absolute; z-index:2; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 23% 17%,#dcebe50c,transparent 65%); }
 .screen::after { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 48% 42%,transparent 44%,#07100c18 67%,#0008 100%); }
 .cabinet-controls { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:flex-start; gap:16px; padding:4px 4px 10px; font-size:11px; }
@@ -149,6 +152,10 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 .control-group .control:has(.export-panel) { grid-column:1 / -1; }
 .control-group > .media-controls { grid-column:1 / -1; }
 .export-panel { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:16px; }
+.encoded-preview-settings { padding:0 2px 8px; }
+.encoded-preview-settings label { display:flex; align-items:center; gap:8px; min-height:36px; font-size:13px; font-weight:400; }
+.encoded-preview-settings input { width:18px; height:18px; accent-color:#786c51; }
+.encoded-preview-settings .hint { margin:4px 0; overflow-wrap:anywhere; }
 .export-panel > :not(.control),.export-panel > .control:has(select) { grid-column:1 / -1; }
 .dos-header { display:flex; justify-content:space-between; align-items:center; padding:3px 0 12px; }
 .dos-model { margin:0 0 4px; font-size:9px; color:#777165; letter-spacing:2px; }
@@ -252,6 +259,7 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
             <button id="zoomInPreview" type="button" aria-label="放大">+</button>
           </div>
           <canvas id="glCanvas"></canvas>
+          <video id="exportPreviewVideo" class="encoded-screen" playsinline loop hidden aria-label="编码预览"></video>
           <svg class="glass-reflection" viewBox="0 0 1000 800" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="glassLight" x1="0" y1="0" x2="0.8" y2="1">
@@ -291,6 +299,12 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
     <div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
+    <div class="preview-quality-control"><label for="previewMode" data-i18n-zh="预览内容" data-i18n-en="Preview content">预览内容</label><select id="previewMode"><option value="effect" data-i18n-zh="效果预览" data-i18n-en="Live effects">效果预览</option><option value="encoded" data-i18n-zh="编码预览" data-i18n-en="Encoded preview">编码预览</option></select></div>
+    <div class="encoded-preview-settings">
+      <label><input id="autoEncodedPreview" type="checkbox" checked /><span data-i18n-zh="自动更新编码预览" data-i18n-en="Update encoded preview automatically">自动更新编码预览</span></label>
+      <p id="encodedPreviewStatus" class="hint" role="status" aria-live="polite"></p>
+      <p id="exportPreviewInfo" class="hint" hidden></p>
+    </div>
 
     <details class="control-group">
       <summary>PRESETS / 效果预设</summary>
@@ -397,12 +411,8 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
         <p class="hint">优先使用本地 WebCodecs/Mediabunny 离线封装；不支持时会提示使用兼容 WebM 导出。</p>
       </div>
 
-      <button id="previewExportButton" type="button" data-i18n-zh="试导出当前片段（最多 3 秒）" data-i18n-en="Test current segment (up to 3 seconds)">试导出当前片段（最多 3 秒）</button>
-      <p class="hint" data-i18n-zh="试导出使用当前编码参数，可准确查看压缩画质和处理后的音轨。调整参数后请重新生成。" data-i18n-en="The test uses your actual encoding settings, including processed audio. Regenerate after changing settings.">试导出使用当前编码参数，可准确查看压缩画质和处理后的音轨。调整参数后请重新生成。</p>
-      <div hidden>
-        <video id="exportPreviewVideo" controls playsinline style="width:100%;max-height:240px"></video>
-        <p id="exportPreviewInfo" class="hint"></p>
-      </div>
+      <button id="previewExportButton" type="button" data-i18n-zh="刷新编码预览" data-i18n-en="Refresh encoded preview">刷新编码预览</button>
+      <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
       <p class="hint">图片与视频都会离线逐帧渲染；视频音轨会按“复古音频”参数同步处理。</p>
       </div>
       <p class="hint">这版支持图片和视频。媒体、RGB、点遮罩、光带先合成，再一起桶形变形；光带等待阶段完全隐藏，扫过时是下方平直亮边、上方渐变拖影。</p>
@@ -2796,11 +2806,51 @@ function applyBuiltInPreset() {
 }
 
 </script>
+  <script data-source="js/preview.js">
+// Single-flight, latest-settings-only encoded preview. No browser/UI dependency.
+function createEncodedPreviewScheduler({ generate, onResult, onState, delay = 400 }) {
+  let version = 0, timer = null, running = null, controller = null, pending = false;
+  function pump() {
+    if (running || !pending) return;
+    pending = false;
+    const jobVersion = version;
+    controller = new AbortController();
+    const signal = controller.signal;
+    onState("generating");
+    running = Promise.resolve().then(() => generate(signal)).then(result => {
+      if (signal.aborted || jobVersion !== version) return;
+      onResult(result);
+      onState("ready");
+    }).catch(error => {
+      if (!signal.aborted && jobVersion === version) onState("error", error);
+    }).finally(() => {
+      running = null;
+      controller = null;
+      pump();
+    });
+  }
+  function cancel() {
+    version++;
+    clearTimeout(timer);
+    timer = null;
+    pending = false;
+    controller?.abort();
+  }
+  function request(wait = delay) {
+    cancel();
+    onState("stale");
+    timer = setTimeout(() => { timer = null; pending = true; pump(); }, wait);
+  }
+  return { request, refresh: () => request(0), cancel,
+    idle: async () => { while (running) await running; } };
+}
+
+</script>
   <script data-source="js/crt.js">
 // WebGL renderer, media sources and image/video/audio export.
 // Classic scripts share scope; load config.js, crt.js, controls.js in this order.
-const canvas = document.getElementById("glCanvas");
-const gl = canvas.getContext("webgl", {
+let canvas = document.getElementById("glCanvas");
+let gl = canvas.getContext("webgl", {
   premultipliedAlpha: false,
   antialias: false,
   preserveDrawingBuffer: true
@@ -3381,7 +3431,7 @@ function createProgram(fragmentSource) {
   return { program, aPosition, uniforms };
 }
 
-const programs = {
+function createPrograms() { return {
   source: createProgram(SOURCE_FS),
   rgb: createProgram(RGB_FS),
   mask: createProgram(MASK_FS),
@@ -3390,8 +3440,10 @@ const programs = {
   warp: createProgram(WARP_FS),
   luma: createProgram(LUMA_FS),
   final: createProgram(FINAL_FS)
-};
+}; }
+let programs = createPrograms();
 
+function createQuad() {
 const quad = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 gl.bufferData(
@@ -3406,6 +3458,9 @@ gl.bufferData(
   ]),
   gl.STATIC_DRAW
 );
+return quad;
+}
+let quad = createQuad();
 
 function useProgram(name) {
   const p = programs[name];
@@ -3453,6 +3508,7 @@ function resizeTarget(target, w, h) {
 
   gl.bindTexture(gl.TEXTURE_2D, target.texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  if (gl.getError() !== gl.NO_ERROR) throw new Error(currentLang === "zh" ? "渲染内存不足，请降低导出倍率。" : "Insufficient rendering memory; reduce export scale.");
 }
 
 function bindTexture(unit, texture, location) {
@@ -3473,7 +3529,7 @@ function drawTo(target) {
   gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
-const targets = {
+function createTargets() { return {
   fit: createTarget(1, 1),
   imageBlurX: createTarget(1, 1),
   imageBlurred: createTarget(1, 1),
@@ -3494,9 +3550,15 @@ const targets = {
   luma: createTarget(1, 1),
   glowX: createTarget(1, 1),
   glow: createTarget(1, 1)
-};
+}; }
+let targets = createTargets();
 
 let sourceTexture = null;
+let sourceDrawable = null;
+let renderSettings = null;
+let renderSurfaceSize = null;
+let previewRenderBusy = false;
+let encodedRenderSurface = null;
 let sourceWidth = 1024;
 let sourceHeight = 768;
 let sourceAspect = sourceWidth / sourceHeight;
@@ -3554,6 +3616,7 @@ function uploadSource(source, w, h) {
 
   const previous = sourceTexture;
   sourceTexture = replacement;
+  sourceDrawable = source;
   if (previous) gl.deleteTexture(previous);
   return true;
 }
@@ -3659,6 +3722,7 @@ const labels = {
 };
 
 function val(key) {
+  if (renderSettings) return renderSettings[key] ?? "";
   const control = controls[key];
   if (!control) return "";
   if (control.type === "checkbox") {
@@ -3694,6 +3758,14 @@ function getPreviewSize(width, height, maxSize) {
 }
 
 function resize() {
+  if (renderSurfaceSize) {
+    const { width:w, height:h } = renderSurfaceSize;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;
+      Object.values(targets).forEach(target => resizeTarget(target, w, h));
+    }
+    return;
+  }
   const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const dpr = baseDpr * (exportInProgress ? exportRenderScale : 1);
   const rect = { width: canvas.clientWidth, height: canvas.clientHeight };
@@ -3725,6 +3797,57 @@ function resize() {
   Object.values(targets).forEach((target) => {
     resizeTarget(target, w, h);
   });
+}
+
+// Scope a detached renderer synchronously. Never hold switched globals across await.
+// Both surfaces execute the very same shaders, passes and parameter interpretation.
+function withRenderSurface(surface, settings, dimensions, frame, draw) {
+  const saved = { canvas, gl, programs, quad, targets, sourceTexture, sourceWidth, sourceHeight,
+    sourceAspect, exportDecodedCanvas, renderSettings, renderSurfaceSize, currentMediaType, exportMosaic };
+  try {
+    ({ canvas, gl, programs, quad, targets, sourceTexture, sourceWidth, sourceHeight, sourceAspect } = surface);
+    currentMediaType = surface.mediaType;
+    exportDecodedCanvas = frame;
+    renderSettings = settings;
+    exportMosaic = settings ? Number(settings.exportPixelSize) > 0 : false;
+    renderSurfaceSize = dimensions;
+    return draw();
+  } finally {
+    surface.sourceTexture = sourceTexture;
+    ({ canvas, gl, programs, quad, targets, sourceTexture, sourceWidth, sourceHeight,
+      sourceAspect, exportDecodedCanvas, renderSettings, renderSurfaceSize, currentMediaType, exportMosaic } = saved);
+  }
+}
+
+function preparePreviewSurface(mediaType, drawable, width, height) {
+  if (!encodedRenderSurface) {
+    const detachedCanvas = document.createElement("canvas");
+    const detachedGl = detachedCanvas.getContext("webgl", { antialias:false, premultipliedAlpha:false, preserveDrawingBuffer:true });
+    if (!detachedGl) throw new Error("Preview WebGL unavailable");
+    encodedRenderSurface = { canvas:detachedCanvas, gl:detachedGl, sourceTexture:null };
+    withRenderSurface(encodedRenderSurface, null, null, null, () => {
+      encodedRenderSurface.programs = createPrograms();
+      encodedRenderSurface.quad = createQuad();
+      encodedRenderSurface.targets = createTargets();
+    });
+  }
+  Object.assign(encodedRenderSurface, { mediaType, sourceWidth:width, sourceHeight:height, sourceAspect:width / height });
+  withRenderSurface(encodedRenderSurface, null, null, null, () => {
+    if (sourceTexture) gl.deleteTexture(sourceTexture);
+    sourceTexture = createTexture(width, height, mediaType === "video" ? null : drawable);
+  });
+  return encodedRenderSurface;
+}
+
+function getExportDimensions(settings, aspect = sourceAspect) {
+  const visible = document.getElementById("glCanvas");
+  const scale = Math.min(window.devicePixelRatio || 1, 1.5) * Number(settings.exportScale);
+  let width = Math.max(2, visible.clientWidth * scale), height = Math.max(2, visible.clientHeight * scale);
+  if (settings.effectBoundary === "source") {
+    if (width / height > aspect) width = height * aspect;
+    else height = width / aspect;
+  }
+  return { width:Math.max(2, Math.floor(width / 2) * 2), height:Math.max(2, Math.floor(height / 2) * 2) };
 }
 
 function computeImagePlacement() {
@@ -3941,7 +4064,8 @@ function renderFrame(ms) {
 
 let lastPreviewFrame = -Infinity;
 function render(ms) {
-  const frameInterval = document.getElementById("previewQuality").value === "smooth" ? 1000 / 15 : 1000 / 30;
+  const previewFps = Math.min(Math.max(10, num("exportFps")), document.getElementById("previewQuality").value === "smooth" ? 15 : 60);
+  const frameInterval = 1000 / previewFps;
   if ((!exportInProgress || compatibilityRecording) && ms - lastPreviewFrame >= frameInterval - 1) {
     renderFrame(ms);
     lastPreviewFrame = ms;
@@ -3999,6 +4123,7 @@ function resetToDemo() {
   image.decoding = "async";
   image.onload = () => {
     uploadSource(image, image.naturalWidth, image.naturalHeight);
+    notifyMediaPreviewReady();
     setPresetStatus("Default desktop loaded / 已载入默认桌面图");
   };
   image.onerror = () => {
@@ -4010,6 +4135,7 @@ function resetToDemo() {
 document.getElementById("imageUpload").addEventListener("change", (event) => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
+  notifyMediaPreviewChanged();
 
   currentSourceFile = file;
 
@@ -4028,6 +4154,7 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
     const img = new Image();
     img.onload = () => {
       uploadSource(img, img.naturalWidth, img.naturalHeight);
+      notifyMediaPreviewReady();
     };
     img.src = currentObjectURL;
     return;
@@ -4057,11 +4184,13 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
     sourceVideo.addEventListener("canplay", () => {
       uploadVideoFrame();
       startPlayback();
+      notifyMediaPreviewReady();
     }, { once: true });
   }
 });
 
 document.getElementById("clearImageButton").addEventListener("click", () => {
+  notifyMediaPreviewChanged();
   if (currentObjectURL) {
     URL.revokeObjectURL(currentObjectURL);
     currentObjectURL = null;
@@ -4072,6 +4201,7 @@ document.getElementById("clearImageButton").addEventListener("click", () => {
 });
 
 document.getElementById("showDemoButton").addEventListener("click", () => {
+  notifyMediaPreviewChanged();
   resetToDemo();
 });
 
@@ -4371,11 +4501,114 @@ sourceVideo.addEventListener("pause", refreshAudioAudition);
 sourceVideo.addEventListener("volumechange", refreshAudioAudition);
 
 let exportPreviewUrl = null;
-async function downloadHighQualityVideo({ preview = false } = {}) {
+async function encodePreviewSample(signal) {
+  signal?.throwIfAborted();
+  if (exportInProgress || previewRenderBusy) throw new Error(currentLang === "zh" ? "请等待当前导出结束。" : "Wait for the current export to finish.");
+  if (!globalThis.Mediabunny || typeof VideoEncoder === "undefined") throw new Error(currentLang === "zh" ? "此浏览器不支持离线编码预览，请使用新版 Chrome 或 Edge。" : "Offline preview requires a current Chrome or Edge browser.");
+  const settings = collectConfig();
+  const mediaType = currentMediaType;
+  const file = currentSourceFile;
+  const drawable = sourceDrawable;
+  const sourceDuration = sourceVideo.duration;
+  if (mediaType !== "video" && !drawable) throw new Error(currentLang === "zh" ? "媒体尚未加载，请稍后刷新。" : "Media is not ready; refresh shortly.");
+  if (mediaType === "video" && (!file || !Number.isFinite(sourceDuration))) throw new Error(currentLang === "zh" ? "视频尚未加载，请稍后刷新。" : "Video is not ready; refresh shortly.");
+  const duration = Math.max(0.001, Math.min(2, Number(settings.exportDuration), mediaType === "video" ? sourceDuration : 2));
+  const startTime = mediaType === "video" ? Math.max(0, Math.min(sourceVideo.currentTime, sourceDuration - duration)) : 0;
+  const fps = Math.max(10, Math.min(60, Math.round(Number(settings.exportFps))));
+  const useWebm = settings.exportFormat === "webm";
+  const dimensions = getExportDimensions(settings);
+  const mb = globalThis.Mediabunny;
+  previewRenderBusy = true;
+  let input = null, frames = null, audioSamples = null, output = null, surface = null;
+  let completed = false;
+  try {
+    surface = preparePreviewSurface(mediaType, drawable, sourceWidth, sourceHeight);
+    if (Math.max(dimensions.width, dimensions.height) > surface.gl.getParameter(surface.gl.MAX_TEXTURE_SIZE)) throw new Error(currentLang === "zh" ? "预览分辨率超过此设备的纹理限制，请降低导出倍率。" : "Preview resolution exceeds this device's limit; reduce export scale.");
+    const sampleCanvas = document.createElement("canvas");
+    sampleCanvas.width = dimensions.width; sampleCanvas.height = dimensions.height;
+    const sampleCtx = sampleCanvas.getContext("2d", { alpha:false });
+    output = new mb.Output({ format:useWebm ? new mb.WebMOutputFormat() : new mb.Mp4OutputFormat(), target:new mb.BufferTarget() });
+    const videoSource = new mb.CanvasSource(sampleCanvas, { codec:useWebm ? "vp9" : "avc", bitrate:Number(settings.exportBitrate) * 1000000, frameRate:fps });
+    output.addVideoTrack(videoSource, { frameRate:fps });
+    let audioSource = null, audioEncoding = null;
+    const totalFrames = Math.max(1, Math.ceil(duration * fps));
+    if (mediaType === "video") {
+      input = new mb.Input({ source:new mb.BlobSource(file), formats:mb.ALL_FORMATS });
+      const videoTrack = await input.getPrimaryVideoTrack();
+      if (!videoTrack || !await videoTrack.canDecode()) throw new Error(currentLang === "zh" ? "浏览器无法解码此视频。" : "This video cannot be decoded.");
+      const firstTimestamp = await videoTrack.getFirstTimestamp();
+      const timestamps = (function* () { for (let i = 0; i < totalFrames; i++) yield Math.max(firstTimestamp, startTime + i / fps); })();
+      frames = new mb.CanvasSink(videoTrack, { poolSize:2 }).canvasesAtTimestamps(timestamps);
+      const audioTrack = await input.getPrimaryAudioTrack();
+      if (audioTrack) {
+        if (!await audioTrack.canDecode()) throw new Error(currentLang === "zh" ? "浏览器无法解码此音轨；未移除音轨。" : "The audio track cannot be decoded; it has not been removed.");
+        audioEncoding = await prepareAudioEncoding(mb, useWebm ? "opus" : "aac", await audioTrack.getSampleRate(), Math.min(2, await audioTrack.getNumberOfChannels()));
+        if (!audioEncoding) throw new Error(currentLang === "zh" ? "音频编码不可用，请尝试 WebM。" : "Audio encoding unavailable; try WebM.");
+        audioSource = new mb.AudioBufferSource({ codec:useWebm ? "opus" : "aac", bitrate:audioEncoding.bitrate });
+        output.addAudioTrack(audioSource);
+        audioSamples = new mb.AudioSampleSink(audioTrack).samples(startTime, startTime + duration);
+      }
+    }
+    signal?.throwIfAborted();
+    await output.start();
+    for (let i = 0; i < totalFrames; i++) {
+      signal?.throwIfAborted();
+      const frame = frames ? (await frames.next()).value : null;
+      signal?.throwIfAborted();
+      if (frames && !frame) throw new Error("Could not decode preview frame");
+      withRenderSurface(surface, settings, dimensions, frame?.canvas || null, () => {
+        renderFrame((startTime + i / fps) * 1000);
+        sampleCtx.drawImage(surface.canvas, 0, 0);
+      });
+      await videoSource.add(i / fps, Math.min(1 / fps, duration - i / fps));
+      // Yield each frame so sliders and cancellation remain usable on slow devices.
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (audioSource) for await (const sample of audioSamples) {
+      try {
+        signal?.throwIfAborted();
+        const decoded = sample.toAudioBuffer();
+        const first = Math.max(0, Math.round((startTime - sample.timestamp) * decoded.sampleRate));
+        const last = Math.min(decoded.length, Math.round((startTime + duration - sample.timestamp) * decoded.sampleRate));
+        if (last > first) {
+          const clipped = new AudioBuffer({ length:last - first, numberOfChannels:decoded.numberOfChannels, sampleRate:decoded.sampleRate });
+          for (let c = 0; c < decoded.numberOfChannels; c++) clipped.copyToChannel(decoded.getChannelData(c).subarray(first, last), c);
+          // Graph construction is synchronous; restore settings before awaiting rendering.
+          const previousSettings = renderSettings;
+          let processed;
+          try { renderSettings = settings; processed = processRetroAudio(clipped, audioEncoding); }
+          finally { renderSettings = previousSettings; }
+          const audio = await processed;
+          signal?.throwIfAborted();
+          await audioSource.add(audio);
+        }
+      } finally { sample.close(); }
+    }
+    signal?.throwIfAborted();
+    await output.finalize();
+    signal?.throwIfAborted();
+    completed = true;
+    const info = `${dimensions.width} × ${dimensions.height} · ${fps} fps · ${duration.toFixed(2)} s · ${useWebm ? "WebM" : "MP4"}${audioEncoding ? ` · ${audioEncoding.sampleRate} Hz / ${audioEncoding.bitrate / 1000} kbps` : ""}`;
+    return { blob:new Blob([output.target.buffer], { type:useWebm ? "video/webm" : "video/mp4" }), info, startTime, duration, mediaType };
+  } finally {
+    if (!completed && output) await output.cancel().catch(() => {});
+    if (frames) await frames.return().catch(() => {});
+    if (audioSamples) await audioSamples.return().catch(() => {});
+    input?.dispose();
+    try {
+      if (surface) withRenderSurface(surface, null, { width:1, height:1 }, null, () => {
+        if (sourceTexture) gl.deleteTexture(sourceTexture);
+        sourceTexture = null;
+        resize();
+      });
+    } finally { previewRenderBusy = false; }
+  }
+}
+async function downloadHighQualityVideo() {
   const mb = globalThis.Mediabunny;
   const hasWebCodecs = typeof VideoEncoder !== "undefined";
   if (!hasWebCodecs || !mb || !mb.Output || !mb.CanvasSource) {
-    if (currentMediaType === "video" && !preview) {
+    if (currentMediaType === "video") {
       setPresetStatus("Offline encoder unavailable; using compatibility WebM / 离线编码不可用，改用兼容 WebM");
       return downloadProcessedVideo();
     }
@@ -4386,8 +4619,8 @@ async function downloadHighQualityVideo({ preview = false } = {}) {
   if (exportInProgress) return;
   exportInProgress = true;
   const fps = Math.max(10, Math.min(60, Math.round(num("exportFps"))));
-  const startTime = preview && currentMediaType === "video" ? Math.min(sourceVideo.currentTime, Math.max(0, sourceVideo.duration - 0.1)) : 0;
-  const duration = Math.max(0.001, preview ? Math.min(3, currentMediaType === "video" ? sourceVideo.duration - startTime : 3) : num("exportDuration"));
+  const startTime = 0;
+  const duration = Math.max(0.001, num("exportDuration"));
   const bitrate = Math.round(Math.max(0.1, Math.min(120, num("exportBitrate"))) * 1000 * 1000);
   exportRenderScale = Math.max(0.25, Math.min(3, num("exportScale")));
   exportMosaic = num("exportPixelSize") > 0;
@@ -4493,20 +4726,11 @@ async function downloadHighQualityVideo({ preview = false } = {}) {
     console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
     const mime = useWebm ? "video/webm" : "video/mp4";
     const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
-    if (preview) {
-      if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
-      exportPreviewUrl = url;
-      const player = document.getElementById("exportPreviewVideo");
-      player.src = url;
-      player.parentElement.hidden = false;
-      document.getElementById("exportPreviewInfo").textContent = `${exportCanvas.width} × ${exportCanvas.height} · ${fps} fps · ${duration.toFixed(2)} s · ${useWebm ? "WebM" : "MP4"}${audioEncoding ? ` · ${audioEncoding.sampleRate} Hz / ${audioEncoding.bitrate / 1000} kbps` : ""}`;
-    } else {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1600);
-    }
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1600);
     showExportProgress("done");
     setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
   } catch (error) {
@@ -4534,6 +4758,96 @@ async function downloadHighQualityVideo({ preview = false } = {}) {
   <script data-source="js/controls.js">
 // UI bindings, localization, transport and application startup.
 // Classic scripts share scope; load config.js, crt.js, controls.js in this order.
+const encodedPlayer = document.getElementById("exportPreviewVideo");
+const previewModeControl = document.getElementById("previewMode");
+let encodedSample = null;
+let encodedState = "effect";
+let encodedError = null;
+let resumeSourceAfterPreview = false;
+let encodedWantsPlayback = true;
+let lastPreviewSettings = "";
+const encodedPreviewScheduler = createEncodedPreviewScheduler({
+  generate: encodePreviewSample,
+  onState: (state, error) => { encodedState = state; encodedError = error; updateEncodedPreviewStatus(); },
+  onResult: result => {
+    if (previewModeControl.value !== "encoded") return;
+    if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
+    exportPreviewUrl = URL.createObjectURL(result.blob);
+    encodedSample = result;
+    resumeSourceAfterPreview = currentMediaType === "video" && !sourceVideo.paused;
+    sourceVideo.pause();
+    encodedPlayer.src = exportPreviewUrl;
+    encodedPlayer.hidden = false;
+    encodedPlayer.volume = sourceVideo.volume;
+    document.getElementById("exportPreviewInfo").textContent = result.info;
+    document.getElementById("exportPreviewInfo").hidden = false;
+    if (encodedWantsPlayback) startPlayback();
+    syncPlaybackControls();
+  }
+});
+function updateEncodedPreviewStatus() {
+  const zh = currentLang === "zh";
+  const names = {
+    effect:["实时效果预览（未编码）", "Live effects (not encoded)"],
+    stale:["参数已变化，等待更新…", "Settings changed; waiting to update…"],
+    manual:["参数已变化，请刷新编码预览。", "Settings changed; refresh encoded preview."],
+    generating:["正在生成编码预览，参数仍可调整…", "Generating encoded preview; controls remain available…"],
+    ready:["编码预览已更新 · 样片最多 2 秒", "Encoded preview updated · up to 2 seconds"],
+    error:["编码预览失败", "Encoded preview failed"]
+  };
+  document.getElementById("encodedPreviewStatus").textContent = names[encodedState][zh ? 0 : 1] + (encodedError ? `：${encodedError.message}` : "");
+  encodedPlayer.setAttribute("aria-label", zh ? "编码预览" : "Encoded preview");
+}
+function getPlaybackMedia() { return encodedPlayer.hidden ? sourceVideo : encodedPlayer; }
+function hideEncodedPreview({ restore = true } = {}) {
+  if (!encodedPlayer.hidden) {
+    if (restore && encodedSample?.mediaType === "video" && currentMediaType === "video") sourceVideo.currentTime = Math.min(sourceVideo.duration, encodedSample.startTime + encodedPlayer.currentTime);
+    encodedPlayer.pause();
+    encodedPlayer.hidden = true;
+    if (restore && resumeSourceAfterPreview && currentMediaType === "video") startPlayback();
+  }
+  resumeSourceAfterPreview = false;
+  encodedSample = null;
+  encodedPlayer.removeAttribute("src");
+  encodedPlayer.load();
+  if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
+  exportPreviewUrl = null;
+  document.getElementById("exportPreviewInfo").hidden = true;
+  syncPlaybackControls();
+}
+function invalidateEncodedPreview(force = false) {
+  const signature = JSON.stringify(collectConfig());
+  if (!force && signature === lastPreviewSettings) return;
+  lastPreviewSettings = signature;
+  encodedPreviewScheduler.cancel();
+  hideEncodedPreview();
+  encodedError = null;
+  if (previewModeControl.value !== "encoded") encodedState = "effect";
+  else if (document.getElementById("autoEncodedPreview").checked && !exportInProgress) encodedPreviewScheduler.request();
+  else encodedState = "manual";
+  updateEncodedPreviewStatus();
+}
+function notifyMediaPreviewChanged() {
+  encodedPreviewScheduler.cancel();
+  hideEncodedPreview({ restore:false });
+  sourceDrawable = null;
+}
+function notifyMediaPreviewReady() { invalidateEncodedPreview(true); }
+previewModeControl.addEventListener("change", () => {
+  if (previewModeControl.value === "encoded") encodedWantsPlayback = true;
+  invalidateEncodedPreview(true);
+});
+document.getElementById("autoEncodedPreview").addEventListener("change", () => invalidateEncodedPreview(true));
+for (const name of ["play", "pause", "timeupdate", "loadedmetadata", "ended"]) encodedPlayer.addEventListener(name, syncPlaybackControls);
+encodedPlayer.addEventListener("error", () => {
+  if (!encodedPlayer.hasAttribute("src")) return;
+  hideEncodedPreview();
+  encodedState = "error";
+  encodedError = new Error(currentLang === "zh" ? "浏览器无法播放编码结果，请尝试 WebM。" : "Cannot play the encoded result; try WebM.");
+  updateEncodedPreviewStatus();
+});
+window.addEventListener("resize", () => invalidateEncodedPreview(true));
+
 function updateLabels() {
   refreshAudioAudition();
   labels.imageFit.textContent = val("imageFit");
@@ -4614,6 +4928,7 @@ function updateLabels() {
   document.querySelectorAll(".parameter-value-input").forEach(input => {
     if (document.activeElement !== input) input.value = controls[input.dataset.rangeKey].value;
   });
+  invalidateEncodedPreview();
 }
 
 Object.values(controls).forEach((control) => {
@@ -4731,6 +5046,7 @@ function normalizePlaybackVolume(value) {
 }
 function setPlaybackVolume(value) {
   sourceVideo.volume = normalizePlaybackVolume(value);
+  encodedPlayer.volume = sourceVideo.volume;
   const percent = Math.round(sourceVideo.volume * 100);
   const knob = document.getElementById("playbackVolumeKnob");
   knob.setAttribute("aria-valuenow", String(percent));
@@ -4739,18 +5055,20 @@ function setPlaybackVolume(value) {
   document.getElementById("playbackVolumeValue").textContent = `${percent}%`;
 }
 function syncPlaybackControls() {
-  const playing = currentMediaType === "video" && !sourceVideo.paused;
+  const media = getPlaybackMedia();
+  const available = !encodedPlayer.hidden || currentMediaType === "video";
+  const playing = available && !media.paused;
   const play = document.getElementById("monitorPlayButton");
   play.classList.toggle("is-playing", playing);
   play.setAttribute("aria-label", currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play"));
   document.getElementById("playbackLabel").textContent = currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play");
-  play.disabled = currentMediaType !== "video" || exportInProgress;
+  play.disabled = !available || exportInProgress;
   syncPlaybackProgress();
-  if (currentMediaType !== "video") document.getElementById("playbackStatusText").hidden = true;
+  if (currentMediaType !== "video" && encodedPlayer.hidden) document.getElementById("playbackStatusText").hidden = true;
 }
 function startPlayback() {
   const status = document.getElementById("playbackStatusText");
-  sourceVideo.play().then(() => { status.hidden = true; }).catch(() => {
+  getPlaybackMedia().play().then(() => { status.hidden = true; }).catch(() => {
     status.hidden = false;
     status.textContent = currentLang === "zh" ? "请按播放按钮启用有声播放。" : "Press Play to enable playback with sound.";
   });
@@ -4763,20 +5081,39 @@ function formatPlaybackTime(seconds) {
 }
 function syncPlaybackProgress() {
   const progress = document.getElementById("playbackProgress");
-  const available = currentMediaType === "video" && Number.isFinite(sourceVideo.duration) && sourceVideo.duration > 0;
+  const media = getPlaybackMedia();
+  const available = (!encodedPlayer.hidden || currentMediaType === "video") && Number.isFinite(media.duration) && media.duration > 0;
+  const offset = !encodedPlayer.hidden && encodedSample?.mediaType === "video" ? encodedSample.startTime : 0;
+  const duration = available ? (!encodedPlayer.hidden && encodedSample?.mediaType === "video" ? sourceVideo.duration : media.duration) : 1;
+  const time = available ? offset + media.currentTime : 0;
   progress.disabled = !available || exportInProgress;
-  progress.max = available ? sourceVideo.duration : 1;
-  progress.value = available ? sourceVideo.currentTime : 0;
-  progress.setAttribute("aria-valuetext", `${formatPlaybackTime(available ? sourceVideo.currentTime : 0)} / ${formatPlaybackTime(available ? sourceVideo.duration : 0)}`);
-  document.getElementById("playbackCurrentTime").textContent = formatPlaybackTime(available ? sourceVideo.currentTime : 0);
-  document.getElementById("playbackDuration").textContent = formatPlaybackTime(available ? sourceVideo.duration : 0);
+  progress.max = duration;
+  progress.value = time;
+  progress.setAttribute("aria-valuetext", `${formatPlaybackTime(time)} / ${formatPlaybackTime(available ? duration : 0)}`);
+  document.getElementById("playbackCurrentTime").textContent = formatPlaybackTime(time);
+  document.getElementById("playbackDuration").textContent = formatPlaybackTime(available ? duration : 0);
 }
 const progressControl = document.getElementById("playbackProgress");
-progressControl.addEventListener("pointerdown", () => { if (!progressControl.disabled) sourceVideo.pause(); });
+progressControl.addEventListener("pointerdown", () => {
+  if (!progressControl.disabled) {
+    if (previewModeControl.value === "encoded") { encodedWantsPlayback = false; resumeSourceAfterPreview = false; }
+    getPlaybackMedia().pause();
+  }
+});
 progressControl.addEventListener("input", () => {
+  if (previewModeControl.value === "encoded") { encodedWantsPlayback = false; resumeSourceAfterPreview = false; }
+  const position = Number(progressControl.value);
+  if (!encodedPlayer.hidden && encodedSample) {
+    const offset = encodedSample.mediaType === "video" ? encodedSample.startTime : 0;
+    if (position >= offset && position <= offset + encodedSample.duration) {
+      encodedPlayer.pause(); encodedPlayer.currentTime = position - offset; syncPlaybackProgress(); return;
+    }
+    hideEncodedPreview({ restore:false });
+  }
   if (currentMediaType !== "video" || exportInProgress || !Number.isFinite(sourceVideo.duration)) { syncPlaybackProgress(); return; }
   sourceVideo.pause();
-  sourceVideo.currentTime = Math.max(0, Math.min(sourceVideo.duration, Number(progressControl.value)));
+  sourceVideo.currentTime = Math.max(0, Math.min(sourceVideo.duration, position));
+  invalidateEncodedPreview(true);
   syncPlaybackProgress();
 });
 for (const name of ["timeupdate", "loadedmetadata", "durationchange", "seeked", "emptied"]) sourceVideo.addEventListener(name, syncPlaybackProgress);
@@ -4812,15 +5149,18 @@ volumeKnob.addEventListener("keydown", event => {
 setPlaybackVolume(1);
 
 document.getElementById("playPauseButton").addEventListener("click", () => {
-  if (currentMediaType !== "video") return;
-  if (sourceVideo.paused) {
+  if (currentMediaType !== "video" && encodedPlayer.hidden) return;
+  if (getPlaybackMedia().paused) {
+    if (!encodedPlayer.hidden) { encodedWantsPlayback = true; resumeSourceAfterPreview = currentMediaType === "video"; }
     startPlayback();
   } else {
-    sourceVideo.pause();
+    if (!encodedPlayer.hidden) { encodedWantsPlayback = false; resumeSourceAfterPreview = false; }
+    getPlaybackMedia().pause();
   }
 });
 
 document.getElementById("restartVideoButton").addEventListener("click", () => {
+  if (!encodedPlayer.hidden) { encodedPlayer.currentTime = 0; startPlayback(); return; }
   if (currentMediaType !== "video") return;
   sourceVideo.currentTime = 0;
   startPlayback();
@@ -4896,7 +5236,7 @@ function applyLanguage(lang) {
   document.getElementById("fullscreenLabel").textContent = lang === "zh" ? "放大查看" : "View";
   document.getElementById("fullscreenPreview").setAttribute("aria-label", lang === "zh" ? "放大查看" : "Fullscreen view");
   document.getElementById("exitFullscreenPreview").textContent = lang === "zh" ? "退出全屏" : "Exit fullscreen";
-  document.getElementById("previewQualityLabel").textContent = lang === "zh" ? "预览模式" : "Preview mode";
+  document.getElementById("previewQualityLabel").textContent = lang === "zh" ? "预览性能" : "Preview performance";
   document.querySelector('#previewQuality option[value="fine"]').textContent = lang === "zh" ? "精细" : "Fine";
   document.querySelector('#previewQuality option[value="smooth"]').textContent = lang === "zh" ? "流畅" : "Smooth";
   document.querySelectorAll(".parameter-stepper").forEach(row => {
@@ -4907,6 +5247,7 @@ function applyLanguage(lang) {
     row.querySelector('[data-step-direction="-1"]').setAttribute("aria-label", `${lang === "zh" ? "减少" : "Decrease"} ${title}`);
     row.querySelector('[data-step-direction="1"]').setAttribute("aria-label", `${lang === "zh" ? "增加" : "Increase"} ${title}`);
   });
+  updateEncodedPreviewStatus();
 }
 
 applyLanguage("zh");
@@ -4920,8 +5261,17 @@ document.getElementById("saveUserPresetButton").addEventListener("click", saveCu
 document.getElementById("loadUserPresetButton").addEventListener("click", loadSelectedUserPreset);
 document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
 document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
-document.getElementById("downloadVideoButton").addEventListener("click", () => downloadHighQualityVideo());
-document.getElementById("previewExportButton").addEventListener("click", () => downloadHighQualityVideo({ preview: true }));
+document.getElementById("downloadVideoButton").addEventListener("click", async () => {
+  encodedPreviewScheduler.cancel(); hideEncodedPreview();
+  await encodedPreviewScheduler.idle();
+  await downloadHighQualityVideo();
+  invalidateEncodedPreview(true);
+});
+document.getElementById("previewExportButton").addEventListener("click", () => {
+  previewModeControl.value = "encoded";
+  hideEncodedPreview();
+  encodedPreviewScheduler.refresh();
+});
 document.getElementById("audioAuditionInput").addEventListener("change", enableAudioAudition);
 document.getElementById("enableAudioAuditionButton").addEventListener("click", enableAudioAudition);
 const configDialog = document.getElementById("configDialog");
@@ -4952,6 +5302,7 @@ function updatePreviewZoom(next) {
   previewZoom = Math.max(1, Math.min(8, next));
   if (previewZoom === 1) previewX = previewY = 0;
   canvas.style.transform = `translate(${previewX}px, ${previewY}px) scale(${previewZoom})`;
+  encodedPlayer.style.transform = canvas.style.transform;
   document.getElementById("zoomResetPreview").textContent = `${Math.round(previewZoom * 100)}%`;
 }
 document.getElementById("fullscreenPreview").addEventListener("click", async () => {

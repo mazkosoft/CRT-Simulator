@@ -1,5 +1,95 @@
 // UI bindings, localization, transport and application startup.
 // Classic scripts share scope; load config.js, crt.js, controls.js in this order.
+const encodedPlayer = document.getElementById("exportPreviewVideo");
+const previewModeControl = document.getElementById("previewMode");
+let encodedSample = null;
+let encodedState = "effect";
+let encodedError = null;
+let resumeSourceAfterPreview = false;
+let encodedWantsPlayback = true;
+let lastPreviewSettings = "";
+const encodedPreviewScheduler = createEncodedPreviewScheduler({
+  generate: encodePreviewSample,
+  onState: (state, error) => { encodedState = state; encodedError = error; updateEncodedPreviewStatus(); },
+  onResult: result => {
+    if (previewModeControl.value !== "encoded") return;
+    if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
+    exportPreviewUrl = URL.createObjectURL(result.blob);
+    encodedSample = result;
+    resumeSourceAfterPreview = currentMediaType === "video" && !sourceVideo.paused;
+    sourceVideo.pause();
+    encodedPlayer.src = exportPreviewUrl;
+    encodedPlayer.hidden = false;
+    encodedPlayer.volume = sourceVideo.volume;
+    document.getElementById("exportPreviewInfo").textContent = result.info;
+    document.getElementById("exportPreviewInfo").hidden = false;
+    if (encodedWantsPlayback) startPlayback();
+    syncPlaybackControls();
+  }
+});
+function updateEncodedPreviewStatus() {
+  const zh = currentLang === "zh";
+  const names = {
+    effect:["实时效果预览（未编码）", "Live effects (not encoded)"],
+    stale:["参数已变化，等待更新…", "Settings changed; waiting to update…"],
+    manual:["参数已变化，请刷新编码预览。", "Settings changed; refresh encoded preview."],
+    generating:["正在生成编码预览，参数仍可调整…", "Generating encoded preview; controls remain available…"],
+    ready:["编码预览已更新 · 样片最多 2 秒", "Encoded preview updated · up to 2 seconds"],
+    error:["编码预览失败", "Encoded preview failed"]
+  };
+  document.getElementById("encodedPreviewStatus").textContent = names[encodedState][zh ? 0 : 1] + (encodedError ? `：${encodedError.message}` : "");
+  encodedPlayer.setAttribute("aria-label", zh ? "编码预览" : "Encoded preview");
+}
+function getPlaybackMedia() { return encodedPlayer.hidden ? sourceVideo : encodedPlayer; }
+function hideEncodedPreview({ restore = true } = {}) {
+  if (!encodedPlayer.hidden) {
+    if (restore && encodedSample?.mediaType === "video" && currentMediaType === "video") sourceVideo.currentTime = Math.min(sourceVideo.duration, encodedSample.startTime + encodedPlayer.currentTime);
+    encodedPlayer.pause();
+    encodedPlayer.hidden = true;
+    if (restore && resumeSourceAfterPreview && currentMediaType === "video") startPlayback();
+  }
+  resumeSourceAfterPreview = false;
+  encodedSample = null;
+  encodedPlayer.removeAttribute("src");
+  encodedPlayer.load();
+  if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
+  exportPreviewUrl = null;
+  document.getElementById("exportPreviewInfo").hidden = true;
+  syncPlaybackControls();
+}
+function invalidateEncodedPreview(force = false) {
+  const signature = JSON.stringify(collectConfig());
+  if (!force && signature === lastPreviewSettings) return;
+  lastPreviewSettings = signature;
+  encodedPreviewScheduler.cancel();
+  hideEncodedPreview();
+  encodedError = null;
+  if (previewModeControl.value !== "encoded") encodedState = "effect";
+  else if (document.getElementById("autoEncodedPreview").checked && !exportInProgress) encodedPreviewScheduler.request();
+  else encodedState = "manual";
+  updateEncodedPreviewStatus();
+}
+function notifyMediaPreviewChanged() {
+  encodedPreviewScheduler.cancel();
+  hideEncodedPreview({ restore:false });
+  sourceDrawable = null;
+}
+function notifyMediaPreviewReady() { invalidateEncodedPreview(true); }
+previewModeControl.addEventListener("change", () => {
+  if (previewModeControl.value === "encoded") encodedWantsPlayback = true;
+  invalidateEncodedPreview(true);
+});
+document.getElementById("autoEncodedPreview").addEventListener("change", () => invalidateEncodedPreview(true));
+for (const name of ["play", "pause", "timeupdate", "loadedmetadata", "ended"]) encodedPlayer.addEventListener(name, syncPlaybackControls);
+encodedPlayer.addEventListener("error", () => {
+  if (!encodedPlayer.hasAttribute("src")) return;
+  hideEncodedPreview();
+  encodedState = "error";
+  encodedError = new Error(currentLang === "zh" ? "浏览器无法播放编码结果，请尝试 WebM。" : "Cannot play the encoded result; try WebM.");
+  updateEncodedPreviewStatus();
+});
+window.addEventListener("resize", () => invalidateEncodedPreview(true));
+
 function updateLabels() {
   refreshAudioAudition();
   labels.imageFit.textContent = val("imageFit");
@@ -80,6 +170,7 @@ function updateLabels() {
   document.querySelectorAll(".parameter-value-input").forEach(input => {
     if (document.activeElement !== input) input.value = controls[input.dataset.rangeKey].value;
   });
+  invalidateEncodedPreview();
 }
 
 Object.values(controls).forEach((control) => {
@@ -197,6 +288,7 @@ function normalizePlaybackVolume(value) {
 }
 function setPlaybackVolume(value) {
   sourceVideo.volume = normalizePlaybackVolume(value);
+  encodedPlayer.volume = sourceVideo.volume;
   const percent = Math.round(sourceVideo.volume * 100);
   const knob = document.getElementById("playbackVolumeKnob");
   knob.setAttribute("aria-valuenow", String(percent));
@@ -205,18 +297,20 @@ function setPlaybackVolume(value) {
   document.getElementById("playbackVolumeValue").textContent = `${percent}%`;
 }
 function syncPlaybackControls() {
-  const playing = currentMediaType === "video" && !sourceVideo.paused;
+  const media = getPlaybackMedia();
+  const available = !encodedPlayer.hidden || currentMediaType === "video";
+  const playing = available && !media.paused;
   const play = document.getElementById("monitorPlayButton");
   play.classList.toggle("is-playing", playing);
   play.setAttribute("aria-label", currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play"));
   document.getElementById("playbackLabel").textContent = currentLang === "zh" ? (playing ? "暂停" : "播放") : (playing ? "Pause" : "Play");
-  play.disabled = currentMediaType !== "video" || exportInProgress;
+  play.disabled = !available || exportInProgress;
   syncPlaybackProgress();
-  if (currentMediaType !== "video") document.getElementById("playbackStatusText").hidden = true;
+  if (currentMediaType !== "video" && encodedPlayer.hidden) document.getElementById("playbackStatusText").hidden = true;
 }
 function startPlayback() {
   const status = document.getElementById("playbackStatusText");
-  sourceVideo.play().then(() => { status.hidden = true; }).catch(() => {
+  getPlaybackMedia().play().then(() => { status.hidden = true; }).catch(() => {
     status.hidden = false;
     status.textContent = currentLang === "zh" ? "请按播放按钮启用有声播放。" : "Press Play to enable playback with sound.";
   });
@@ -229,20 +323,39 @@ function formatPlaybackTime(seconds) {
 }
 function syncPlaybackProgress() {
   const progress = document.getElementById("playbackProgress");
-  const available = currentMediaType === "video" && Number.isFinite(sourceVideo.duration) && sourceVideo.duration > 0;
+  const media = getPlaybackMedia();
+  const available = (!encodedPlayer.hidden || currentMediaType === "video") && Number.isFinite(media.duration) && media.duration > 0;
+  const offset = !encodedPlayer.hidden && encodedSample?.mediaType === "video" ? encodedSample.startTime : 0;
+  const duration = available ? (!encodedPlayer.hidden && encodedSample?.mediaType === "video" ? sourceVideo.duration : media.duration) : 1;
+  const time = available ? offset + media.currentTime : 0;
   progress.disabled = !available || exportInProgress;
-  progress.max = available ? sourceVideo.duration : 1;
-  progress.value = available ? sourceVideo.currentTime : 0;
-  progress.setAttribute("aria-valuetext", `${formatPlaybackTime(available ? sourceVideo.currentTime : 0)} / ${formatPlaybackTime(available ? sourceVideo.duration : 0)}`);
-  document.getElementById("playbackCurrentTime").textContent = formatPlaybackTime(available ? sourceVideo.currentTime : 0);
-  document.getElementById("playbackDuration").textContent = formatPlaybackTime(available ? sourceVideo.duration : 0);
+  progress.max = duration;
+  progress.value = time;
+  progress.setAttribute("aria-valuetext", `${formatPlaybackTime(time)} / ${formatPlaybackTime(available ? duration : 0)}`);
+  document.getElementById("playbackCurrentTime").textContent = formatPlaybackTime(time);
+  document.getElementById("playbackDuration").textContent = formatPlaybackTime(available ? duration : 0);
 }
 const progressControl = document.getElementById("playbackProgress");
-progressControl.addEventListener("pointerdown", () => { if (!progressControl.disabled) sourceVideo.pause(); });
+progressControl.addEventListener("pointerdown", () => {
+  if (!progressControl.disabled) {
+    if (previewModeControl.value === "encoded") { encodedWantsPlayback = false; resumeSourceAfterPreview = false; }
+    getPlaybackMedia().pause();
+  }
+});
 progressControl.addEventListener("input", () => {
+  if (previewModeControl.value === "encoded") { encodedWantsPlayback = false; resumeSourceAfterPreview = false; }
+  const position = Number(progressControl.value);
+  if (!encodedPlayer.hidden && encodedSample) {
+    const offset = encodedSample.mediaType === "video" ? encodedSample.startTime : 0;
+    if (position >= offset && position <= offset + encodedSample.duration) {
+      encodedPlayer.pause(); encodedPlayer.currentTime = position - offset; syncPlaybackProgress(); return;
+    }
+    hideEncodedPreview({ restore:false });
+  }
   if (currentMediaType !== "video" || exportInProgress || !Number.isFinite(sourceVideo.duration)) { syncPlaybackProgress(); return; }
   sourceVideo.pause();
-  sourceVideo.currentTime = Math.max(0, Math.min(sourceVideo.duration, Number(progressControl.value)));
+  sourceVideo.currentTime = Math.max(0, Math.min(sourceVideo.duration, position));
+  invalidateEncodedPreview(true);
   syncPlaybackProgress();
 });
 for (const name of ["timeupdate", "loadedmetadata", "durationchange", "seeked", "emptied"]) sourceVideo.addEventListener(name, syncPlaybackProgress);
@@ -278,15 +391,18 @@ volumeKnob.addEventListener("keydown", event => {
 setPlaybackVolume(1);
 
 document.getElementById("playPauseButton").addEventListener("click", () => {
-  if (currentMediaType !== "video") return;
-  if (sourceVideo.paused) {
+  if (currentMediaType !== "video" && encodedPlayer.hidden) return;
+  if (getPlaybackMedia().paused) {
+    if (!encodedPlayer.hidden) { encodedWantsPlayback = true; resumeSourceAfterPreview = currentMediaType === "video"; }
     startPlayback();
   } else {
-    sourceVideo.pause();
+    if (!encodedPlayer.hidden) { encodedWantsPlayback = false; resumeSourceAfterPreview = false; }
+    getPlaybackMedia().pause();
   }
 });
 
 document.getElementById("restartVideoButton").addEventListener("click", () => {
+  if (!encodedPlayer.hidden) { encodedPlayer.currentTime = 0; startPlayback(); return; }
   if (currentMediaType !== "video") return;
   sourceVideo.currentTime = 0;
   startPlayback();
@@ -362,7 +478,7 @@ function applyLanguage(lang) {
   document.getElementById("fullscreenLabel").textContent = lang === "zh" ? "放大查看" : "View";
   document.getElementById("fullscreenPreview").setAttribute("aria-label", lang === "zh" ? "放大查看" : "Fullscreen view");
   document.getElementById("exitFullscreenPreview").textContent = lang === "zh" ? "退出全屏" : "Exit fullscreen";
-  document.getElementById("previewQualityLabel").textContent = lang === "zh" ? "预览模式" : "Preview mode";
+  document.getElementById("previewQualityLabel").textContent = lang === "zh" ? "预览性能" : "Preview performance";
   document.querySelector('#previewQuality option[value="fine"]').textContent = lang === "zh" ? "精细" : "Fine";
   document.querySelector('#previewQuality option[value="smooth"]').textContent = lang === "zh" ? "流畅" : "Smooth";
   document.querySelectorAll(".parameter-stepper").forEach(row => {
@@ -373,6 +489,7 @@ function applyLanguage(lang) {
     row.querySelector('[data-step-direction="-1"]').setAttribute("aria-label", `${lang === "zh" ? "减少" : "Decrease"} ${title}`);
     row.querySelector('[data-step-direction="1"]').setAttribute("aria-label", `${lang === "zh" ? "增加" : "Increase"} ${title}`);
   });
+  updateEncodedPreviewStatus();
 }
 
 applyLanguage("zh");
@@ -386,8 +503,17 @@ document.getElementById("saveUserPresetButton").addEventListener("click", saveCu
 document.getElementById("loadUserPresetButton").addEventListener("click", loadSelectedUserPreset);
 document.getElementById("deleteUserPresetButton").addEventListener("click", deleteSelectedUserPreset);
 document.getElementById("downloadImageButton").addEventListener("click", downloadCurrentFrame);
-document.getElementById("downloadVideoButton").addEventListener("click", () => downloadHighQualityVideo());
-document.getElementById("previewExportButton").addEventListener("click", () => downloadHighQualityVideo({ preview: true }));
+document.getElementById("downloadVideoButton").addEventListener("click", async () => {
+  encodedPreviewScheduler.cancel(); hideEncodedPreview();
+  await encodedPreviewScheduler.idle();
+  await downloadHighQualityVideo();
+  invalidateEncodedPreview(true);
+});
+document.getElementById("previewExportButton").addEventListener("click", () => {
+  previewModeControl.value = "encoded";
+  hideEncodedPreview();
+  encodedPreviewScheduler.refresh();
+});
 document.getElementById("audioAuditionInput").addEventListener("change", enableAudioAudition);
 document.getElementById("enableAudioAuditionButton").addEventListener("click", enableAudioAudition);
 const configDialog = document.getElementById("configDialog");
@@ -418,6 +544,7 @@ function updatePreviewZoom(next) {
   previewZoom = Math.max(1, Math.min(8, next));
   if (previewZoom === 1) previewX = previewY = 0;
   canvas.style.transform = `translate(${previewX}px, ${previewY}px) scale(${previewZoom})`;
+  encodedPlayer.style.transform = canvas.style.transform;
   document.getElementById("zoomResetPreview").textContent = `${Math.round(previewZoom * 100)}%`;
 }
 document.getElementById("fullscreenPreview").addEventListener("click", async () => {

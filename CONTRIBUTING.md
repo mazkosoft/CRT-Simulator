@@ -2,7 +2,7 @@
 
 Use the complete checkout and a local HTTP server. There is no build step.
 Application scripts are classic scripts sharing one scope, loaded in this order:
-`config.js`, `crt.js`, `controls.js`. Keep initialization in `controls.js`;
+`config.js`, `preview.js`, `crt.js`, `controls.js`. Keep initialization in `controls.js`;
 configuration functions may reference renderer/UI bindings after startup.
 These files are not independently reusable ES modules.
 
@@ -10,7 +10,8 @@ Before proposing a change:
 
 1. Run `node tests/structure.test.cjs`.
    Regenerate the single-file release with `node scripts/build-standalone.cjs`,
-   then run `node tests/standalone.test.cjs`. Do not edit `dist` by hand.
+   then run `node tests/standalone.test.cjs`. Also run `node tests/audio-export.test.cjs`
+   and `node tests/preview.test.cjs`. Do not edit `dist` by hand.
 2. Check the browser console and test image/video upload, seek/pause, configuration,
    language switching, fullscreen, PNG export and a short video export.
 3. Inspect desktop and 320px-wide/mobile landscape layouts.
@@ -24,8 +25,8 @@ media unless you intend to share it publicly.
 
 ## 简体中文
 
-使用完整仓库和本地 HTTP 服务，无需构建。三个脚本按
-`config.js → crt.js → controls.js` 顺序加载，共享作用域；初始化放在
+使用完整仓库和本地 HTTP 服务，无需构建。应用脚本按
+`config.js → preview.js → crt.js → controls.js` 顺序加载，共享作用域；初始化放在
 `controls.js` 中，它们不是可独立使用的 ES 模块。
 
 修改前后运行 `node tests/structure.test.cjs`，检查浏览器控制台，并实测上传、

@@ -5,6 +5,10 @@
 .control-group .control:has(.export-panel) { grid-column:1 / -1; }
 .control-group > .media-controls { grid-column:1 / -1; }
 .export-panel { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:16px; }
+.encoded-preview-settings { padding:0 2px 8px; }
+.encoded-preview-settings label { display:flex; align-items:center; gap:8px; min-height:36px; font-size:13px; font-weight:400; }
+.encoded-preview-settings input { width:18px; height:18px; accent-color:#786c51; }
+.encoded-preview-settings .hint { margin:4px 0; overflow-wrap:anywhere; }
 .export-panel > :not(.control),.export-panel > .control:has(select) { grid-column:1 / -1; }
 .dos-header { display:flex; justify-content:space-between; align-items:center; padding:3px 0 12px; }
 .dos-model { margin:0 0 4px; font-size:9px; color:#777165; letter-spacing:2px; }

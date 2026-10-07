@@ -22,6 +22,7 @@
             <button id="zoomInPreview" type="button" aria-label="放大">+</button>
           </div>
           <canvas id="glCanvas"></canvas>
+          <video id="exportPreviewVideo" class="encoded-screen" playsinline loop hidden aria-label="编码预览"></video>
           <svg class="glass-reflection" viewBox="0 0 1000 800" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="glassLight" x1="0" y1="0" x2="0.8" y2="1">
@@ -61,6 +62,12 @@
     </header>
     <p id="dosCaption" class="dos-caption">本地媒体处理控制台</p>
     <div class="preview-quality-control"><label id="previewQualityLabel" for="previewQuality">预览模式</label><select id="previewQuality"><option value="fine">精细</option><option value="smooth">流畅</option></select></div>
+    <div class="preview-quality-control"><label for="previewMode" data-i18n-zh="预览内容" data-i18n-en="Preview content">预览内容</label><select id="previewMode"><option value="effect" data-i18n-zh="效果预览" data-i18n-en="Live effects">效果预览</option><option value="encoded" data-i18n-zh="编码预览" data-i18n-en="Encoded preview">编码预览</option></select></div>
+    <div class="encoded-preview-settings">
+      <label><input id="autoEncodedPreview" type="checkbox" checked /><span data-i18n-zh="自动更新编码预览" data-i18n-en="Update encoded preview automatically">自动更新编码预览</span></label>
+      <p id="encodedPreviewStatus" class="hint" role="status" aria-live="polite"></p>
+      <p id="exportPreviewInfo" class="hint" hidden></p>
+    </div>
 
     <details class="control-group">
       <summary>PRESETS / 效果预设</summary>
@@ -167,12 +174,8 @@
         <p class="hint">优先使用本地 WebCodecs/Mediabunny 离线封装；不支持时会提示使用兼容 WebM 导出。</p>
       </div>
 
-      <button id="previewExportButton" type="button" data-i18n-zh="试导出当前片段（最多 3 秒）" data-i18n-en="Test current segment (up to 3 seconds)">试导出当前片段（最多 3 秒）</button>
-      <p class="hint" data-i18n-zh="试导出使用当前编码参数，可准确查看压缩画质和处理后的音轨。调整参数后请重新生成。" data-i18n-en="The test uses your actual encoding settings, including processed audio. Regenerate after changing settings.">试导出使用当前编码参数，可准确查看压缩画质和处理后的音轨。调整参数后请重新生成。</p>
-      <div hidden>
-        <video id="exportPreviewVideo" controls playsinline style="width:100%;max-height:240px"></video>
-        <p id="exportPreviewInfo" class="hint"></p>
-      </div>
+      <button id="previewExportButton" type="button" data-i18n-zh="刷新编码预览" data-i18n-en="Refresh encoded preview">刷新编码预览</button>
+      <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
       <p class="hint">图片与视频都会离线逐帧渲染；视频音轨会按“复古音频”参数同步处理。</p>
       </div>
       <p class="hint">这版支持图片和视频。媒体、RGB、点遮罩、光带先合成，再一起桶形变形；光带等待阶段完全隐藏，扫过时是下方平直亮边、上方渐变拖影。</p>
@@ -593,6 +596,7 @@
   <script src="vendor/mediabunny.min.cjs"></script>
   <script src="vendor/mediabunny-aac-encoder.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/preview.js"></script>
   <script src="js/crt.js"></script>
   <script src="js/controls.js"></script>
 </body>

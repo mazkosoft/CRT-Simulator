@@ -1,7 +1,7 @@
 // WebGL renderer, media sources and image/video/audio export.
 // Classic scripts share scope; load config.js, crt.js, controls.js in this order.
-const canvas = document.getElementById("glCanvas");
-const gl = canvas.getContext("webgl", {
+let canvas = document.getElementById("glCanvas");
+let gl = canvas.getContext("webgl", {
   premultipliedAlpha: false,
   antialias: false,
   preserveDrawingBuffer: true
@@ -582,7 +582,7 @@ function createProgram(fragmentSource) {
   return { program, aPosition, uniforms };
 }
 
-const programs = {
+function createPrograms() { return {
   source: createProgram(SOURCE_FS),
   rgb: createProgram(RGB_FS),
   mask: createProgram(MASK_FS),
@@ -591,8 +591,10 @@ const programs = {
   warp: createProgram(WARP_FS),
   luma: createProgram(LUMA_FS),
   final: createProgram(FINAL_FS)
-};
+}; }
+let programs = createPrograms();
 
+function createQuad() {
 const quad = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 gl.bufferData(
@@ -607,6 +609,9 @@ gl.bufferData(
   ]),
   gl.STATIC_DRAW
 );
+return quad;
+}
+let quad = createQuad();
 
 function useProgram(name) {
   const p = programs[name];
@@ -654,6 +659,7 @@ function resizeTarget(target, w, h) {
 
   gl.bindTexture(gl.TEXTURE_2D, target.texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  if (gl.getError() !== gl.NO_ERROR) throw new Error(currentLang === "zh" ? "渲染内存不足，请降低导出倍率。" : "Insufficient rendering memory; reduce export scale.");
 }
 
 function bindTexture(unit, texture, location) {
@@ -674,7 +680,7 @@ function drawTo(target) {
   gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
-const targets = {
+function createTargets() { return {
   fit: createTarget(1, 1),
   imageBlurX: createTarget(1, 1),
   imageBlurred: createTarget(1, 1),
@@ -695,9 +701,15 @@ const targets = {
   luma: createTarget(1, 1),
   glowX: createTarget(1, 1),
   glow: createTarget(1, 1)
-};
+}; }
+let targets = createTargets();
 
 let sourceTexture = null;
+let sourceDrawable = null;
+let renderSettings = null;
+let renderSurfaceSize = null;
+let previewRenderBusy = false;
+let encodedRenderSurface = null;
 let sourceWidth = 1024;
 let sourceHeight = 768;
 let sourceAspect = sourceWidth / sourceHeight;
@@ -755,6 +767,7 @@ function uploadSource(source, w, h) {
 
   const previous = sourceTexture;
   sourceTexture = replacement;
+  sourceDrawable = source;
   if (previous) gl.deleteTexture(previous);
   return true;
 }
@@ -860,6 +873,7 @@ const labels = {
 };
 
 function val(key) {
+  if (renderSettings) return renderSettings[key] ?? "";
   const control = controls[key];
   if (!control) return "";
   if (control.type === "checkbox") {
@@ -895,6 +909,14 @@ function getPreviewSize(width, height, maxSize) {
 }
 
 function resize() {
+  if (renderSurfaceSize) {
+    const { width:w, height:h } = renderSurfaceSize;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;
+      Object.values(targets).forEach(target => resizeTarget(target, w, h));
+    }
+    return;
+  }
   const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const dpr = baseDpr * (exportInProgress ? exportRenderScale : 1);
   const rect = { width: canvas.clientWidth, height: canvas.clientHeight };
@@ -926,6 +948,57 @@ function resize() {
   Object.values(targets).forEach((target) => {
     resizeTarget(target, w, h);
   });
+}
+
+// Scope a detached renderer synchronously. Never hold switched globals across await.
+// Both surfaces execute the very same shaders, passes and parameter interpretation.
+function withRenderSurface(surface, settings, dimensions, frame, draw) {
+  const saved = { canvas, gl, programs, quad, targets, sourceTexture, sourceWidth, sourceHeight,
+    sourceAspect, exportDecodedCanvas, renderSettings, renderSurfaceSize, currentMediaType, exportMosaic };
+  try {
+    ({ canvas, gl, programs, quad, targets, sourceTexture, sourceWidth, sourceHeight, sourceAspect } = surface);
+    currentMediaType = surface.mediaType;
+    exportDecodedCanvas = frame;
+    renderSettings = settings;
+    exportMosaic = settings ? Number(settings.exportPixelSize) > 0 : false;
+    renderSurfaceSize = dimensions;
+    return draw();
+  } finally {
+    surface.sourceTexture = sourceTexture;
+    ({ canvas, gl, programs, quad, targets, sourceTexture, sourceWidth, sourceHeight,
+      sourceAspect, exportDecodedCanvas, renderSettings, renderSurfaceSize, currentMediaType, exportMosaic } = saved);
+  }
+}
+
+function preparePreviewSurface(mediaType, drawable, width, height) {
+  if (!encodedRenderSurface) {
+    const detachedCanvas = document.createElement("canvas");
+    const detachedGl = detachedCanvas.getContext("webgl", { antialias:false, premultipliedAlpha:false, preserveDrawingBuffer:true });
+    if (!detachedGl) throw new Error("Preview WebGL unavailable");
+    encodedRenderSurface = { canvas:detachedCanvas, gl:detachedGl, sourceTexture:null };
+    withRenderSurface(encodedRenderSurface, null, null, null, () => {
+      encodedRenderSurface.programs = createPrograms();
+      encodedRenderSurface.quad = createQuad();
+      encodedRenderSurface.targets = createTargets();
+    });
+  }
+  Object.assign(encodedRenderSurface, { mediaType, sourceWidth:width, sourceHeight:height, sourceAspect:width / height });
+  withRenderSurface(encodedRenderSurface, null, null, null, () => {
+    if (sourceTexture) gl.deleteTexture(sourceTexture);
+    sourceTexture = createTexture(width, height, mediaType === "video" ? null : drawable);
+  });
+  return encodedRenderSurface;
+}
+
+function getExportDimensions(settings, aspect = sourceAspect) {
+  const visible = document.getElementById("glCanvas");
+  const scale = Math.min(window.devicePixelRatio || 1, 1.5) * Number(settings.exportScale);
+  let width = Math.max(2, visible.clientWidth * scale), height = Math.max(2, visible.clientHeight * scale);
+  if (settings.effectBoundary === "source") {
+    if (width / height > aspect) width = height * aspect;
+    else height = width / aspect;
+  }
+  return { width:Math.max(2, Math.floor(width / 2) * 2), height:Math.max(2, Math.floor(height / 2) * 2) };
 }
 
 function computeImagePlacement() {
@@ -1142,7 +1215,8 @@ function renderFrame(ms) {
 
 let lastPreviewFrame = -Infinity;
 function render(ms) {
-  const frameInterval = document.getElementById("previewQuality").value === "smooth" ? 1000 / 15 : 1000 / 30;
+  const previewFps = Math.min(Math.max(10, num("exportFps")), document.getElementById("previewQuality").value === "smooth" ? 15 : 60);
+  const frameInterval = 1000 / previewFps;
   if ((!exportInProgress || compatibilityRecording) && ms - lastPreviewFrame >= frameInterval - 1) {
     renderFrame(ms);
     lastPreviewFrame = ms;
@@ -1200,6 +1274,7 @@ function resetToDemo() {
   image.decoding = "async";
   image.onload = () => {
     uploadSource(image, image.naturalWidth, image.naturalHeight);
+    notifyMediaPreviewReady();
     setPresetStatus("Default desktop loaded / 已载入默认桌面图");
   };
   image.onerror = () => {
@@ -1211,6 +1286,7 @@ function resetToDemo() {
 document.getElementById("imageUpload").addEventListener("change", (event) => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
+  notifyMediaPreviewChanged();
 
   currentSourceFile = file;
 
@@ -1229,6 +1305,7 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
     const img = new Image();
     img.onload = () => {
       uploadSource(img, img.naturalWidth, img.naturalHeight);
+      notifyMediaPreviewReady();
     };
     img.src = currentObjectURL;
     return;
@@ -1258,11 +1335,13 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
     sourceVideo.addEventListener("canplay", () => {
       uploadVideoFrame();
       startPlayback();
+      notifyMediaPreviewReady();
     }, { once: true });
   }
 });
 
 document.getElementById("clearImageButton").addEventListener("click", () => {
+  notifyMediaPreviewChanged();
   if (currentObjectURL) {
     URL.revokeObjectURL(currentObjectURL);
     currentObjectURL = null;
@@ -1273,6 +1352,7 @@ document.getElementById("clearImageButton").addEventListener("click", () => {
 });
 
 document.getElementById("showDemoButton").addEventListener("click", () => {
+  notifyMediaPreviewChanged();
   resetToDemo();
 });
 
@@ -1572,11 +1652,114 @@ sourceVideo.addEventListener("pause", refreshAudioAudition);
 sourceVideo.addEventListener("volumechange", refreshAudioAudition);
 
 let exportPreviewUrl = null;
-async function downloadHighQualityVideo({ preview = false } = {}) {
+async function encodePreviewSample(signal) {
+  signal?.throwIfAborted();
+  if (exportInProgress || previewRenderBusy) throw new Error(currentLang === "zh" ? "请等待当前导出结束。" : "Wait for the current export to finish.");
+  if (!globalThis.Mediabunny || typeof VideoEncoder === "undefined") throw new Error(currentLang === "zh" ? "此浏览器不支持离线编码预览，请使用新版 Chrome 或 Edge。" : "Offline preview requires a current Chrome or Edge browser.");
+  const settings = collectConfig();
+  const mediaType = currentMediaType;
+  const file = currentSourceFile;
+  const drawable = sourceDrawable;
+  const sourceDuration = sourceVideo.duration;
+  if (mediaType !== "video" && !drawable) throw new Error(currentLang === "zh" ? "媒体尚未加载，请稍后刷新。" : "Media is not ready; refresh shortly.");
+  if (mediaType === "video" && (!file || !Number.isFinite(sourceDuration))) throw new Error(currentLang === "zh" ? "视频尚未加载，请稍后刷新。" : "Video is not ready; refresh shortly.");
+  const duration = Math.max(0.001, Math.min(2, Number(settings.exportDuration), mediaType === "video" ? sourceDuration : 2));
+  const startTime = mediaType === "video" ? Math.max(0, Math.min(sourceVideo.currentTime, sourceDuration - duration)) : 0;
+  const fps = Math.max(10, Math.min(60, Math.round(Number(settings.exportFps))));
+  const useWebm = settings.exportFormat === "webm";
+  const dimensions = getExportDimensions(settings);
+  const mb = globalThis.Mediabunny;
+  previewRenderBusy = true;
+  let input = null, frames = null, audioSamples = null, output = null, surface = null;
+  let completed = false;
+  try {
+    surface = preparePreviewSurface(mediaType, drawable, sourceWidth, sourceHeight);
+    if (Math.max(dimensions.width, dimensions.height) > surface.gl.getParameter(surface.gl.MAX_TEXTURE_SIZE)) throw new Error(currentLang === "zh" ? "预览分辨率超过此设备的纹理限制，请降低导出倍率。" : "Preview resolution exceeds this device's limit; reduce export scale.");
+    const sampleCanvas = document.createElement("canvas");
+    sampleCanvas.width = dimensions.width; sampleCanvas.height = dimensions.height;
+    const sampleCtx = sampleCanvas.getContext("2d", { alpha:false });
+    output = new mb.Output({ format:useWebm ? new mb.WebMOutputFormat() : new mb.Mp4OutputFormat(), target:new mb.BufferTarget() });
+    const videoSource = new mb.CanvasSource(sampleCanvas, { codec:useWebm ? "vp9" : "avc", bitrate:Number(settings.exportBitrate) * 1000000, frameRate:fps });
+    output.addVideoTrack(videoSource, { frameRate:fps });
+    let audioSource = null, audioEncoding = null;
+    const totalFrames = Math.max(1, Math.ceil(duration * fps));
+    if (mediaType === "video") {
+      input = new mb.Input({ source:new mb.BlobSource(file), formats:mb.ALL_FORMATS });
+      const videoTrack = await input.getPrimaryVideoTrack();
+      if (!videoTrack || !await videoTrack.canDecode()) throw new Error(currentLang === "zh" ? "浏览器无法解码此视频。" : "This video cannot be decoded.");
+      const firstTimestamp = await videoTrack.getFirstTimestamp();
+      const timestamps = (function* () { for (let i = 0; i < totalFrames; i++) yield Math.max(firstTimestamp, startTime + i / fps); })();
+      frames = new mb.CanvasSink(videoTrack, { poolSize:2 }).canvasesAtTimestamps(timestamps);
+      const audioTrack = await input.getPrimaryAudioTrack();
+      if (audioTrack) {
+        if (!await audioTrack.canDecode()) throw new Error(currentLang === "zh" ? "浏览器无法解码此音轨；未移除音轨。" : "The audio track cannot be decoded; it has not been removed.");
+        audioEncoding = await prepareAudioEncoding(mb, useWebm ? "opus" : "aac", await audioTrack.getSampleRate(), Math.min(2, await audioTrack.getNumberOfChannels()));
+        if (!audioEncoding) throw new Error(currentLang === "zh" ? "音频编码不可用，请尝试 WebM。" : "Audio encoding unavailable; try WebM.");
+        audioSource = new mb.AudioBufferSource({ codec:useWebm ? "opus" : "aac", bitrate:audioEncoding.bitrate });
+        output.addAudioTrack(audioSource);
+        audioSamples = new mb.AudioSampleSink(audioTrack).samples(startTime, startTime + duration);
+      }
+    }
+    signal?.throwIfAborted();
+    await output.start();
+    for (let i = 0; i < totalFrames; i++) {
+      signal?.throwIfAborted();
+      const frame = frames ? (await frames.next()).value : null;
+      signal?.throwIfAborted();
+      if (frames && !frame) throw new Error("Could not decode preview frame");
+      withRenderSurface(surface, settings, dimensions, frame?.canvas || null, () => {
+        renderFrame((startTime + i / fps) * 1000);
+        sampleCtx.drawImage(surface.canvas, 0, 0);
+      });
+      await videoSource.add(i / fps, Math.min(1 / fps, duration - i / fps));
+      // Yield each frame so sliders and cancellation remain usable on slow devices.
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (audioSource) for await (const sample of audioSamples) {
+      try {
+        signal?.throwIfAborted();
+        const decoded = sample.toAudioBuffer();
+        const first = Math.max(0, Math.round((startTime - sample.timestamp) * decoded.sampleRate));
+        const last = Math.min(decoded.length, Math.round((startTime + duration - sample.timestamp) * decoded.sampleRate));
+        if (last > first) {
+          const clipped = new AudioBuffer({ length:last - first, numberOfChannels:decoded.numberOfChannels, sampleRate:decoded.sampleRate });
+          for (let c = 0; c < decoded.numberOfChannels; c++) clipped.copyToChannel(decoded.getChannelData(c).subarray(first, last), c);
+          // Graph construction is synchronous; restore settings before awaiting rendering.
+          const previousSettings = renderSettings;
+          let processed;
+          try { renderSettings = settings; processed = processRetroAudio(clipped, audioEncoding); }
+          finally { renderSettings = previousSettings; }
+          const audio = await processed;
+          signal?.throwIfAborted();
+          await audioSource.add(audio);
+        }
+      } finally { sample.close(); }
+    }
+    signal?.throwIfAborted();
+    await output.finalize();
+    signal?.throwIfAborted();
+    completed = true;
+    const info = `${dimensions.width} × ${dimensions.height} · ${fps} fps · ${duration.toFixed(2)} s · ${useWebm ? "WebM" : "MP4"}${audioEncoding ? ` · ${audioEncoding.sampleRate} Hz / ${audioEncoding.bitrate / 1000} kbps` : ""}`;
+    return { blob:new Blob([output.target.buffer], { type:useWebm ? "video/webm" : "video/mp4" }), info, startTime, duration, mediaType };
+  } finally {
+    if (!completed && output) await output.cancel().catch(() => {});
+    if (frames) await frames.return().catch(() => {});
+    if (audioSamples) await audioSamples.return().catch(() => {});
+    input?.dispose();
+    try {
+      if (surface) withRenderSurface(surface, null, { width:1, height:1 }, null, () => {
+        if (sourceTexture) gl.deleteTexture(sourceTexture);
+        sourceTexture = null;
+        resize();
+      });
+    } finally { previewRenderBusy = false; }
+  }
+}
+async function downloadHighQualityVideo() {
   const mb = globalThis.Mediabunny;
   const hasWebCodecs = typeof VideoEncoder !== "undefined";
   if (!hasWebCodecs || !mb || !mb.Output || !mb.CanvasSource) {
-    if (currentMediaType === "video" && !preview) {
+    if (currentMediaType === "video") {
       setPresetStatus("Offline encoder unavailable; using compatibility WebM / 离线编码不可用，改用兼容 WebM");
       return downloadProcessedVideo();
     }
@@ -1587,8 +1770,8 @@ async function downloadHighQualityVideo({ preview = false } = {}) {
   if (exportInProgress) return;
   exportInProgress = true;
   const fps = Math.max(10, Math.min(60, Math.round(num("exportFps"))));
-  const startTime = preview && currentMediaType === "video" ? Math.min(sourceVideo.currentTime, Math.max(0, sourceVideo.duration - 0.1)) : 0;
-  const duration = Math.max(0.001, preview ? Math.min(3, currentMediaType === "video" ? sourceVideo.duration - startTime : 3) : num("exportDuration"));
+  const startTime = 0;
+  const duration = Math.max(0.001, num("exportDuration"));
   const bitrate = Math.round(Math.max(0.1, Math.min(120, num("exportBitrate"))) * 1000 * 1000);
   exportRenderScale = Math.max(0.25, Math.min(3, num("exportScale")));
   exportMosaic = num("exportPixelSize") > 0;
@@ -1694,20 +1877,11 @@ async function downloadHighQualityVideo({ preview = false } = {}) {
     console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
     const mime = useWebm ? "video/webm" : "video/mp4";
     const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
-    if (preview) {
-      if (exportPreviewUrl) URL.revokeObjectURL(exportPreviewUrl);
-      exportPreviewUrl = url;
-      const player = document.getElementById("exportPreviewVideo");
-      player.src = url;
-      player.parentElement.hidden = false;
-      document.getElementById("exportPreviewInfo").textContent = `${exportCanvas.width} × ${exportCanvas.height} · ${fps} fps · ${duration.toFixed(2)} s · ${useWebm ? "WebM" : "MP4"}${audioEncoding ? ` · ${audioEncoding.sampleRate} Hz / ${audioEncoding.bitrate / 1000} kbps` : ""}`;
-    } else {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1600);
-    }
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `crt-simulator-${useWebm ? "export.webm" : "export.mp4"}`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1600);
     showExportProgress("done");
     setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
   } catch (error) {

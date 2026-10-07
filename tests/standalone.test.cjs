@@ -12,7 +12,7 @@ assert.ok(html.includes('data:image/png;base64,' + fs.readFileSync(path.join(roo
 assert.ok(!html.includes('new URL("assets/demo-desktop.png"'), 'No demo file dependency');
 assert.ok(html.includes(fs.readFileSync(path.join(root, 'vendor/mediabunny.min.cjs'), 'utf8')), 'Retain the unmodified vendor bundle');
 const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(match => match[1]);
-assert.equal(scripts.length, 5, 'Preserve vendor/AAC/config/renderer/control order');
+assert.equal(scripts.length, 6, 'Preserve vendor/AAC/config/preview/renderer/control order');
 scripts.forEach((script, index) => new vm.Script(script, { filename: `standalone-${index}.js` }));
 new vm.Script(scripts.join('\n'));
 for (const name of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/MEDIABUNNY-LICENSE.txt', 'vendor/AAC-ENCODER-LICENSE.txt', 'vendor/FFMPEG-LGPL-2.1.txt', 'vendor/AAC-ENCODER-README.md']) {

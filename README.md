@@ -55,6 +55,7 @@ export/storage on your browser, use the live site or serve the HTML over localho
 - Playback, seeking, volume dial, fullscreen zoom/pan and mobile fine adjustment.
 - PNG and offline frame-by-frame MP4/WebM export with WebCodecs/Mediabunny.
 - Export audio gain, bandwidth, hiss, distortion, modulation and reverb.
+- Automatic encoded samples on the CRT screen, with processed audio and the selected compression settings.
 - English/Chinese controls, About and Credits groups.
 
 ### Online user guide
@@ -146,9 +147,24 @@ multichannel sources are downmixed to stereo. Choose **Original / Processed** an
 the export processing graph but does not simulate codec compression. Silent sources remain silent. Preview-volume zero does not mute export;
 adjust export audio gain separately.
 
-Use **Test current segment** to encode up to three seconds from the playback cursor
-with the current video/audio settings, then play the result in the panel. Regenerate
-after changing settings. The test does not replace or download the full export.
+Choose **Preview content → Encoded preview** to see an actual encoded sample on
+the CRT screen, including processed/compressed audio. After settings stop changing
+for 400 ms, the app generates up to two seconds near the playback cursor and loops
+the sample. The source video pauses while the sample is displayed to avoid double
+audio. Play/pause, timeline, volume and fullscreen zoom control the same screen.
+Seeking outside the sample requests a new segment. Choose **Live effects** to
+return to the original media with immediate effect adjustments.
+
+Generating a sample does not lock the controls or resize the visible renderer.
+New settings cancel superseded jobs; old results cannot replace the newest one.
+On slower devices, disable **Update encoded preview automatically** and press
+**Refresh encoded preview** when ready. Autoplay may require pressing Play.
+Only one job and one result are retained; large intermediate render buffers are
+released after each job. Resolution/bitrate are not silently reduced.
+
+This is delayed automatic sample encoding, not zero-latency continuous codec
+preview. Short samples may compress differently from a long export due to keyframe
+placement and rate control. They do not replace/download the full export.
 Audio encoding support is checked before video rendering; supported sample rates
 and bitrates are selected without removing the track or changing channel count.
 If native AAC is unavailable, the bundled official Mediabunny AAC extension
@@ -180,6 +196,7 @@ index.html                 Page structure / GitHub Pages entry
 css/crt.css                Casing, screen and physical controls
 css/ui.css                 Parameter panel, dialogs and sliders
 js/config.js               Defaults, presets and configuration
+js/preview.js              Cancellable, latest-settings-only preview scheduling
 js/crt.js                  WebGL, media and image/video/audio export
 js/controls.js             UI, language, transport and startup
 assets/demo-desktop.png    Supplied default image
@@ -187,6 +204,7 @@ assets/readme-preview.jpg  Actual application screenshot
 vendor/                    Mediabunny bundle and its license
 tests/structure.test.cjs   Dependency-free checks
 tests/standalone.test.cjs  Self-contained/reproducible release checks
+tests/preview.test.cjs     Preview scheduling and renderer isolation checks
 scripts/build-standalone.cjs Single-file generator
 dist/crt-simulator-standalone.html Complete offline release
 CONTRIBUTING.md            Development / bug-report guide
@@ -201,6 +219,8 @@ not the generated standalone HTML, then rebuild:
 ```sh
 node scripts/build-standalone.cjs
 node tests/structure.test.cjs
+node tests/audio-export.test.cjs
+node tests/preview.test.cjs
 node tests/standalone.test.cjs
 ```
 
@@ -343,8 +363,18 @@ WebM 使用 VP9／Opus，声音取决于源音轨及解码支持。图片也能�
 音效处理链，但不模拟编码压缩。无音轨的源不会自动生成声音。
 试听音量为零不代表导出静音，需单独调整导出音量。
 
-在“媒体与导出”点击“试导出当前片段”，会从当前播放位置按现有视频／音频参数编码
-最多 3 秒，可直接在面板内播放。修改参数后请重新生成；试导出不会替代完整导出。
+在“预览内容”选择“编码预览”，原 CRT 屏幕会显示经过实际编码的样片，包含处理和
+压缩后的声音。参数停止变化 400 毫秒后自动生成当前位置附近最多 2 秒的样片，并循环播放。
+显示样片时会暂停源视频，避免两路声音重叠。屏幕下方的播放、暂停、进度、音量和
+全屏放大仍然有效；拖到样片范围之外会请求新片段。“效果预览”可返回原媒体即时调参。
+
+生成样片期间不会锁住参数，也不改变可见渲染画布的尺寸。修改参数会取消过期任务，
+旧结果不会覆盖新设置。手机或设备较慢时，取消“自动更新编码预览”，再按“刷新编码预览”。
+若浏览器阻止自动播放，请按播放按钮。仅保留一个生成任务和一个结果，生成结束后释放
+大尺寸中间渲染缓存，不会擅自降低所选分辨率或码率。
+
+这属于有短暂等待的自动试编码，而非零延迟持续压缩预览。由于关键帧和码率分配不同，
+短样片与完整导出可能存在差异。样片不会替代或下载完整导出。
 音轨编码兼容性会在画面渲染前检查，自动选用受支持的采样率和码率，不会擅自移除
 音轨或改变声道数量。原生 AAC 不可用时，自动调用随附的官方 Mediabunny 软件 AAC
 编码器；独立 HTML 也包含该扩展，无需联网下载。如初始化失败，可选择 WebM／Opus。
@@ -375,6 +405,8 @@ Windows 有 Python 启动器时可用 `py -m http.server 8080 --bind 127.0.0.1`�
 ```sh
 node scripts/build-standalone.cjs
 node tests/structure.test.cjs
+node tests/audio-export.test.cjs
+node tests/preview.test.cjs
 node tests/standalone.test.cjs
 ```
 
