@@ -72,9 +72,14 @@ Search across categories by name, then clear the search to return.
 Use **☆** to collect favorite parameters and **Modified** to see changes since
 the last loaded preset/configuration. **Reset** restores a single parameter to
 that baseline. Loading a preset starts a new baseline; it does not erase favorites.
-On phones, the 4:3 screen stays above the work area. Swipe the category and
-parameter-name strips horizontally, then edit one parameter with its slider,
-number field or ± keys. Only the work area scrolls; it never covers the screen.
+On phones, the 4:3 screen stays above the work area. Use the compact **Media / Presets /
+Adjust / Export** tabs; in Adjust, choose a category tab and a parameter from the
+dropdown, then edit with its slider, number field or ± keys. **More** holds Guide,
+About, language switching and (in Adjust) Favorites/Modified. Only the work area
+scrolls; it never covers the screen.
+The mobile controls share one inset console, with compact navigation and a quiet
+preview tool strip. Expand **Parameter help** for explanations without permanently
+using up the adjustment area.
 The preview status remains at the bottom. **Preview settings** opens mode/quality
 options; **Hold for original** compares the unprocessed media while held.
 Import, Guide, About and the configuration button remain available in every workspace.
@@ -89,6 +94,11 @@ Open the [live demo](https://mazkosoft.github.io/CRT-Simulator/). The supplied i
 loads automatically. In **Media import**, choose an image/video. **Load default
 image** and **Clear** both return to the sample; neither deletes your local file.
 Input format support depends on browser decoders.
+
+You can also drag one image/video file onto the terminal (including the screen
+or controls). Release it when the drop indicator appears. Multiple files and
+non-media files are rejected without replacing the current media. The file picker
+remains available on touch devices.
 
 Preview status stays in the operating strip; **Preview settings** opens mode,
 performance, automatic updating and refresh controls. The eleven categories are:
@@ -406,6 +416,9 @@ RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、�
 
 #### 不再反复翻找参数
 
+也可以直接把一个图片或视频文件拖到一体机上（屏幕或控制台均可），看到提示后松开即可导入。
+一次处理一个文件；非媒体文件或多个文件不会替换当前内容。手机等触屏设备仍可使用文件选择按钮。
+
 通过机身上的“预设／调整／导出”切换工作区。预设使用当前媒体生成缩略图，点击即可应用。
 电脑屏幕固定在左侧，右侧分类键直接切换参数；只有参数槽内部滚动。
 拖动中间分隔线可以调整两侧宽度；分隔线也支持方向键调整、Home 恢复默认。
@@ -413,7 +426,10 @@ RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、�
 
 点击 ☆ 收藏参数，在“常用”中集中调节；“已修改”显示与最近载入的预设／配置不同的参数。
 “还原”只恢复这一项。载入预设会更新比较基准，不删除收藏；收藏仅保存在当前浏览器。
-手机上方保持完整的 4:3 屏幕，下方横向选择分类和参数名称，一次调节一个参数。
+手机上方保持完整的 4:3 屏幕，下方用紧凑的“媒体／预设／调整／导出”标签切换工作区。
+在“调整”中选择分类标签，再从下拉框选择参数，一次调节一个参数。
+“更多”收纳使用说明、关于鸣谢和语言切换；调整页还可在这里进入“常用／已修改”。
+手机操作区采用一体式浅凹面板，减少重复边框；参数说明点击展开，底部预览工具带保持紧凑。
 数字输入、± 和滑条仍然可用，工作区独立滚动，不遮挡屏幕，也不用整页来回翻找。
 底部保留预览状态，“预览设置”展开编码选项，“按住对比原图”临时查看未处理媒体。
 导入媒体、使用说明、关于鸣谢和屏幕下方的配置按钮始终保留。

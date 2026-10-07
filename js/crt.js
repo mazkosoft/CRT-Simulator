@@ -783,6 +783,7 @@ function uploadVideoFrame() {
   sourceHeight = vh;
   sourceAspect = vw / vh;
 
+  if (!sourceTexture) sourceTexture = createTexture(vw, vh, null);
   gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -1261,6 +1262,7 @@ async function drawExportFrame(ms) {
 }
 
 function resetToDemo() {
+  setMediaImportStatus('');
   controls.exportDuration.value = DEFAULT_CONFIG.exportDuration;
   updateLabels();
   currentMediaType = "image";
@@ -1283,9 +1285,24 @@ function resetToDemo() {
   image.src = new URL("assets/demo-desktop.png", document.baseURI).href;
 }
 
-document.getElementById("imageUpload").addEventListener("change", (event) => {
-  const file = event.target.files && event.target.files[0];
+function mediaFileKind(file) {
+  if (!file) return null;
+  const type = (file.type || '').toLowerCase();
+  if (type.startsWith('image/')) return 'image';
+  if (type.startsWith('video/')) return 'video';
+  if (type && type !== 'application/octet-stream') return null;
+  // Some local files arrive without a MIME type. The browser still validates decoding.
+  if (/\.(png|jpe?g|gif|webp|bmp|avif|svg|ico|heic|heif|tiff?)$/i.test(file.name || '')) return 'image';
+  if (/\.(mp4|m4v|webm|mov|ogv|ogg|avi|mkv|mpeg|mpg)$/i.test(file.name || '')) return 'video';
+  return null;
+}
+
+function loadMediaFile(file) {
   if (!file) return;
+  const kind = mediaFileKind(file);
+  if (!kind) { setMediaImportStatus('Drop an image or video file / 请添加图片或视频文件'); return; }
+  if (exportInProgress) { setMediaImportStatus('Wait for the current export to finish / 请等待当前导出完成后再导入媒体'); return; }
+  setMediaImportStatus('');
   notifyMediaPreviewChanged();
 
   currentSourceFile = file;
@@ -1293,7 +1310,7 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
   if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
   currentObjectURL = URL.createObjectURL(file);
 
-  if (file.type.startsWith("image/")) {
+  if (kind === "image") {
     controls.exportDuration.value = DEFAULT_CONFIG.exportDuration;
     updateLabels();
     currentMediaType = "image";
@@ -1307,11 +1324,12 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
       uploadSource(img, img.naturalWidth, img.naturalHeight);
       notifyMediaPreviewReady();
     };
+    img.onerror = () => setMediaImportStatus('This image cannot be decoded by the browser / 浏览器无法读取这张图片，请尝试 PNG、JPEG 或 WebP');
     img.src = currentObjectURL;
     return;
   }
 
-  if (file.type.startsWith("video/")) {
+  if (kind === "video") {
     currentMediaType = "video";
     sourceVideo.src = currentObjectURL;
     sourceVideo.loop = true;
@@ -1338,7 +1356,9 @@ document.getElementById("imageUpload").addEventListener("change", (event) => {
       notifyMediaPreviewReady();
     }, { once: true });
   }
-});
+}
+
+document.getElementById("imageUpload").addEventListener("change", event => loadMediaFile(event.target.files?.[0]));
 
 document.getElementById("clearImageButton").addEventListener("click", () => {
   notifyMediaPreviewChanged();

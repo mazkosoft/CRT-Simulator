@@ -1,5 +1,46 @@
 // UI bindings, localization, transport and application startup.
 // Classic scripts share scope; load config.js, crt.js, controls.js in this order.
+function setMediaImportStatus(message) {
+  const notice = document.getElementById('mediaDropNotice');
+  notice.hidden = !message;
+  const text = splitBilingual(message);
+  notice.textContent = text ? text[currentLang === 'zh' ? 'zh' : 'en'] : message;
+  if (message) setPresetStatus(message);
+}
+
+function initializeMediaDrop() {
+  const machine = document.querySelector('.machine');
+  const fileDrag = event => Array.from(event.dataTransfer?.types || []).includes('Files');
+  let depth = 0;
+  const clear = () => { depth = 0; machine.classList.remove('media-dragover'); };
+  document.addEventListener('dragenter', event => {
+    if (!fileDrag(event)) return;
+    event.preventDefault(); depth++; machine.classList.add('media-dragover');
+  });
+  document.addEventListener('dragover', event => {
+    if (!fileDrag(event)) return;
+    event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; machine.classList.add('media-dragover');
+  });
+  document.addEventListener('dragleave', event => {
+    if (--depth <= 0 || !event.relatedTarget) clear();
+  });
+  document.addEventListener('drop', event => {
+    if (!fileDrag(event)) return;
+    event.preventDefault(); clear();
+    const files = Array.from(event.dataTransfer.files || []);
+    if (files.length !== 1) { setMediaImportStatus('Drop one file at a time / 请一次拖入一个图片或视频文件'); return; }
+    if (!mediaFileKind(files[0])) { setMediaImportStatus('Drop an image or video file / 请添加图片或视频文件'); return; }
+    document.getElementById('imageUpload').value = '';
+    loadMediaFile(files[0]);
+  });
+  window.addEventListener('blur', clear);
+  window.addEventListener('dragend', clear);
+}
+initializeMediaDrop();
+sourceVideo.addEventListener('error', () => {
+  if (currentMediaType === 'video' && sourceVideo.hasAttribute('src')) setMediaImportStatus('This video cannot be decoded by the browser / 浏览器无法读取这个视频，请尝试 MP4 或 WebM');
+});
+
 const encodedPlayer = document.getElementById("exportPreviewVideo");
 const previewModeControl = document.getElementById("previewMode");
 let encodedSample = null;
@@ -19,11 +60,16 @@ const encodedPreviewScheduler = createEncodedPreviewScheduler({
     resumeSourceAfterPreview = currentMediaType === "video" && !sourceVideo.paused;
     sourceVideo.pause();
     encodedPlayer.src = exportPreviewUrl;
-    encodedPlayer.hidden = false;
     encodedPlayer.volume = sourceVideo.volume;
     document.getElementById("exportPreviewInfo").textContent = result.info;
     document.getElementById("exportPreviewInfo").hidden = false;
-    if (encodedWantsPlayback) startPlayback();
+    const sample = encodedSample;
+    encodedPlayer.addEventListener('loadeddata', () => {
+      if (encodedSample !== sample || previewModeControl.value !== 'encoded') return;
+      encodedPlayer.hidden = false;
+      if (encodedWantsPlayback) startPlayback();
+      syncPlaybackControls();
+    }, { once:true });
     syncPlaybackControls();
   }
 });
@@ -42,7 +88,7 @@ function updateEncodedPreviewStatus() {
 }
 function getPlaybackMedia() { return encodedPlayer.hidden ? sourceVideo : encodedPlayer; }
 function hideEncodedPreview({ restore = true } = {}) {
-  if (!encodedPlayer.hidden) {
+  if (encodedSample) {
     if (restore && encodedSample?.mediaType === "video" && currentMediaType === "video") sourceVideo.currentTime = Math.min(sourceVideo.duration, encodedSample.startTime + encodedPlayer.currentTime);
     encodedPlayer.pause();
     encodedPlayer.hidden = true;

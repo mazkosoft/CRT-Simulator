@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🅜 𝙲𝚁𝚃 𝚂𝚒𝚖𝚞𝚕𝚊𝚝𝚘𝚛</title>
-  <link rel="stylesheet" href="css/crt.css?v=workspace-3" />
-  <link rel="stylesheet" href="css/ui.css?v=workspace-3" />
+  <link rel="stylesheet" href="css/crt.css?v=workspace-4" />
+  <link rel="stylesheet" href="css/ui.css?v=workspace-8" />
 </head>
 
 <body>
@@ -14,6 +14,8 @@
     <section class="crt-cabinet" aria-label="CRT preview">
       <div class="cabinet-brand"><span>Max-OS 1998</span><div class="signal-group" aria-label="Power indicator"><span class="cabinet-led"></span></div></div>
       <div class="screen-well">
+        <div id="mediaDropHint" class="media-drop-hint" data-i18n-zh="释放以导入图片或视频" data-i18n-en="Drop an image or video to import" aria-hidden="true">释放以导入图片或视频</div>
+        <p id="mediaDropNotice" class="media-drop-notice" role="status" hidden></p>
         <div class="screen">
           <div class="preview-tools">
             <button id="exitFullscreenPreview" type="button">退出全屏</button>
@@ -86,6 +88,7 @@
 <div class="control media-controls">
       <label><span>Upload Image / Video<br />上传图片或视频</span></label>
       <input id="imageUpload" type="file" accept="image/*,video/*" />
+      <p id="mediaImportHint" class="hint" data-i18n-zh="点击选择图片或视频，也可直接拖入页面。" data-i18n-en="Choose an image or video, or drag a file onto the page.">点击选择图片或视频，也可直接拖入页面。</p>
       <div class="button-row">
         <button id="clearImageButton" type="button">Clear<br />清除</button>
         <button id="showDemoButton" type="button">Load default<br />载入默认图</button>
@@ -574,11 +577,11 @@
 <p class="hint" data-i18n-zh="1. 在“媒体导入”选择图片或视频，再在“效果预设”选择并应用效果。" data-i18n-en="1. Load an image or video in Media import, then choose and apply an Effect preset.">1. 在“媒体导入”选择图片或视频，再在“效果预设”选择并应用效果。</p>
 <p class="hint" data-i18n-zh="2. 像素化与点阵在“像素分辨率”；曲面、闪烁、暗角和辉光在“CRT屏幕”；亮度、对比度和模糊在“色彩设置”。" data-i18n-en="2. Pixel resolution controls pixelation and the mask. CRT screen controls curvature, flicker, vignette and glow. Color settings controls brightness, contrast and blur.">2. 像素化与点阵在“像素分辨率”；曲面、闪烁、暗角和辉光在“CRT屏幕”；亮度、对比度和模糊在“色彩设置”。</p>
 <p class="hint" data-i18n-zh="3. 数值可以直接输入，按回车或离开输入框应用；旁边的减号和加号按参数精度微调。滑杆接近有效整数时吸附，0～1 参数保留小数。" data-i18n-en="3. Enter a number and press Enter or leave the field to apply it. Minus and plus adjust by the parameter step. Sliders attract valid integers; ranges from zero to one retain fractional control.">3. 数值可以直接输入，按回车或离开输入框应用；旁边的减号和加号按参数精度微调。滑杆接近有效整数时吸附，0～1 参数保留小数。</p>
-<p class="hint" data-i18n-zh="4. 顶部切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。" data-i18n-en="4. Switch between live effects and encoded preview at the top. On slower devices, turn off automatic updates and refresh manually. Use the controls below the screen to play, pause, restart, adjust volume or zoom.">4. 顶部切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。</p>
+<p class="hint" data-i18n-zh="4. 在面板底部的“预览设置”中切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。" data-i18n-en="4. Switch live effects and encoded preview in Preview settings at the bottom of the panel. On slower devices, turn off automatic updates and refresh manually. Controls below the screen play, pause, restart, adjust volume or zoom.">4. 在面板底部的“预览设置”中切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。</p>
 <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
 <p class="hint" data-i18n-zh="5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。" data-i18n-en="5. Choose quality, duration, frame rate, bitrate and format in Video settings, then save an image or video in Media export. Export mosaic affects encoded output, unlike live pixelation.">5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。</p>
 <p class="hint" data-i18n-zh="6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。" data-i18n-en="6. Use the configuration button below the screen to import, export or save settings. Media is processed locally and is not uploaded.">6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。</p>
-<p class="hint" data-i18n-zh="基础模式显示常用参数，高级模式提供完整调整。通过顶部分类直接切换，或搜索参数；手机可用“查看画面／返回参数”保留调整位置。" data-i18n-en="Basic shows common settings; Advanced provides all controls. Switch categories or search at the top. On phones, View screen / Back to settings preserves your position.">基础模式显示常用参数，高级模式提供完整调整。通过顶部分类直接切换，或搜索参数；手机可用“查看画面／返回参数”保留调整位置。</p>
+<p class="hint" data-i18n-zh="电脑端可用分类键和搜索查找参数。手机端通过“媒体／预设／调整／导出”标签切换，在调整页选择分类和参数下拉框；使用说明、鸣谢、语言及常用参数入口收纳在“更多”中。" data-i18n-en="On desktop, use category keys or search. On phones, switch Media / Presets / Adjust / Export tabs, then choose a category and a parameter from the dropdown. More holds the guide, credits, language and favorite settings.">电脑端可用分类键和搜索查找参数。手机端通过“媒体／预设／调整／导出”标签切换，在调整页选择分类和参数下拉框；使用说明、鸣谢、语言及常用参数入口收纳在“更多”中。</p>
 <p class="credit-text"><a id="userGuideLink" href="https://github.com/mazkosoft/CRT-Simulator#简体中文" target="_blank" rel="noopener noreferrer" data-i18n-zh="完整使用说明书" data-i18n-en="Complete user guide">完整使用说明书</a></p>
     </details>
 
