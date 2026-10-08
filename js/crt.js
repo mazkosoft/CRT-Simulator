@@ -717,6 +717,17 @@ let currentObjectURL = null;
 let currentSourceFile = null;
 let currentMediaType = "demo";
 let exportInProgress = false;
+let exportCancelled = false;
+let stopCompatibilityExport = null;
+function checkExportCancellation() {
+  if (exportCancelled) throw new DOMException('Export cancelled', 'AbortError');
+}
+document.getElementById('cancelExportButton').addEventListener('click', () => {
+  if (!exportInProgress) return;
+  exportCancelled = true;
+  document.getElementById('cancelExportButton').disabled = true;
+  if (stopCompatibilityExport) stopCompatibilityExport();
+});
 let renderFrameOverrideTime = null;
 let exportRenderScale = 1;
 let exportMosaic = false;
@@ -726,16 +737,21 @@ function lockExportControls() {
   const saved = [...document.querySelectorAll('input, select, button')]
     .map(element => [element, element.disabled]);
   saved.forEach(([element]) => { element.disabled = true; });
+  exportCancelled = false;
+  const cancel = document.getElementById('cancelExportButton');cancel.hidden=false;cancel.disabled=false;
   return () => saved.forEach(([element, disabled]) => { element.disabled = disabled; });
 }
 
 function showExportProgress(stage, completed = 0, total = 0, detail = "") {
+  if (exportCancelled && stage === 'error') { stage='cancelled';detail=''; }
+  document.getElementById('cancelExportButton').hidden=['done','error','cancelled'].includes(stage);
   const names = { preparing:["准备导出","Preparing export"], video:["视频编码","Video encoding"], audio:["音轨处理","Audio processing"], recording:["兼容录制","Compatibility recording"], finalizing:["封装文件","Finalizing file"], done:["导出完成","Export complete"], error:["导出失败","Export failed"] };
   const progress = document.getElementById("exportProgress");
-  const title = names[stage][currentLang === "zh" ? 0 : 1];
+  const title = stage==='cancelled' ? (currentLang==='zh'?'导出已取消':'Export cancelled') : names[stage][currentLang === "zh" ? 0 : 1];
   document.getElementById("exportProgressPanel").hidden = false;
   document.getElementById("exportProgressLabel").textContent = title;
   if (stage === "done") progress.value = 100;
+  else if (stage === 'cancelled') progress.value = progress.hasAttribute('value') ? progress.value : 0;
   else if (total > 0) progress.value = exportProgressPercent(completed, total);
   else progress.removeAttribute("value");
   document.getElementById("exportProgressStatus").textContent = detail || (total > 0 ? `${exportProgressPercent(completed, total).toFixed(1)}%` : title);
@@ -885,6 +901,12 @@ function val(key) {
 
 function num(key) {
   return Number(val(key));
+}
+function effectNum(key) {
+  const off = key.startsWith('vhs') || key.startsWith('chroma') ? 'vhsEnabled'
+    : ['rgbOpacity','maskOpacity','beamOpacity','flickerAmount'].includes(key) ? 'crtEnabled'
+    : ['scale','warpBlurX','warpBlurY','glowOpacity','vignette'].includes(key) ? 'opticsEnabled' : null;
+  return off && val(off)==='0' ? 0 : num(key);
 }
 
 function clamp(v, a, b) {
@@ -1050,9 +1072,9 @@ function passSource() {
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform2f(u.u_imgSize, placement.size[0], placement.size[1]);
   gl.uniform2f(u.u_imgOffset, placement.offset[0], placement.offset[1]);
-  gl.uniform1f(u.u_opacity, num("imageOpacity"));
-  gl.uniform1f(u.u_pixelate, exportMosaic ? 1 : num("pixelate"));
-  gl.uniform1f(u.u_pixelPeriod, exportMosaic ? num("exportPixelSize") : num("rgbPeriod"));
+  gl.uniform1f(u.u_opacity, effectNum("imageOpacity"));
+  gl.uniform1f(u.u_pixelate, exportMosaic ? 1 : effectNum("pixelate"));
+  gl.uniform1f(u.u_pixelPeriod, exportMosaic ? effectNum("exportPixelSize") : effectNum("rgbPeriod"));
 
   drawTo(targets.fit);
 }
@@ -1072,20 +1094,20 @@ function passRgb() {
   const u = useProgram("rgb");
 
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
-  gl.uniform1f(u.u_period, num("rgbPeriod"));
-  gl.uniform3f(u.u_rgbBias, num("rgbRedBias"), num("rgbGreenBias"), num("rgbBlueBias"));
+  gl.uniform1f(u.u_period, effectNum("rgbPeriod"));
+  gl.uniform3f(u.u_rgbBias, effectNum("rgbRedBias"), effectNum("rgbGreenBias"), effectNum("rgbBlueBias"));
 
   drawTo(targets.rgbRaw);
 }
 
 function passMask() {
   const u = useProgram("mask");
-  const period = num("rgbPeriod");
+  const period = effectNum("rgbPeriod");
 
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform1f(u.u_period, period);
-  gl.uniform1f(u.u_maskX, clamp(num("maskX"), 0, period - 1));
-  gl.uniform1f(u.u_maskY, clamp(num("maskY"), 0, period - 1));
+  gl.uniform1f(u.u_maskX, clamp(effectNum("maskX"), 0, period - 1));
+  gl.uniform1f(u.u_maskY, clamp(effectNum("maskY"), 0, period - 1));
 
   drawTo(targets.maskRaw);
 }
@@ -1097,12 +1119,12 @@ function passComposite(time) {
   bindTexture(1, targets.rgbBlurred.texture, u.u_rgb);
   bindTexture(2, targets.maskBlurred.texture, u.u_mask);
 
-  gl.uniform1f(u.u_rgbOpacity, num("rgbOpacity"));
-  gl.uniform1f(u.u_maskOpacity, num("maskOpacity"));
+  gl.uniform1f(u.u_rgbOpacity, effectNum("rgbOpacity"));
+  gl.uniform1f(u.u_maskOpacity, effectNum("maskOpacity"));
 
-  gl.uniform1f(u.u_beamOpacity, num("beamOpacity"));
-  gl.uniform1f(u.u_beamHeight, num("beamHeight"));
-  gl.uniform1f(u.u_beamSpeed, num("beamSpeed"));
+  gl.uniform1f(u.u_beamOpacity, effectNum("beamOpacity"));
+  gl.uniform1f(u.u_beamHeight, effectNum("beamHeight"));
+  gl.uniform1f(u.u_beamSpeed, effectNum("beamSpeed"));
   gl.uniform1i(u.u_beamBlend, getBeamMode(val("beamBlend")));
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform1f(u.u_time, time);
@@ -1114,8 +1136,8 @@ function passWarp() {
   const u = useProgram("warp");
 
   bindTexture(0, targets.preWarp.texture, u.u_tex);
-  gl.uniform1f(u.u_scale, num("scale"));
-  gl.uniform1f(u.u_zoom, num("mapZoom"));
+  gl.uniform1f(u.u_scale, effectNum("scale"));
+  gl.uniform1f(u.u_zoom, effectNum("mapZoom"));
   gl.uniform1i(u.u_direction, getWarpDirection(val("warpDirection")));
 
   drawTo(targets.warped);
@@ -1124,9 +1146,9 @@ function passWarp() {
 function passLuma(time) {
   const u = useProgram("luma");
 
-  const baseBrightness = num("brightness");
-  const amount = num("flickerAmount");
-  const speed = num("flickerSpeed");
+  const baseBrightness = effectNum("brightness");
+  const amount = effectNum("flickerAmount");
+  const speed = effectNum("flickerSpeed");
 
   const slow = Math.sin(time * speed * Math.PI * 2.0) * 0.45;
   const fast = Math.sin(time * speed * Math.PI * 9.7) * 0.18;
@@ -1135,7 +1157,7 @@ function passLuma(time) {
 
   bindTexture(0, targets.postBlurred.texture, u.u_tex);
   gl.uniform1f(u.u_brightness, brightness);
-  gl.uniform1f(u.u_contrast, num("contrast"));
+  gl.uniform1f(u.u_contrast, effectNum("contrast"));
 
   drawTo(targets.luma);
 }
@@ -1146,28 +1168,28 @@ function passFinal() {
   bindTexture(0, targets.luma.texture, u.u_main);
   bindTexture(1, targets.glow.texture, u.u_glow);
 
-  gl.uniform1f(u.u_glowOpacity, num("glowOpacity"));
-  gl.uniform1f(u.u_saturation, num("finalSaturation"));
-  gl.uniform2f(u.u_chromaOffset, num("chromaOffsetX"), num("chromaOffsetY"));
-  gl.uniform1f(u.u_chromaSoftness, num("chromaSoftness"));
+  gl.uniform1f(u.u_glowOpacity, effectNum("glowOpacity"));
+  gl.uniform1f(u.u_saturation, effectNum("finalSaturation"));
+  gl.uniform2f(u.u_chromaOffset, effectNum("chromaOffsetX"), effectNum("chromaOffsetY"));
+  gl.uniform1f(u.u_chromaSoftness, effectNum("chromaSoftness"));
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform1f(u.u_time, performance.now() / 1000);
 
-  gl.uniform1f(u.u_vhsNoise, num("vhsNoise"));
-  gl.uniform1f(u.u_vhsJitter, num("vhsJitter"));
-  gl.uniform1f(u.u_vhsTracking, num("vhsTracking"));
-  gl.uniform1f(u.u_vhsChromaBleed, num("vhsChromaBleed"));
-  gl.uniform1f(u.u_vhsLineWeave, num("vhsLineWeave"));
-  gl.uniform1f(u.u_vhsSharpen, num("vhsSharpen"));
-  gl.uniform1f(u.u_vhsSharpenWidth, num("vhsSharpenWidth"));
-  gl.uniform1f(u.u_vhsThickRinging, num("vhsThickRinging"));
-  gl.uniform1f(u.u_vhsInterlace, num("vhsInterlace"));
-  gl.uniform1f(u.u_vhsHeadSwitch, num("vhsHeadSwitch"));
-  gl.uniform1f(u.u_vhsDropout, num("vhsDropout"));
+  gl.uniform1f(u.u_vhsNoise, effectNum("vhsNoise"));
+  gl.uniform1f(u.u_vhsJitter, effectNum("vhsJitter"));
+  gl.uniform1f(u.u_vhsTracking, effectNum("vhsTracking"));
+  gl.uniform1f(u.u_vhsChromaBleed, effectNum("vhsChromaBleed"));
+  gl.uniform1f(u.u_vhsLineWeave, effectNum("vhsLineWeave"));
+  gl.uniform1f(u.u_vhsSharpen, effectNum("vhsSharpen"));
+  gl.uniform1f(u.u_vhsSharpenWidth, effectNum("vhsSharpenWidth"));
+  gl.uniform1f(u.u_vhsThickRinging, effectNum("vhsThickRinging"));
+  gl.uniform1f(u.u_vhsInterlace, effectNum("vhsInterlace"));
+  gl.uniform1f(u.u_vhsHeadSwitch, effectNum("vhsHeadSwitch"));
+  gl.uniform1f(u.u_vhsDropout, effectNum("vhsDropout"));
 
-  gl.uniform1f(u.u_vignetteOpacity, num("vignette"));
-  gl.uniform1f(u.u_vignetteInner, num("vignetteInner") / 100);
-  gl.uniform1f(u.u_vignetteOuter, num("vignetteOuter") / 100);
+  gl.uniform1f(u.u_vignetteOpacity, effectNum("vignette"));
+  gl.uniform1f(u.u_vignetteInner, effectNum("vignetteInner") / 100);
+  gl.uniform1f(u.u_vignetteOuter, effectNum("vignetteOuter") / 100);
   const placement = computeImagePlacement();
   gl.uniform2f(u.u_mediaSize, placement.size[0], placement.size[1]);
   gl.uniform2f(u.u_mediaOffset, placement.offset[0], placement.offset[1]);
@@ -1189,27 +1211,27 @@ function renderFrame(ms) {
   uploadVideoFrame();
   passSource();
 
-  passBlur(targets.fit.texture, targets.imageBlurX, num("imageBlurX"), 1, 0);
-  passBlur(targets.imageBlurX.texture, targets.imageBlurred, num("imageBlurY"), 0, 1);
+  passBlur(targets.fit.texture, targets.imageBlurX, effectNum("imageBlurX"), 1, 0);
+  passBlur(targets.imageBlurX.texture, targets.imageBlurred, effectNum("imageBlurY"), 0, 1);
 
   passRgb();
-  passBlur(targets.rgbRaw.texture, targets.rgbBlurX, num("rgbBlurX"), 1, 0);
-  passBlur(targets.rgbBlurX.texture, targets.rgbBlurred, num("rgbBlurY"), 0, 1);
+  passBlur(targets.rgbRaw.texture, targets.rgbBlurX, effectNum("rgbBlurX"), 1, 0);
+  passBlur(targets.rgbBlurX.texture, targets.rgbBlurred, effectNum("rgbBlurY"), 0, 1);
 
   passMask();
-  passBlur(targets.maskRaw.texture, targets.maskBlurX, num("maskBlurX"), 1, 0);
-  passBlur(targets.maskBlurX.texture, targets.maskBlurred, num("maskBlurY"), 0, 1);
+  passBlur(targets.maskRaw.texture, targets.maskBlurX, effectNum("maskBlurX"), 1, 0);
+  passBlur(targets.maskBlurX.texture, targets.maskBlurred, effectNum("maskBlurY"), 0, 1);
 
   passComposite(time);
   passWarp();
 
-  passBlur(targets.warped.texture, targets.postBlurX, num("warpBlurX"), 1, 0);
-  passBlur(targets.postBlurX.texture, targets.postBlurred, num("warpBlurY"), 0, 1);
+  passBlur(targets.warped.texture, targets.postBlurX, effectNum("warpBlurX"), 1, 0);
+  passBlur(targets.postBlurX.texture, targets.postBlurred, effectNum("warpBlurY"), 0, 1);
 
   passLuma(time);
 
-  passBlur(targets.luma.texture, targets.glowX, num("glowBlurX"), 1, 0);
-  passBlur(targets.glowX.texture, targets.glow, num("glowBlurY"), 0, 1);
+  passBlur(targets.luma.texture, targets.glowX, effectNum("glowBlurX"), 1, 0);
+  passBlur(targets.glowX.texture, targets.glow, effectNum("glowBlurY"), 0, 1);
 
   passFinal();
 }
@@ -1455,6 +1477,7 @@ async function downloadProcessedVideo() {
     await seekSourceVideo(0);
 
     const done = new Promise(resolve => { recorder.onstop = resolve; });
+    checkExportCancellation();
     recorder.start(100);
     showExportProgress("recording", 0, duration);
     setPresetStatus("Recording video export... / 正在录制导出视频…");
@@ -1464,6 +1487,7 @@ async function downloadProcessedVideo() {
       if (recorder.state !== "inactive") recorder.stop();
     };
     sourceVideo.addEventListener("ended", stopRecording);
+    stopCompatibilityExport = stopRecording;
     // The preview renderer is deliberately allowed to run during recording.
     compatibilityRecording = true;
     timer = setInterval(() => {
@@ -1473,8 +1497,10 @@ async function downloadProcessedVideo() {
     recorder.onerror = event => { recordingError = event.error || new Error("Recording failed"); stopRecording(); };
     await sourceVideo.play();
     await done;
+    checkExportCancellation();
     if (recordingError) throw recordingError;
     clearInterval(timer);
+    stopCompatibilityExport = null;
     showExportProgress("finalizing");
 
     const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
@@ -1491,6 +1517,7 @@ async function downloadProcessedVideo() {
     if (recorder.state !== "inactive") recorder.stop();
   } finally {
     clearInterval(timer);
+    stopCompatibilityExport = null;
     if (stopRecording) sourceVideo.removeEventListener("ended", stopRecording);
     stream.getTracks().forEach(track => track.stop());
     unlock();
@@ -1801,13 +1828,15 @@ async function downloadHighQualityVideo() {
   const unlock = lockExportControls();
   let input = null;
   let decodedFrames = null;
+  let output = null;
+  let completed = false;
   try {
     document.getElementById("exportPreviewVideo").pause();
     if (currentMediaType === "video") sourceVideo.pause();
     showExportProgress("preparing");
     resize();
     syncExportCanvasSize();
-    const output = new mb.Output({
+    output = new mb.Output({
       format: useWebm ? new mb.WebMOutputFormat() : new mb.Mp4OutputFormat(),
       target: new mb.BufferTarget()
     });
@@ -1845,6 +1874,7 @@ async function downloadHighQualityVideo() {
       }
     }
 
+    checkExportCancellation();
     await output.start();
     const totalFrames = Math.max(1, Math.ceil(duration * fps));
     const exportStarted = performance.now();
@@ -1853,6 +1883,7 @@ async function downloadHighQualityVideo() {
     showExportProgress("video", 0, totalFrames);
 
     for (let i = 0; i < totalFrames; i++) {
+      checkExportCancellation();
       if (decodedFrames) {
         const frame = await decodedFrames.next();
         if (frame.done || !frame.value) throw new Error(currentLang === "zh" ? "未能读取导出视频帧。" : "Could not decode an export frame.");
@@ -1860,6 +1891,7 @@ async function downloadHighQualityVideo() {
       }
       const renderStarted = performance.now();
       await drawExportFrame((startTime + i / fps) * 1000);
+      checkExportCancellation();
       exportTimings.renderMs += performance.now() - renderStarted;
       const encodeStarted = performance.now();
       await videoSource.add(i / fps, Math.min(1 / fps, duration - i / fps));
@@ -1879,6 +1911,7 @@ async function downloadHighQualityVideo() {
       showExportProgress("audio");
       for await (const sample of audioSamples) {
         try {
+          checkExportCancellation();
           const decoded = sample.toAudioBuffer();
           const first = Math.max(0, Math.round((startTime - sample.timestamp) * decoded.sampleRate));
           const last = Math.min(decoded.length, Math.round((startTime + duration - sample.timestamp) * decoded.sampleRate));
@@ -1894,6 +1927,8 @@ async function downloadHighQualityVideo() {
 
     showExportProgress("finalizing");
     await output.finalize();
+    checkExportCancellation();
+    completed = true;
     console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
     const mime = useWebm ? "video/webm" : "video/mp4";
     const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
@@ -1905,12 +1940,13 @@ async function downloadHighQualityVideo() {
     showExportProgress("done");
     setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
   } catch (error) {
-    console.error(error);
+    if (!exportCancelled) console.error(error);
     const detail = error && error.message ? `: ${error.message}` : "";
     showExportProgress("error", 0, 0, detail);
-    setPresetStatus(`High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
+    setPresetStatus(exportCancelled ? 'Export cancelled / 导出已取消' : `High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
   } finally {
     exportDecodedCanvas = null;
+    if (!completed && output) await output.cancel().catch(() => {});
     if (decodedFrames) await decodedFrames.return().catch(() => {});
     if (input) input.dispose();
     exportInProgress = false;

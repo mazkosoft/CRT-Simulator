@@ -296,26 +296,35 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 .workspace-auxiliary { display:contents; }
 .workspace-auxiliary > summary,.mobile-media-tab { display:none; }
 .parameter-picker { width:100%; min-width:0; }
-.parameter-help { display:contents; }
-.parameter-help > summary { display:none; }
+.parameter-help { display:block; grid-column:1 / -1; min-width:0; }
+.terminal-workspace .parameter-help > summary { display:block; min-height:28px; margin:0; padding:4px 0; border:0; border-radius:0; background:none; box-shadow:none; font-size:12px; cursor:pointer; }
+.terminal-workspace .parameter-help > summary::after { content:' +'; }
+.terminal-workspace .parameter-help[open] > summary::after { content:' −'; }
+.parameter-help .hint { margin:4px 0; overflow-wrap:break-word; }
+.terminal-workspace .control:has(input[type=checkbox]) label { align-items:center; min-height:32px; }
+.terminal-workspace input[type=checkbox] { appearance:none; width:32px; height:20px; flex:none; border:1px solid #aa9b81; border-radius:10px; background:#bcb19c; box-shadow:inset 0 2px 3px #786b5144; cursor:pointer; position:relative; }
+.terminal-workspace input[type=checkbox]::after { content:''; position:absolute; width:14px; height:14px; left:2px; top:2px; border-radius:50%; background:linear-gradient(#fff9ec,#d7cbb5); box-shadow:0 1px 2px #645b4a66; }
+.terminal-workspace input[type=checkbox]:checked { background:#778465; }
+.terminal-workspace input[type=checkbox]:checked::after { left:14px; }
 .workspace-body { display:grid; grid-template-columns:100px minmax(0,1fr); gap:12px; min-height:0; flex:1; padding:12px 0; }
 .category-rail { display:flex; flex-direction:column; gap:10px; overflow:auto; padding:2px 4px 8px 0; border-right:1px solid #aaa08c; box-shadow:1px 0 #ede5d4; }
 .category-rail button { flex:none; padding:9px 5px; font-size:12px; min-height:42px; border-radius:8px; }
 .workspace-editor { display:flex; flex-direction:column; min-width:0; min-height:0; }
-.parameter-content { overflow:auto; overscroll-behavior:contain; min-height:0; padding:2px 6px 8px 2px; flex:1; scrollbar-width:thin; }
+.parameter-content { overflow:auto; overscroll-behavior:contain; min-height:0; padding:2px 6px 8px 2px; flex:1; scrollbar-width:thin; container-type:inline-size; }
 .terminal-workspace .control-group { margin:0 0 12px; }
 .terminal-workspace .control-group > summary { padding:0 0 8px; min-height:24px; border:0; background:none; box-shadow:none; border-radius:0; margin:0 0 8px; cursor:default; font-size:15px; }
 .terminal-workspace .control-group > summary::after { content:none; }
 .terminal-workspace .group-body { display:block; padding:10px; margin:0 0 8px; }
+.terminal-workspace .export-panel { display:block; }
 .terminal-workspace .control { position:relative; margin:4px 0 18px; }
 .terminal-workspace .control:has(.parameter-stepper) { display:grid; grid-template-columns:minmax(0,1fr) 124px; gap:4px 8px; align-items:center; }
 .terminal-workspace .control:has(.parameter-stepper) > label { margin:0; font-size:13px; }
 .terminal-workspace .control:has(.parameter-stepper) > label span:last-child:not(:first-child) { display:none; }
 .terminal-workspace .control:has(.parameter-stepper) > input[type=range] { grid-column:1 / -1; grid-row:2; margin:0; }
-.terminal-workspace .parameter-stepper { grid-column:2; grid-row:1; margin:0; gap:4px; }
+.terminal-workspace .parameter-stepper { grid-column:2; grid-row:2; margin:0; gap:4px; }
 .terminal-workspace .parameter-stepper input { padding:4px; text-align:center; }
 .terminal-workspace .parameter-stepper button { padding:0; min-width:26px; width:26px; border-radius:8px; }
-.parameter-tools { display:flex; gap:6px; justify-content:flex-end; grid-column:1 / -1; }
+.parameter-tools { display:flex; gap:6px; justify-content:flex-end; grid-column:1 / -1; grid-row:1; }
 .terminal-workspace .parameter-tools button { min-height:24px; padding:2px 8px; font-size:11px; box-shadow:inset 0 1px #fff9eb,0 1px #a49c8c; }
 .terminal-workspace .parameter-tools button:disabled { opacity:.45; cursor:default; }
 .terminal-workspace .control > .hint { grid-column:1 / -1; margin:0; }
@@ -343,7 +352,10 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 .media-dragover .media-drop-hint { display:flex; }
 .media-drop-notice { position:absolute; left:24px; right:24px; bottom:24px; z-index:10; margin:0; padding:10px 14px; border:1px solid #b8aa8d; border-radius:6px; color:#f6ecda; background:#40392ee6; font-size:13px; line-height:1.5; pointer-events:none; }
 @media(min-width:901px) { .machine { grid-template-columns:minmax(0,var(--screen-weight,60fr)) minmax(0,var(--panel-weight,40fr)); } }
-@media(min-width:1600px) { .terminal-workspace .group-body,.fine-body { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; } .fine-settings { grid-column:1 / -1; } }
+@container (min-width:640px) { .terminal-workspace .group-body,.fine-body,.terminal-workspace .export-panel { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 20px; align-items:start; } .fine-settings { grid-column:1 / -1; } }
+.terminal-workspace .control:has(.parameter-stepper) > label { grid-row:2; }
+.terminal-workspace .control:has(.parameter-stepper) > input[type=range] { grid-row:3; }
+.terminal-workspace .control:has(.parameter-stepper) > .parameter-help { grid-row:4; }
 @media(max-width:900px) {
   html,body { height:100%; overflow:hidden; }
   body { padding:6px; }
@@ -368,8 +380,8 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
   .terminal-workspace .control input::file-selector-button { min-height:var(--panel-control-height); padding:4px 10px; font-size:13px; }
   .terminal-workspace .dos-header { display:none; }
   .parameter-toolbar { grid-template-columns:minmax(0,1fr) 48px; gap:4px; padding:0; border-bottom:1px solid #afa187; box-shadow:0 1px #f8efdc; }
-  .workspace-modes { gap:0; align-items:end; border:0; box-shadow:none; }
-  .workspace-modes [role=tab] { display:block; min-height:36px; padding:6px 3px; font-size:14px; font-weight:400; border-radius:4px 4px 0 0; border:1px solid transparent; border-bottom:0; background:none; box-shadow:none; color:#756a56; }
+  .workspace-modes { gap:3px; align-items:end; border:0; box-shadow:none; }
+  .workspace-modes [role=tab] { display:block; min-height:36px; padding:6px 3px; font-size:14px; font-weight:400; border-radius:5px 5px 0 0; border:1px solid #b3a58c; border-bottom:0; background:linear-gradient(#eee6d5,#cfc3ad); box-shadow:inset 1px 1px #fff8e8, inset -1px 0 #b9ac94; color:#665b48; }
   .workspace-modes [role=tab][aria-selected=true] { color:#453e31; background:linear-gradient(#f0e8d7,#e2d9c7); border-color:#b3a58c; box-shadow:inset 0 1px #fff7e7; margin-bottom:-1px; padding-bottom:7px; }
   .workspace-auxiliary { display:block; min-width:0; align-self:end; }
   .workspace-auxiliary > summary { display:block; min-height:36px; padding:8px 2px; font-size:13px; text-align:center; list-style:none; cursor:pointer; color:#665b48; }
@@ -386,37 +398,46 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
   .workspace-utilities .language-toggle { width:36px; min-width:36px; height:24px; min-height:24px; }
   .workspace-utilities .language-toggle svg { width:16px; height:16px; }
   .parameter-search { display:none; }
-  .workspace-body { display:flex; flex-direction:column; gap:0; padding:4px 0; overflow:auto; overscroll-behavior:contain; }
-  .category-rail { flex-direction:row; display:flex; gap:0; overflow:auto; flex:none; padding:0 0 4px; border:0; box-shadow:none; scrollbar-width:thin; }
-  .category-rail button { flex:1; min-width:40px; min-height:32px; padding:5px 2px; font-size:13px; white-space:nowrap; border:0; border-radius:0; background:none; box-shadow:none; color:#756a56; }
-  .category-rail button + button { border-left:1px solid #b7aa923d; }
-  .category-rail button[aria-selected=true] { color:#463d2c; background:none; box-shadow:inset 0 -2px #978467; }
+  .workspace-body { display:flex; flex-direction:column; gap:4px; padding:6px 0; overflow:hidden; overscroll-behavior:contain; }
+  .category-rail { flex-direction:row; display:flex; gap:4px; overflow:auto; flex:none; padding:0 0 3px; border:0; box-shadow:none; scrollbar-width:thin; }
+  .category-rail button { flex:1; min-width:40px; min-height:32px; padding:5px 2px; font-size:13px; white-space:nowrap; border:1px solid #b6a88e; border-radius:5px; background:linear-gradient(#eee5d3,#d7cbb5); box-shadow:inset 0 1px #fff8e8,0 2px 2px #93866d55; color:#554b39; }
+  .category-rail button[aria-selected=true] { color:#463d2c; background:#c9bda6; box-shadow:inset 1px 2px 3px #8f806766,0 1px #fff6e0; }
   .parameter-strip { display:block; flex:none; padding:0; }
   .terminal-workspace .parameter-picker { height:var(--panel-control-height); min-height:var(--panel-control-height); padding:4px; font-size:14px; color:#4c4232; border:0; border-bottom:1px solid #b1a389; border-radius:0; background:transparent; box-shadow:0 1px #f5ebd7; }
-  .workspace-editor { flex:1; min-height:144px; flex-shrink:0; }
+  .workspace-editor { flex:1; min-height:0; }
   .parameter-strip { margin-bottom:2px; }
   .terminal-workspace .group-body { padding:0; margin:0; border:0; border-radius:0; box-shadow:none; background:none; }
   .terminal-workspace .control-group > summary { display:none; }
-  .terminal-workspace .control { margin:8px 0; }
+  .terminal-workspace .control { margin:0; padding:2px 0; border-bottom:1px solid #b9ac9455; }
   .terminal-workspace .control-group { margin:0; }
   .terminal-workspace .parameter-content { padding-top:0; }
   #mediaImportHint { margin:6px 0 8px; font-size:12px; line-height:1.5; }
-  .terminal-workspace .control:has(.parameter-stepper) { grid-template-columns:minmax(0,1fr); gap:8px; }
-  .terminal-workspace .control:has(.parameter-stepper) > label { display:none; }
-  .terminal-workspace .parameter-stepper { grid-column:1; justify-self:center; width:160px; gap:4px; }
+  .terminal-workspace .control:has(.parameter-stepper) { grid-template-columns:minmax(0,1fr) 124px; gap:2px 8px; }
+  .terminal-workspace .control:has(.parameter-stepper) > label { display:block; grid-column:1; grid-row:1; font-size:13px; line-height:24px; }
+  .terminal-workspace .control:has(.parameter-stepper) > input[type=range] { grid-column:1; grid-row:2; height:32px; min-width:0; }
+  .terminal-workspace .control:has([data-config$=Enabled]) { padding:4px 0; }
+  .terminal-workspace .control:has([data-config$=Enabled]) label { margin:0; min-height:28px; align-items:center; }
+  .terminal-workspace .parameter-stepper { grid-column:2; grid-row:2; justify-self:stretch; width:auto; gap:3px; }
   .terminal-workspace .control label { font-size:14px; }
   .terminal-workspace .parameter-stepper input { height:var(--panel-control-height); font-size:15px; font-variant-numeric:tabular-nums; border-radius:3px; background:#eee5d3; box-shadow:inset 0 1px 2px #897b6033,0 1px #fff8e6; }
   .terminal-workspace .parameter-stepper button { height:var(--panel-control-height); min-height:var(--panel-control-height); min-width:32px; width:32px; border-radius:4px; box-shadow:inset 0 1px #fff9eb,0 2px #aa9b81; }
-  .terminal-workspace .parameter-tools { gap:8px; }
-  .terminal-workspace .parameter-tools button { min-height:30px; border:0; border-radius:3px; background:none; box-shadow:none; font-size:13px; }
+  .terminal-workspace .parameter-tools { grid-column:2; grid-row:1; gap:4px; }
+  .terminal-workspace .parameter-tools button { min-height:24px; padding:2px 7px; border:1px solid #b6a88e; border-radius:4px; background:linear-gradient(#eee5d3,#d7cbb5); box-shadow:inset 0 1px #fff9eb,0 1px #aa9b81; font-size:11px; }
+  .terminal-workspace .parameter-content .parameter-tools button { min-height:24px; height:24px; padding:2px 7px; font-size:11px; }
   .parameter-help { display:block; grid-column:1 / -1; }
   .terminal-workspace .parameter-help > summary { display:block; min-height:28px; margin:0; padding:4px 0; border:0; border-radius:0; background:none; box-shadow:none; text-shadow:none; transform:none; font-size:13px; color:#756852; cursor:pointer; }
   .terminal-workspace .parameter-help > summary:active { transform:none; box-shadow:none; }
   .terminal-workspace .parameter-help > summary::after { content:' +'; }
   .terminal-workspace .parameter-help[open] > summary::after { content:' −'; }
+  .terminal-workspace .control:has(.parameter-stepper) > .parameter-help:not([open]) { grid-column:2; grid-row:1; justify-self:start; width:24px; }
+  .terminal-workspace .control:has(.parameter-stepper) > .parameter-help:not([open]) > summary { min-height:24px; height:24px; padding:2px; font-size:0; text-align:center; border:1px solid #b6a88e; border-radius:4px; background:linear-gradient(#eee5d3,#d7cbb5); box-shadow:inset 0 1px #fff8e8,0 1px #aa9b81; }
+  .terminal-workspace .control:has(.parameter-stepper) > .parameter-help:not([open]) > summary::after { content:'?'; font-size:12px; }
+  .terminal-workspace .control:has(.parameter-stepper) > .parameter-help[open] { grid-row:3; }
   .parameter-help .hint { margin:6px 0; line-height:1.6; font-size:13px; }
-  .terminal-workspace .fine-settings { margin:0; }
-  .terminal-workspace .fine-settings > summary { display:none; }
+  .terminal-workspace .fine-settings { margin:6px 0; }
+  .terminal-workspace .fine-settings > summary { display:block; min-height:32px; padding:7px 10px; font-size:13px; border:1px solid #b6a88e; border-radius:4px; background:linear-gradient(#eee5d3,#d7cbb5); box-shadow:inset 0 1px #fff8e8,0 1px #aa9b81; cursor:pointer; }
+  .terminal-workspace .fine-settings > summary::after { content:' +'; }
+  .terminal-workspace .fine-settings[open] > summary::after { content:' −'; }
   .terminal-workspace .fine-body { padding:0; }
   .preview-console { padding-top:4px; gap:2px; grid-template-columns:1fr 1fr 1fr; border-color:#b1a389; box-shadow:0 -1px #f5ebd7; }
   .preview-console > .hint { max-height:18px; font-size:11px; }
@@ -582,10 +603,7 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
         <select id="builtInPresetSelect">
           <option value="default">Current Default / 当前默认</option>
           <option value="soft-crt">Soft CRT / 柔和显像</option>
-          <option value="clean-vhs">Clean VHS / 干净录像带</option>
-          <option value="vhs">VHS - Latest / 最新 VHS</option>
-          <option value="damaged-vhs">Damaged VHS / 受损磁带</option>
-          <option value="vaporwave">Vaporwave / 蒸汽波偏色</option>
+          <option value="soft-analog-video" data-i18n-zh="柔和模拟录像" data-i18n-en="Soft analog video">柔和模拟录像</option>
           <option value="worn-network-vhs" data-i18n-zh="低码率磨损 VHS" data-i18n-en="Worn low-bitrate VHS">低码率磨损 VHS</option>
           <option value="glowing-pixel-crt" data-i18n-zh="高辉光像素 CRT" data-i18n-en="Glowing pixel CRT">高辉光像素 CRT</option>
         </select>
@@ -611,6 +629,8 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 <p class="hint" data-i18n-zh="配置文件和本地保存位于屏幕下方的配置按钮中。" data-i18n-en="Use the configuration button below the screen to manage files and local settings.">配置文件和本地保存位于屏幕下方的配置按钮中。</p>
     </details>
 
+    <details id="opticsGroup" class="control-group"><summary data-i18n-zh="光学效果" data-i18n-en="Optical effects">光学效果</summary><div class="control"><label><span data-i18n-zh="启用光学效果" data-i18n-en="Enable optical effects">启用光学效果</span><input type="checkbox" id="opticsEnabledInput" data-config="opticsEnabled" checked></label></div></details>
+    <details id="textureGroup" class="control-group"><summary data-i18n-zh="CRT 纹理" data-i18n-en="CRT texture">CRT 纹理</summary><div class="control"><label><span data-i18n-zh="启用 CRT 效果" data-i18n-en="Enable CRT effects">启用 CRT 效果</span><input type="checkbox" id="crtEnabledInput" data-config="crtEnabled" checked></label></div></details>
     <details id="phosphorGroup" class="control-group">
       <summary data-i18n-zh="像素分辨率" data-i18n-en="Pixel resolution">像素分辨率</summary>
 <div class="control">
@@ -811,6 +831,7 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
     </details>
 
     <details id="tapeGroup" class="control-group">
+      <div class="control"><label><span data-i18n-zh="启用 VHS 效果" data-i18n-en="Enable VHS effects">启用 VHS 效果</span><input type="checkbox" id="vhsEnabledInput" data-config="vhsEnabled" checked></label></div>
       <summary data-i18n-zh="VHS设置" data-i18n-en="VHS settings">VHS设置</summary>
 <p class="hint">这一组负责录像带化处理。色度相关参数现在全部并入 VHS：其中 NTSC Chroma Bleed 会按亮度 / 色度分离思路，只压缩色度带宽，不是简单 RGB 硬分离。</p>
 
@@ -1005,6 +1026,7 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 <div id="exportProgressPanel" class="export-progress-panel" hidden>
         <label for="exportProgress" id="exportProgressLabel">导出进度</label>
         <progress id="exportProgress" max="100" value="0"></progress>
+        <button id="cancelExportButton" type="button" data-i18n-zh="取消导出" data-i18n-en="Cancel export" hidden>取消导出</button>
         <p id="exportProgressStatus" role="status" aria-live="polite"></p>
       </div>
 <p class="hint">图片可直接导出 PNG；视频优先输出高质量 MP4/WebM，并在浏览器能力不足时回退为兼容 WebM。</p>
@@ -2702,6 +2724,9 @@ function readUiLanguage() {
 }
 
 const DEFAULT_CONFIG = {
+  "crtEnabled": "1",
+  "vhsEnabled": "1",
+  "opticsEnabled": "1",
   "imageFit": "contain",
   "imageOpacity": "1",
   "imagePosX": "50",
@@ -2845,6 +2870,74 @@ function downloadConfig() {
 }
 
 const PRESET_LIBRARY = {
+  "soft-analog-video": {
+    "imageFit": "contain",
+    "effectBoundary": "source",
+    "imageOpacity": "1",
+    "imagePosX": "50",
+    "imagePosY": "50",
+    "pixelate": "0",
+    "rgbOpacity": "0",
+    "rgbRedBias": "1",
+    "rgbGreenBias": "1",
+    "rgbBlueBias": "1",
+    "rgbPeriod": "1",
+    "rgbBlurX": "3.34",
+    "rgbBlurY": "2.92",
+    "maskOpacity": "0",
+    "maskX": "0",
+    "maskY": "0",
+    "maskBlurX": "3.53",
+    "maskBlurY": "3.59",
+    "warpDirection": "barrel",
+    "scale": "38",
+    "mapZoom": "0.3",
+    "warpBlurX": "3.94",
+    "warpBlurY": "1.94",
+    "flickerAmount": "0",
+    "flickerSpeed": "30",
+    "vignette": "0",
+    "vignetteInner": "55",
+    "vignetteOuter": "120",
+    "beamBlend": "color-dodge",
+    "beamOpacity": "0",
+    "beamHeight": "272",
+    "beamSpeed": "20.5",
+    "glowOpacity": "0.16",
+    "glowBlurX": "13.2",
+    "glowBlurY": "3",
+    "brightness": "0.81",
+    "contrast": "1",
+    "finalSaturation": "1.04",
+    "imageBlurX": "2.42",
+    "imageBlurY": "0",
+    "vhsNoise": "0.05",
+    "vhsJitter": "0.1",
+    "vhsLineWeave": "0.2",
+    "vhsTracking": "0",
+    "vhsChromaBleed": "23.2",
+    "vhsThickRinging": "1",
+    "vhsSharpen": "1.13",
+    "vhsSharpenWidth": "4.1",
+    "vhsInterlace": "0",
+    "vhsHeadSwitch": "0",
+    "vhsDropout": "0",
+    "chromaOffsetX": "11.76",
+    "chromaOffsetY": "-0.5",
+    "chromaSoftness": "0",
+    "audioPreset": "crt",
+    "audioVolume": "0.92",
+    "audioBandwidth": "6000",
+    "audioHiss": "0.025",
+    "audioDrive": "0.06",
+    "audioWow": "0",
+    "audioReverb": "0.1",
+    "exportPixelSize": "0",
+    "exportFps": "24",
+    "exportBitrate": "10",
+    "exportScale": "1",
+    "exportFormat": "mp4"
+  },
   "default": DEFAULT_CONFIG,
   "soft-crt": {
     ...DEFAULT_CONFIG,
@@ -2859,104 +2952,6 @@ const PRESET_LIBRARY = {
     vhsNoise: "0",
     vhsInterlace: "0"
   },
-  "clean-vhs": {
-    ...DEFAULT_CONFIG,
-    vhsNoise: "0.06",
-    vhsJitter: "5.0",
-    vhsTracking: "0.10",
-    vhsChromaBleed: "8.0",
-    vhsLineWeave: "2.0",
-    chromaSoftness: "10",
-    vhsSharpen: "1.35",
-    vhsSharpenWidth: "2.0",
-    vhsThickRinging: "1",
-    vhsInterlace: "0.18",
-    vhsHeadSwitch: "0.08",
-    vhsDropout: "0.05"
-  },
-  "vhs": {
-          "exportDuration": "6",
-          "exportFps": "30",
-          "imageFit": "contain",
-          "imageOpacity": "1",
-          "imagePosX": "50",
-          "imagePosY": "50",
-          "pixelate": "0",
-          "imageBlurX": "7.29",
-          "imageBlurY": "2.91",
-          "finalSaturation": "1.04",
-          "warpDirection": "barrel",
-          "scale": "38",
-          "mapZoom": "0.3",
-          "warpBlurX": "7.5",
-          "warpBlurY": "0",
-          "brightness": "1",
-          "contrast": "1.46",
-          "flickerAmount": "0.07",
-          "flickerSpeed": "30",
-          "vignette": "1",
-          "vignetteInner": "55",
-          "vignetteOuter": "120",
-          "rgbOpacity": "0.54",
-          "rgbRedBias": "1",
-          "rgbGreenBias": "1",
-          "rgbBlueBias": "1",
-          "rgbPeriod": "6",
-          "rgbBlurX": "3.08",
-          "rgbBlurY": "2.92",
-          "maskOpacity": "0.43",
-          "maskX": "2",
-          "maskY": "2",
-          "maskBlurX": "3.53",
-          "maskBlurY": "3.59",
-          "beamBlend": "color-dodge",
-          "beamOpacity": "0.29",
-          "beamHeight": "272",
-          "beamSpeed": "20.5",
-          "glowOpacity": "0.4",
-          "glowBlurX": "16.9",
-          "glowBlurY": "17.5",
-          "vhsNoise": "0.21",
-          "vhsJitter": "4.2",
-          "vhsLineWeave": "1.1",
-          "vhsTracking": "0.59",
-          "vhsChromaBleed": "20.5",
-          "vhsThickRinging": "0",
-          "vhsSharpen": "2",
-          "vhsSharpenWidth": "7.85",
-          "vhsInterlace": "0",
-          "vhsHeadSwitch": "0",
-          "vhsDropout": "0",
-          "chromaOffsetX": "18.38",
-          "chromaOffsetY": "-11.88",
-          "chromaSoftness": "0"
-  },
-  "damaged-vhs": {
-    ...DEFAULT_CONFIG,
-    vhsNoise: "0.16",
-    vhsJitter: "18.0",
-    vhsTracking: "0.22",
-    vhsChromaBleed: "18.0",
-    vhsLineWeave: "6.0",
-    chromaOffsetX: "2.5",
-    chromaSoftness: "18",
-    vhsSharpen: "0.42",
-    vhsInterlace: "0.34",
-    vhsHeadSwitch: "0.36",
-    vhsDropout: "0.28"
-  },
-  "vaporwave": {
-    ...DEFAULT_CONFIG,
-    finalSaturation: "1.45",
-    rgbRedBias: "1.18",
-    rgbGreenBias: "0.92",
-    rgbBlueBias: "1.28",
-    vhsChromaBleed: "12.0",
-    chromaOffsetX: "1.5",
-    chromaSoftness: "12",
-    vhsNoise: "0.05",
-    glowOpacity: "0.34"
-  }
 };
 
 function setPresetStatus(message) {
@@ -3058,6 +3053,7 @@ function applyBuiltInPreset() {
   if (!preset) return;
   const config = sanitizePresetConfig(preset);
   config.exportDuration = controls.exportDuration.value;
+  delete config.previewSettings;
   applyConfig(config);
   setPresetStatus(key === "vhs" ? "Applied system preset: VHS / 已应用系统预设：VHS" : `Applied built-in preset: ${key}`);
 }
@@ -3970,6 +3966,17 @@ let currentObjectURL = null;
 let currentSourceFile = null;
 let currentMediaType = "demo";
 let exportInProgress = false;
+let exportCancelled = false;
+let stopCompatibilityExport = null;
+function checkExportCancellation() {
+  if (exportCancelled) throw new DOMException('Export cancelled', 'AbortError');
+}
+document.getElementById('cancelExportButton').addEventListener('click', () => {
+  if (!exportInProgress) return;
+  exportCancelled = true;
+  document.getElementById('cancelExportButton').disabled = true;
+  if (stopCompatibilityExport) stopCompatibilityExport();
+});
 let renderFrameOverrideTime = null;
 let exportRenderScale = 1;
 let exportMosaic = false;
@@ -3979,16 +3986,21 @@ function lockExportControls() {
   const saved = [...document.querySelectorAll('input, select, button')]
     .map(element => [element, element.disabled]);
   saved.forEach(([element]) => { element.disabled = true; });
+  exportCancelled = false;
+  const cancel = document.getElementById('cancelExportButton');cancel.hidden=false;cancel.disabled=false;
   return () => saved.forEach(([element, disabled]) => { element.disabled = disabled; });
 }
 
 function showExportProgress(stage, completed = 0, total = 0, detail = "") {
+  if (exportCancelled && stage === 'error') { stage='cancelled';detail=''; }
+  document.getElementById('cancelExportButton').hidden=['done','error','cancelled'].includes(stage);
   const names = { preparing:["准备导出","Preparing export"], video:["视频编码","Video encoding"], audio:["音轨处理","Audio processing"], recording:["兼容录制","Compatibility recording"], finalizing:["封装文件","Finalizing file"], done:["导出完成","Export complete"], error:["导出失败","Export failed"] };
   const progress = document.getElementById("exportProgress");
-  const title = names[stage][currentLang === "zh" ? 0 : 1];
+  const title = stage==='cancelled' ? (currentLang==='zh'?'导出已取消':'Export cancelled') : names[stage][currentLang === "zh" ? 0 : 1];
   document.getElementById("exportProgressPanel").hidden = false;
   document.getElementById("exportProgressLabel").textContent = title;
   if (stage === "done") progress.value = 100;
+  else if (stage === 'cancelled') progress.value = progress.hasAttribute('value') ? progress.value : 0;
   else if (total > 0) progress.value = exportProgressPercent(completed, total);
   else progress.removeAttribute("value");
   document.getElementById("exportProgressStatus").textContent = detail || (total > 0 ? `${exportProgressPercent(completed, total).toFixed(1)}%` : title);
@@ -4138,6 +4150,12 @@ function val(key) {
 
 function num(key) {
   return Number(val(key));
+}
+function effectNum(key) {
+  const off = key.startsWith('vhs') || key.startsWith('chroma') ? 'vhsEnabled'
+    : ['rgbOpacity','maskOpacity','beamOpacity','flickerAmount'].includes(key) ? 'crtEnabled'
+    : ['scale','warpBlurX','warpBlurY','glowOpacity','vignette'].includes(key) ? 'opticsEnabled' : null;
+  return off && val(off)==='0' ? 0 : num(key);
 }
 
 function clamp(v, a, b) {
@@ -4303,9 +4321,9 @@ function passSource() {
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform2f(u.u_imgSize, placement.size[0], placement.size[1]);
   gl.uniform2f(u.u_imgOffset, placement.offset[0], placement.offset[1]);
-  gl.uniform1f(u.u_opacity, num("imageOpacity"));
-  gl.uniform1f(u.u_pixelate, exportMosaic ? 1 : num("pixelate"));
-  gl.uniform1f(u.u_pixelPeriod, exportMosaic ? num("exportPixelSize") : num("rgbPeriod"));
+  gl.uniform1f(u.u_opacity, effectNum("imageOpacity"));
+  gl.uniform1f(u.u_pixelate, exportMosaic ? 1 : effectNum("pixelate"));
+  gl.uniform1f(u.u_pixelPeriod, exportMosaic ? effectNum("exportPixelSize") : effectNum("rgbPeriod"));
 
   drawTo(targets.fit);
 }
@@ -4325,20 +4343,20 @@ function passRgb() {
   const u = useProgram("rgb");
 
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
-  gl.uniform1f(u.u_period, num("rgbPeriod"));
-  gl.uniform3f(u.u_rgbBias, num("rgbRedBias"), num("rgbGreenBias"), num("rgbBlueBias"));
+  gl.uniform1f(u.u_period, effectNum("rgbPeriod"));
+  gl.uniform3f(u.u_rgbBias, effectNum("rgbRedBias"), effectNum("rgbGreenBias"), effectNum("rgbBlueBias"));
 
   drawTo(targets.rgbRaw);
 }
 
 function passMask() {
   const u = useProgram("mask");
-  const period = num("rgbPeriod");
+  const period = effectNum("rgbPeriod");
 
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform1f(u.u_period, period);
-  gl.uniform1f(u.u_maskX, clamp(num("maskX"), 0, period - 1));
-  gl.uniform1f(u.u_maskY, clamp(num("maskY"), 0, period - 1));
+  gl.uniform1f(u.u_maskX, clamp(effectNum("maskX"), 0, period - 1));
+  gl.uniform1f(u.u_maskY, clamp(effectNum("maskY"), 0, period - 1));
 
   drawTo(targets.maskRaw);
 }
@@ -4350,12 +4368,12 @@ function passComposite(time) {
   bindTexture(1, targets.rgbBlurred.texture, u.u_rgb);
   bindTexture(2, targets.maskBlurred.texture, u.u_mask);
 
-  gl.uniform1f(u.u_rgbOpacity, num("rgbOpacity"));
-  gl.uniform1f(u.u_maskOpacity, num("maskOpacity"));
+  gl.uniform1f(u.u_rgbOpacity, effectNum("rgbOpacity"));
+  gl.uniform1f(u.u_maskOpacity, effectNum("maskOpacity"));
 
-  gl.uniform1f(u.u_beamOpacity, num("beamOpacity"));
-  gl.uniform1f(u.u_beamHeight, num("beamHeight"));
-  gl.uniform1f(u.u_beamSpeed, num("beamSpeed"));
+  gl.uniform1f(u.u_beamOpacity, effectNum("beamOpacity"));
+  gl.uniform1f(u.u_beamHeight, effectNum("beamHeight"));
+  gl.uniform1f(u.u_beamSpeed, effectNum("beamSpeed"));
   gl.uniform1i(u.u_beamBlend, getBeamMode(val("beamBlend")));
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform1f(u.u_time, time);
@@ -4367,8 +4385,8 @@ function passWarp() {
   const u = useProgram("warp");
 
   bindTexture(0, targets.preWarp.texture, u.u_tex);
-  gl.uniform1f(u.u_scale, num("scale"));
-  gl.uniform1f(u.u_zoom, num("mapZoom"));
+  gl.uniform1f(u.u_scale, effectNum("scale"));
+  gl.uniform1f(u.u_zoom, effectNum("mapZoom"));
   gl.uniform1i(u.u_direction, getWarpDirection(val("warpDirection")));
 
   drawTo(targets.warped);
@@ -4377,9 +4395,9 @@ function passWarp() {
 function passLuma(time) {
   const u = useProgram("luma");
 
-  const baseBrightness = num("brightness");
-  const amount = num("flickerAmount");
-  const speed = num("flickerSpeed");
+  const baseBrightness = effectNum("brightness");
+  const amount = effectNum("flickerAmount");
+  const speed = effectNum("flickerSpeed");
 
   const slow = Math.sin(time * speed * Math.PI * 2.0) * 0.45;
   const fast = Math.sin(time * speed * Math.PI * 9.7) * 0.18;
@@ -4388,7 +4406,7 @@ function passLuma(time) {
 
   bindTexture(0, targets.postBlurred.texture, u.u_tex);
   gl.uniform1f(u.u_brightness, brightness);
-  gl.uniform1f(u.u_contrast, num("contrast"));
+  gl.uniform1f(u.u_contrast, effectNum("contrast"));
 
   drawTo(targets.luma);
 }
@@ -4399,28 +4417,28 @@ function passFinal() {
   bindTexture(0, targets.luma.texture, u.u_main);
   bindTexture(1, targets.glow.texture, u.u_glow);
 
-  gl.uniform1f(u.u_glowOpacity, num("glowOpacity"));
-  gl.uniform1f(u.u_saturation, num("finalSaturation"));
-  gl.uniform2f(u.u_chromaOffset, num("chromaOffsetX"), num("chromaOffsetY"));
-  gl.uniform1f(u.u_chromaSoftness, num("chromaSoftness"));
+  gl.uniform1f(u.u_glowOpacity, effectNum("glowOpacity"));
+  gl.uniform1f(u.u_saturation, effectNum("finalSaturation"));
+  gl.uniform2f(u.u_chromaOffset, effectNum("chromaOffsetX"), effectNum("chromaOffsetY"));
+  gl.uniform1f(u.u_chromaSoftness, effectNum("chromaSoftness"));
   gl.uniform2f(u.u_resolution, canvas.width, canvas.height);
   gl.uniform1f(u.u_time, performance.now() / 1000);
 
-  gl.uniform1f(u.u_vhsNoise, num("vhsNoise"));
-  gl.uniform1f(u.u_vhsJitter, num("vhsJitter"));
-  gl.uniform1f(u.u_vhsTracking, num("vhsTracking"));
-  gl.uniform1f(u.u_vhsChromaBleed, num("vhsChromaBleed"));
-  gl.uniform1f(u.u_vhsLineWeave, num("vhsLineWeave"));
-  gl.uniform1f(u.u_vhsSharpen, num("vhsSharpen"));
-  gl.uniform1f(u.u_vhsSharpenWidth, num("vhsSharpenWidth"));
-  gl.uniform1f(u.u_vhsThickRinging, num("vhsThickRinging"));
-  gl.uniform1f(u.u_vhsInterlace, num("vhsInterlace"));
-  gl.uniform1f(u.u_vhsHeadSwitch, num("vhsHeadSwitch"));
-  gl.uniform1f(u.u_vhsDropout, num("vhsDropout"));
+  gl.uniform1f(u.u_vhsNoise, effectNum("vhsNoise"));
+  gl.uniform1f(u.u_vhsJitter, effectNum("vhsJitter"));
+  gl.uniform1f(u.u_vhsTracking, effectNum("vhsTracking"));
+  gl.uniform1f(u.u_vhsChromaBleed, effectNum("vhsChromaBleed"));
+  gl.uniform1f(u.u_vhsLineWeave, effectNum("vhsLineWeave"));
+  gl.uniform1f(u.u_vhsSharpen, effectNum("vhsSharpen"));
+  gl.uniform1f(u.u_vhsSharpenWidth, effectNum("vhsSharpenWidth"));
+  gl.uniform1f(u.u_vhsThickRinging, effectNum("vhsThickRinging"));
+  gl.uniform1f(u.u_vhsInterlace, effectNum("vhsInterlace"));
+  gl.uniform1f(u.u_vhsHeadSwitch, effectNum("vhsHeadSwitch"));
+  gl.uniform1f(u.u_vhsDropout, effectNum("vhsDropout"));
 
-  gl.uniform1f(u.u_vignetteOpacity, num("vignette"));
-  gl.uniform1f(u.u_vignetteInner, num("vignetteInner") / 100);
-  gl.uniform1f(u.u_vignetteOuter, num("vignetteOuter") / 100);
+  gl.uniform1f(u.u_vignetteOpacity, effectNum("vignette"));
+  gl.uniform1f(u.u_vignetteInner, effectNum("vignetteInner") / 100);
+  gl.uniform1f(u.u_vignetteOuter, effectNum("vignetteOuter") / 100);
   const placement = computeImagePlacement();
   gl.uniform2f(u.u_mediaSize, placement.size[0], placement.size[1]);
   gl.uniform2f(u.u_mediaOffset, placement.offset[0], placement.offset[1]);
@@ -4442,27 +4460,27 @@ function renderFrame(ms) {
   uploadVideoFrame();
   passSource();
 
-  passBlur(targets.fit.texture, targets.imageBlurX, num("imageBlurX"), 1, 0);
-  passBlur(targets.imageBlurX.texture, targets.imageBlurred, num("imageBlurY"), 0, 1);
+  passBlur(targets.fit.texture, targets.imageBlurX, effectNum("imageBlurX"), 1, 0);
+  passBlur(targets.imageBlurX.texture, targets.imageBlurred, effectNum("imageBlurY"), 0, 1);
 
   passRgb();
-  passBlur(targets.rgbRaw.texture, targets.rgbBlurX, num("rgbBlurX"), 1, 0);
-  passBlur(targets.rgbBlurX.texture, targets.rgbBlurred, num("rgbBlurY"), 0, 1);
+  passBlur(targets.rgbRaw.texture, targets.rgbBlurX, effectNum("rgbBlurX"), 1, 0);
+  passBlur(targets.rgbBlurX.texture, targets.rgbBlurred, effectNum("rgbBlurY"), 0, 1);
 
   passMask();
-  passBlur(targets.maskRaw.texture, targets.maskBlurX, num("maskBlurX"), 1, 0);
-  passBlur(targets.maskBlurX.texture, targets.maskBlurred, num("maskBlurY"), 0, 1);
+  passBlur(targets.maskRaw.texture, targets.maskBlurX, effectNum("maskBlurX"), 1, 0);
+  passBlur(targets.maskBlurX.texture, targets.maskBlurred, effectNum("maskBlurY"), 0, 1);
 
   passComposite(time);
   passWarp();
 
-  passBlur(targets.warped.texture, targets.postBlurX, num("warpBlurX"), 1, 0);
-  passBlur(targets.postBlurX.texture, targets.postBlurred, num("warpBlurY"), 0, 1);
+  passBlur(targets.warped.texture, targets.postBlurX, effectNum("warpBlurX"), 1, 0);
+  passBlur(targets.postBlurX.texture, targets.postBlurred, effectNum("warpBlurY"), 0, 1);
 
   passLuma(time);
 
-  passBlur(targets.luma.texture, targets.glowX, num("glowBlurX"), 1, 0);
-  passBlur(targets.glowX.texture, targets.glow, num("glowBlurY"), 0, 1);
+  passBlur(targets.luma.texture, targets.glowX, effectNum("glowBlurX"), 1, 0);
+  passBlur(targets.glowX.texture, targets.glow, effectNum("glowBlurY"), 0, 1);
 
   passFinal();
 }
@@ -4708,6 +4726,7 @@ async function downloadProcessedVideo() {
     await seekSourceVideo(0);
 
     const done = new Promise(resolve => { recorder.onstop = resolve; });
+    checkExportCancellation();
     recorder.start(100);
     showExportProgress("recording", 0, duration);
     setPresetStatus("Recording video export... / 正在录制导出视频…");
@@ -4717,6 +4736,7 @@ async function downloadProcessedVideo() {
       if (recorder.state !== "inactive") recorder.stop();
     };
     sourceVideo.addEventListener("ended", stopRecording);
+    stopCompatibilityExport = stopRecording;
     // The preview renderer is deliberately allowed to run during recording.
     compatibilityRecording = true;
     timer = setInterval(() => {
@@ -4726,8 +4746,10 @@ async function downloadProcessedVideo() {
     recorder.onerror = event => { recordingError = event.error || new Error("Recording failed"); stopRecording(); };
     await sourceVideo.play();
     await done;
+    checkExportCancellation();
     if (recordingError) throw recordingError;
     clearInterval(timer);
+    stopCompatibilityExport = null;
     showExportProgress("finalizing");
 
     const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
@@ -4744,6 +4766,7 @@ async function downloadProcessedVideo() {
     if (recorder.state !== "inactive") recorder.stop();
   } finally {
     clearInterval(timer);
+    stopCompatibilityExport = null;
     if (stopRecording) sourceVideo.removeEventListener("ended", stopRecording);
     stream.getTracks().forEach(track => track.stop());
     unlock();
@@ -5054,13 +5077,15 @@ async function downloadHighQualityVideo() {
   const unlock = lockExportControls();
   let input = null;
   let decodedFrames = null;
+  let output = null;
+  let completed = false;
   try {
     document.getElementById("exportPreviewVideo").pause();
     if (currentMediaType === "video") sourceVideo.pause();
     showExportProgress("preparing");
     resize();
     syncExportCanvasSize();
-    const output = new mb.Output({
+    output = new mb.Output({
       format: useWebm ? new mb.WebMOutputFormat() : new mb.Mp4OutputFormat(),
       target: new mb.BufferTarget()
     });
@@ -5098,6 +5123,7 @@ async function downloadHighQualityVideo() {
       }
     }
 
+    checkExportCancellation();
     await output.start();
     const totalFrames = Math.max(1, Math.ceil(duration * fps));
     const exportStarted = performance.now();
@@ -5106,6 +5132,7 @@ async function downloadHighQualityVideo() {
     showExportProgress("video", 0, totalFrames);
 
     for (let i = 0; i < totalFrames; i++) {
+      checkExportCancellation();
       if (decodedFrames) {
         const frame = await decodedFrames.next();
         if (frame.done || !frame.value) throw new Error(currentLang === "zh" ? "未能读取导出视频帧。" : "Could not decode an export frame.");
@@ -5113,6 +5140,7 @@ async function downloadHighQualityVideo() {
       }
       const renderStarted = performance.now();
       await drawExportFrame((startTime + i / fps) * 1000);
+      checkExportCancellation();
       exportTimings.renderMs += performance.now() - renderStarted;
       const encodeStarted = performance.now();
       await videoSource.add(i / fps, Math.min(1 / fps, duration - i / fps));
@@ -5132,6 +5160,7 @@ async function downloadHighQualityVideo() {
       showExportProgress("audio");
       for await (const sample of audioSamples) {
         try {
+          checkExportCancellation();
           const decoded = sample.toAudioBuffer();
           const first = Math.max(0, Math.round((startTime - sample.timestamp) * decoded.sampleRate));
           const last = Math.min(decoded.length, Math.round((startTime + duration - sample.timestamp) * decoded.sampleRate));
@@ -5147,6 +5176,8 @@ async function downloadHighQualityVideo() {
 
     showExportProgress("finalizing");
     await output.finalize();
+    checkExportCancellation();
+    completed = true;
     console.info("CRT export timing", { ...exportTimings, totalMs:performance.now() - exportStarted });
     const mime = useWebm ? "video/webm" : "video/mp4";
     const url = URL.createObjectURL(new Blob([output.target.buffer], { type: mime }));
@@ -5158,12 +5189,13 @@ async function downloadHighQualityVideo() {
     showExportProgress("done");
     setPresetStatus(`High-quality ${useWebm ? "WebM" : "MP4"} exported / 高质量视频已导出`);
   } catch (error) {
-    console.error(error);
+    if (!exportCancelled) console.error(error);
     const detail = error && error.message ? `: ${error.message}` : "";
     showExportProgress("error", 0, 0, detail);
-    setPresetStatus(`High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
+    setPresetStatus(exportCancelled ? 'Export cancelled / 导出已取消' : `High-quality export failed${detail} / 高质量导出失败；请尝试兼容 WebM`);
   } finally {
     exportDecodedCanvas = null;
+    if (!completed && output) await output.cancel().catch(() => {});
     if (decodedFrames) await decodedFrames.return().catch(() => {});
     if (input) input.dispose();
     exportInProgress = false;
@@ -5886,13 +5918,19 @@ if (typeof document !== 'undefined') initializeParameterNavigation();
 function initializeParameterNavigation() {
   const panel = document.querySelector('aside.control-panel');
   const toolbar = document.getElementById('parameterToolbar');
-  const groups = [...panel.querySelectorAll('.control-group')];
+  const texture=document.getElementById('textureGroup'),optics=document.getElementById('opticsGroup');
+  for(const key of ['rgbOpacity','rgbRedBias','rgbGreenBias','rgbBlueBias','rgbBlurX','rgbBlurY','maskOpacity','maskX','maskY','maskBlurX','maskBlurY','flickerAmount','flickerSpeed','beamBlend','beamOpacity','beamHeight','beamSpeed'])texture.querySelector('.group-body').append(controls[key].closest('.control'));
+  for(const key of ['warpDirection','scale','mapZoom','warpBlurX','warpBlurY','vignette','vignetteInner','vignetteOuter','glowOpacity','glowBlurX','glowBlurY'])optics.querySelector('.group-body').append(controls[key].closest('.control'));
+  document.getElementById('displayGroup').hidden=true;
+  for(const [id,zh,en] of [['phosphorGroup','像素分辨率','Pixel resolution'],['audioGroup','声音处理','Sound processing']]){const heading=document.getElementById(id).querySelector('summary');heading.dataset.i18nZh=zh;heading.dataset.i18nEn=en;heading.textContent=currentLang==='zh'?zh:en;}
+  const groupOrder=['mediaGroup','presetsGroup','phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup','videoSettingsGroup','audioGroup','exportGroup','userGuideGroup','aboutGroup'];
+  const groups = [...panel.querySelectorAll('.control-group')].filter(group=>group.id!=='displayGroup').sort((a,b)=>groupOrder.indexOf(a.id)-groupOrder.indexOf(b.id));
   const search = document.getElementById('parameterSearch');
   const status = document.getElementById('navigationStatus');
   const language=document.querySelector('.dos-tools');
   const header=language.parentElement;
   const mobile = matchMedia('(max-width:900px)');
-  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','displayGroup','colorGroup','tapeGroup','audioGroup'], export:['videoSettingsGroup','exportGroup'] };
+  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup'], export:['videoSettingsGroup','audioGroup','exportGroup'] };
   const common = new Set(['imageFit','effectBoundary','rgbPeriod','pixelate','rgbOpacity','maskOpacity','scale','glowOpacity','vignette','brightness','contrast','finalSaturation','vhsNoise','vhsJitter','vhsChromaBleed','audioVolume','audioBandwidth','audioHiss','audioReverb','exportScale','exportFps','exportBitrate','exportDuration','exportFormat','exportPixelSize']);
   const workspace = document.createElement('div'); workspace.className = 'workspace-body';
   const rail = document.createElement('nav'); rail.className = 'category-rail';
@@ -5918,7 +5956,7 @@ function initializeParameterNavigation() {
   let page='presets', active='presetsGroup', selected='', baseline=collectConfig();
   let favorites=new Set();
   try {favorites=new Set(JSON.parse(localStorage.getItem('crt-favorite-parameters')||'[]').filter(key=>key in DEFAULT_CONFIG));}catch { /* Storage optional. */ }
-  const entries=[...panel.querySelectorAll('[data-config]')].map(input=>({input,key:input.dataset.config,item:input.closest('.control'),group:input.closest('.control-group')}));
+  const entries=[...panel.querySelectorAll('[data-config]')].filter(input=>!input.dataset.config.endsWith('Enabled')).map(input=>({input,key:input.dataset.config,item:input.closest('.control'),group:input.closest('.control-group')}));
   const label=entry=>entry.item.querySelector('label span')?.textContent||entry.key;
   const value=entry=>entry.input.type==='checkbox'?(entry.input.checked?'1':'0'):entry.input.value;
   const changed=entry=>parameterChanged(value(entry),baseline[entry.key]);
@@ -5949,7 +5987,7 @@ function initializeParameterNavigation() {
       const heading=document.createElement('summary');heading.dataset.i18nZh='精细调整';heading.dataset.i18nEn='Fine adjustment';heading.textContent='精细调整';detail.append(heading);
       const body=document.createElement('div');body.className='fine-body';detail.append(body);
       for(const item of [...group.querySelector('.group-body').children]) {
-        const input=item.querySelector('[data-config]');if(input&&!common.has(input.dataset.config))body.append(item);
+        const input=item.querySelector('[data-config]');if(input&&!input.dataset.config.endsWith('Enabled')&&!common.has(input.dataset.config))body.append(item);
       }
       if(body.children.length)group.querySelector('.group-body').append(detail);
     }
@@ -5981,12 +6019,12 @@ function initializeParameterNavigation() {
       if(entry.input.type==='checkbox')entry.input.checked=['1',1,true].includes(baseline[entry.key]);else entry.input.value=baseline[entry.key];
       entry.input.dispatchEvent(new Event('input',{bubbles:true}));entry.input.dispatchEvent(new Event('change',{bubbles:true}));
     });
-    tools.append(star,reset);entry.item.append(tools);entry.star=star;entry.reset=reset;
+    tools.append(star,reset);entry.item.prepend(tools);entry.star=star;entry.reset=reset;
   }
   function refresh() {
     if(auxiliaryWasMobile!==mobile.matches){auxiliary.open=!mobile.matches;auxiliaryWasMobile=mobile.matches;}
     for(const entry of entries)if(entry.help){
-      if(entry.help.dataset.mobile!==String(mobile.matches)){entry.help.open=!mobile.matches;entry.help.dataset.mobile=String(mobile.matches);}
+      if(entry.help.dataset.mobile!==String(mobile.matches)){entry.help.open=false;entry.help.dataset.mobile=String(mobile.matches);}
     }
     (mobile.matches?utilities:header).append(language);
     if(!mobile.matches&&page==='media')page='presets';
@@ -6004,10 +6042,10 @@ function initializeParameterNavigation() {
       for(const item of group.querySelectorAll('.control')) {
         const entry=entries.find(entry=>entry.item===item);
         // A wrapper containing nested controls must stay mounted (export controls).
-        item.classList.toggle('navigation-hidden',entry?!candidates.includes(entry)||(mobile.matches&&entry.key!==selected):filtered&&!item.querySelector('[data-config]'));
+        item.classList.toggle('navigation-hidden',entry?!candidates.includes(entry):filtered&&!item.querySelector('[data-config]'));
       }
       for(const detail of group.querySelectorAll('.fine-settings')) {
-        if(mobile.matches||filtered)detail.open=true;
+        if(filtered)detail.open=true;
         detail.hidden=(mobile.matches||filtered)&&!detail.querySelector('.control:not(.navigation-hidden)');
       }
       for(const heading of group.querySelectorAll('.group-section-title'))heading.hidden=filtered;
@@ -6018,8 +6056,8 @@ function initializeParameterNavigation() {
     }
     parameterPicker.value=selected;
     parameterPicker.setAttribute('aria-label',currentLang==='zh'?'选择调整参数':'Choose a parameter');
-    strip.hidden=!mobile.matches||!candidates.length;
-    const shortNames={phosphorGroup:['像素','Pixels'],displayGroup:['CRT','CRT'],colorGroup:['色彩','Color'],tapeGroup:['VHS','VHS'],audioGroup:['音频','Audio']};
+    strip.hidden=true;
+    const shortNames={phosphorGroup:['像素','Pixels'],textureGroup:['CRT','CRT'],opticsGroup:['光学','Optics'],colorGroup:['色彩','Color'],tapeGroup:['VHS','VHS'],audioGroup:['声音','Sound']};
     for(const [id,btn]of categoryButtons){
       btn.hidden=mobile.matches?!(pages[page].length>1&&page!=='presets'&&pages[page].includes(id)):!pages[page].includes(id)&&id!==active;
       const names=shortNames[id];btn.textContent=mobile.matches&&names?names[currentLang==='zh'?0:1]:btn.dataset[currentLang==='zh'?'i18nZh':'i18nEn'];

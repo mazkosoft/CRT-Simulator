@@ -3,13 +3,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const groups = [...html.matchAll(/<details\b([^>]*)>([\s\S]*?)<\/details>/g)].filter(m => m[1].includes('control-group'));
-const order = ['mediaGroup','presetsGroup','phosphorGroup','displayGroup','colorGroup','tapeGroup','audioGroup','videoSettingsGroup','exportGroup','userGuideGroup','aboutGroup'];
+const order = ['mediaGroup','presetsGroup','opticsGroup','textureGroup','phosphorGroup','displayGroup','colorGroup','tapeGroup','audioGroup','videoSettingsGroup','exportGroup','userGuideGroup','aboutGroup'];
 assert.deepEqual(groups.map(m => m[1].match(/id="([^"]+)"/)?.[1]), order);
 assert.deepEqual(groups.filter(m => /\bopen\b/.test(m[1])).map(m => m[1].match(/id="([^"]+)"/)[1]), ['mediaGroup']);
 for (const [id, control] of [['mediaGroup','imageUpload'],['colorGroup','finalSaturationInput'],['colorGroup','brightnessInput'],['displayGroup','scaleInput'],['displayGroup','glowOpacityInput'],['phosphorGroup','pixelateInput'],['phosphorGroup','rgbPeriodInput'],['videoSettingsGroup','exportPixelSizeInput'],['exportGroup','exportProgressPanel'],['exportGroup','downloadVideoButton']]) {
   assert.ok(groups.find(m => m[1].includes(`id="${id}"`))[2].includes(`id="${control}"`), `${control} belongs in ${id}`);
 }
-assert.deepEqual(groups.map(m => m[2].match(/data-i18n-zh="([^"]+)"/)[1]), ['媒体导入','效果预设','像素分辨率','CRT屏幕','色彩设置','VHS设置','音频设置','视频设置','媒体导出','使用说明','关于鸣谢']);
+assert.deepEqual(groups.map(m => m[2].match(/data-i18n-zh="([^"]+)"/)[1]), ['媒体导入','效果预设','光学效果','CRT 纹理','像素分辨率','CRT屏幕','色彩设置','启用 VHS 效果','音频设置','视频设置','媒体导出','使用说明','关于鸣谢']);
+const navigation=fs.readFileSync(path.join(__dirname,'../js/navigation.js'),'utf8');
+assert.ok(navigation.includes("export:['videoSettingsGroup','audioGroup','exportGroup']"));
+assert.ok(navigation.includes("document.getElementById('displayGroup').hidden=true"));
 for (const id of ['previewMode','previewQuality','autoEncodedPreview','previewExportButton','encodedPreviewStatus','exportPreviewInfo']) {
   assert.ok(html.indexOf(`id="${id}"`) < html.indexOf('<details id="mediaGroup"'), `${id} must be above every accordion`);
 }

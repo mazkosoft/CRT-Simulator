@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const read=n=>fs.readFileSync(require('node:path').join(__dirname,'..',n),'utf8');
+const c=vm.createContext({});vm.runInContext(read('js/config.js')+';this.presets=PRESET_LIBRARY;this.defaults=DEFAULT_CONFIG;',c);
+assert.ok(c.presets['soft-analog-video']);
+for(const key of ['vhs','clean-vhs','damaged-vhs','vaporwave'])assert.ok(!c.presets[key]);
+assert.equal(c.defaults.crtEnabled,'1');
+assert.ok(read('js/crt.js').includes('checkExportCancellation()'));
+assert.ok(read('js/navigation.js').includes('entry.item.prepend(tools)'));
+const effect=read('js/crt.js').match(/function effectNum\(key\) \{[\s\S]*?\n\}/)[0];
+vm.runInContext('let settings={crtEnabled:"0",vhsEnabled:"0",opticsEnabled:"0",rgbOpacity:"0.54",vhsNoise:"0.19",scale:"38",brightness:"0.81",pixelate:"1"};function val(k){return settings[k];}function num(k){return Number(val(k));}'+effect+';this.effect=effectNum;this.settings=settings;',c);
+for(const key of ['rgbOpacity','vhsNoise','scale'])assert.equal(c.effect(key),0);
+assert.equal(c.effect('brightness'),0.81);assert.equal(c.effect('pixelate'),1);
+c.settings.crtEnabled='1';assert.equal(c.effect('rgbOpacity'),0.54);
+console.log('Effect workflow structure passed');

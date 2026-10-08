@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🅜 𝙲𝚁𝚃 𝚂𝚒𝚖𝚞𝚕𝚊𝚝𝚘𝚛</title>
   <link rel="stylesheet" href="css/crt.css?v=workspace-4" />
-  <link rel="stylesheet" href="css/ui.css?v=workspace-9" />
+  <link rel="stylesheet" href="css/ui.css?v=mobile-density-1" />
 </head>
 
 <body>
@@ -144,10 +144,7 @@
         <select id="builtInPresetSelect">
           <option value="default">Current Default / 当前默认</option>
           <option value="soft-crt">Soft CRT / 柔和显像</option>
-          <option value="clean-vhs">Clean VHS / 干净录像带</option>
-          <option value="vhs">VHS - Latest / 最新 VHS</option>
-          <option value="damaged-vhs">Damaged VHS / 受损磁带</option>
-          <option value="vaporwave">Vaporwave / 蒸汽波偏色</option>
+          <option value="soft-analog-video" data-i18n-zh="柔和模拟录像" data-i18n-en="Soft analog video">柔和模拟录像</option>
           <option value="worn-network-vhs" data-i18n-zh="低码率磨损 VHS" data-i18n-en="Worn low-bitrate VHS">低码率磨损 VHS</option>
           <option value="glowing-pixel-crt" data-i18n-zh="高辉光像素 CRT" data-i18n-en="Glowing pixel CRT">高辉光像素 CRT</option>
         </select>
@@ -173,6 +170,8 @@
 <p class="hint" data-i18n-zh="配置文件和本地保存位于屏幕下方的配置按钮中。" data-i18n-en="Use the configuration button below the screen to manage files and local settings.">配置文件和本地保存位于屏幕下方的配置按钮中。</p>
     </details>
 
+    <details id="opticsGroup" class="control-group"><summary data-i18n-zh="光学效果" data-i18n-en="Optical effects">光学效果</summary><div class="control"><label><span data-i18n-zh="启用光学效果" data-i18n-en="Enable optical effects">启用光学效果</span><input type="checkbox" id="opticsEnabledInput" data-config="opticsEnabled" checked></label></div></details>
+    <details id="textureGroup" class="control-group"><summary data-i18n-zh="CRT 纹理" data-i18n-en="CRT texture">CRT 纹理</summary><div class="control"><label><span data-i18n-zh="启用 CRT 效果" data-i18n-en="Enable CRT effects">启用 CRT 效果</span><input type="checkbox" id="crtEnabledInput" data-config="crtEnabled" checked></label></div></details>
     <details id="phosphorGroup" class="control-group">
       <summary data-i18n-zh="像素分辨率" data-i18n-en="Pixel resolution">像素分辨率</summary>
 <div class="control">
@@ -373,6 +372,7 @@
     </details>
 
     <details id="tapeGroup" class="control-group">
+      <div class="control"><label><span data-i18n-zh="启用 VHS 效果" data-i18n-en="Enable VHS effects">启用 VHS 效果</span><input type="checkbox" id="vhsEnabledInput" data-config="vhsEnabled" checked></label></div>
       <summary data-i18n-zh="VHS设置" data-i18n-en="VHS settings">VHS设置</summary>
 <p class="hint">这一组负责录像带化处理。色度相关参数现在全部并入 VHS：其中 NTSC Chroma Bleed 会按亮度 / 色度分离思路，只压缩色度带宽，不是简单 RGB 硬分离。</p>
 
@@ -567,6 +567,7 @@
 <div id="exportProgressPanel" class="export-progress-panel" hidden>
         <label for="exportProgress" id="exportProgressLabel">导出进度</label>
         <progress id="exportProgress" max="100" value="0"></progress>
+        <button id="cancelExportButton" type="button" data-i18n-zh="取消导出" data-i18n-en="Cancel export" hidden>取消导出</button>
         <p id="exportProgressStatus" role="status" aria-live="polite"></p>
       </div>
 <p class="hint">图片可直接导出 PNG；视频优先输出高质量 MP4/WebM，并在浏览器能力不足时回退为兼容 WebM。</p>

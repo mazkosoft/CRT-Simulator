@@ -11,13 +11,19 @@ if (typeof document !== 'undefined') initializeParameterNavigation();
 function initializeParameterNavigation() {
   const panel = document.querySelector('aside.control-panel');
   const toolbar = document.getElementById('parameterToolbar');
-  const groups = [...panel.querySelectorAll('.control-group')];
+  const texture=document.getElementById('textureGroup'),optics=document.getElementById('opticsGroup');
+  for(const key of ['rgbOpacity','rgbRedBias','rgbGreenBias','rgbBlueBias','rgbBlurX','rgbBlurY','maskOpacity','maskX','maskY','maskBlurX','maskBlurY','flickerAmount','flickerSpeed','beamBlend','beamOpacity','beamHeight','beamSpeed'])texture.querySelector('.group-body').append(controls[key].closest('.control'));
+  for(const key of ['warpDirection','scale','mapZoom','warpBlurX','warpBlurY','vignette','vignetteInner','vignetteOuter','glowOpacity','glowBlurX','glowBlurY'])optics.querySelector('.group-body').append(controls[key].closest('.control'));
+  document.getElementById('displayGroup').hidden=true;
+  for(const [id,zh,en] of [['phosphorGroup','像素分辨率','Pixel resolution'],['audioGroup','声音处理','Sound processing']]){const heading=document.getElementById(id).querySelector('summary');heading.dataset.i18nZh=zh;heading.dataset.i18nEn=en;heading.textContent=currentLang==='zh'?zh:en;}
+  const groupOrder=['mediaGroup','presetsGroup','phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup','videoSettingsGroup','audioGroup','exportGroup','userGuideGroup','aboutGroup'];
+  const groups = [...panel.querySelectorAll('.control-group')].filter(group=>group.id!=='displayGroup').sort((a,b)=>groupOrder.indexOf(a.id)-groupOrder.indexOf(b.id));
   const search = document.getElementById('parameterSearch');
   const status = document.getElementById('navigationStatus');
   const language=document.querySelector('.dos-tools');
   const header=language.parentElement;
   const mobile = matchMedia('(max-width:900px)');
-  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','displayGroup','colorGroup','tapeGroup','audioGroup'], export:['videoSettingsGroup','exportGroup'] };
+  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup'], export:['videoSettingsGroup','audioGroup','exportGroup'] };
   const common = new Set(['imageFit','effectBoundary','rgbPeriod','pixelate','rgbOpacity','maskOpacity','scale','glowOpacity','vignette','brightness','contrast','finalSaturation','vhsNoise','vhsJitter','vhsChromaBleed','audioVolume','audioBandwidth','audioHiss','audioReverb','exportScale','exportFps','exportBitrate','exportDuration','exportFormat','exportPixelSize']);
   const workspace = document.createElement('div'); workspace.className = 'workspace-body';
   const rail = document.createElement('nav'); rail.className = 'category-rail';
@@ -43,7 +49,7 @@ function initializeParameterNavigation() {
   let page='presets', active='presetsGroup', selected='', baseline=collectConfig();
   let favorites=new Set();
   try {favorites=new Set(JSON.parse(localStorage.getItem('crt-favorite-parameters')||'[]').filter(key=>key in DEFAULT_CONFIG));}catch { /* Storage optional. */ }
-  const entries=[...panel.querySelectorAll('[data-config]')].map(input=>({input,key:input.dataset.config,item:input.closest('.control'),group:input.closest('.control-group')}));
+  const entries=[...panel.querySelectorAll('[data-config]')].filter(input=>!input.dataset.config.endsWith('Enabled')).map(input=>({input,key:input.dataset.config,item:input.closest('.control'),group:input.closest('.control-group')}));
   const label=entry=>entry.item.querySelector('label span')?.textContent||entry.key;
   const value=entry=>entry.input.type==='checkbox'?(entry.input.checked?'1':'0'):entry.input.value;
   const changed=entry=>parameterChanged(value(entry),baseline[entry.key]);
@@ -74,7 +80,7 @@ function initializeParameterNavigation() {
       const heading=document.createElement('summary');heading.dataset.i18nZh='精细调整';heading.dataset.i18nEn='Fine adjustment';heading.textContent='精细调整';detail.append(heading);
       const body=document.createElement('div');body.className='fine-body';detail.append(body);
       for(const item of [...group.querySelector('.group-body').children]) {
-        const input=item.querySelector('[data-config]');if(input&&!common.has(input.dataset.config))body.append(item);
+        const input=item.querySelector('[data-config]');if(input&&!input.dataset.config.endsWith('Enabled')&&!common.has(input.dataset.config))body.append(item);
       }
       if(body.children.length)group.querySelector('.group-body').append(detail);
     }
@@ -106,12 +112,12 @@ function initializeParameterNavigation() {
       if(entry.input.type==='checkbox')entry.input.checked=['1',1,true].includes(baseline[entry.key]);else entry.input.value=baseline[entry.key];
       entry.input.dispatchEvent(new Event('input',{bubbles:true}));entry.input.dispatchEvent(new Event('change',{bubbles:true}));
     });
-    tools.append(star,reset);entry.item.append(tools);entry.star=star;entry.reset=reset;
+    tools.append(star,reset);entry.item.prepend(tools);entry.star=star;entry.reset=reset;
   }
   function refresh() {
     if(auxiliaryWasMobile!==mobile.matches){auxiliary.open=!mobile.matches;auxiliaryWasMobile=mobile.matches;}
     for(const entry of entries)if(entry.help){
-      if(entry.help.dataset.mobile!==String(mobile.matches)){entry.help.open=!mobile.matches;entry.help.dataset.mobile=String(mobile.matches);}
+      if(entry.help.dataset.mobile!==String(mobile.matches)){entry.help.open=false;entry.help.dataset.mobile=String(mobile.matches);}
     }
     (mobile.matches?utilities:header).append(language);
     if(!mobile.matches&&page==='media')page='presets';
@@ -129,10 +135,10 @@ function initializeParameterNavigation() {
       for(const item of group.querySelectorAll('.control')) {
         const entry=entries.find(entry=>entry.item===item);
         // A wrapper containing nested controls must stay mounted (export controls).
-        item.classList.toggle('navigation-hidden',entry?!candidates.includes(entry)||(mobile.matches&&entry.key!==selected):filtered&&!item.querySelector('[data-config]'));
+        item.classList.toggle('navigation-hidden',entry?!candidates.includes(entry):filtered&&!item.querySelector('[data-config]'));
       }
       for(const detail of group.querySelectorAll('.fine-settings')) {
-        if(mobile.matches||filtered)detail.open=true;
+        if(filtered)detail.open=true;
         detail.hidden=(mobile.matches||filtered)&&!detail.querySelector('.control:not(.navigation-hidden)');
       }
       for(const heading of group.querySelectorAll('.group-section-title'))heading.hidden=filtered;
@@ -143,8 +149,8 @@ function initializeParameterNavigation() {
     }
     parameterPicker.value=selected;
     parameterPicker.setAttribute('aria-label',currentLang==='zh'?'选择调整参数':'Choose a parameter');
-    strip.hidden=!mobile.matches||!candidates.length;
-    const shortNames={phosphorGroup:['像素','Pixels'],displayGroup:['CRT','CRT'],colorGroup:['色彩','Color'],tapeGroup:['VHS','VHS'],audioGroup:['音频','Audio']};
+    strip.hidden=true;
+    const shortNames={phosphorGroup:['像素','Pixels'],textureGroup:['CRT','CRT'],opticsGroup:['光学','Optics'],colorGroup:['色彩','Color'],tapeGroup:['VHS','VHS'],audioGroup:['声音','Sound']};
     for(const [id,btn]of categoryButtons){
       btn.hidden=mobile.matches?!(pages[page].length>1&&page!=='presets'&&pages[page].includes(id)):!pages[page].includes(id)&&id!==active;
       const names=shortNames[id];btn.textContent=mobile.matches&&names?names[currentLang==='zh'?0:1]:btn.dataset[currentLang==='zh'?'i18nZh':'i18nEn'];

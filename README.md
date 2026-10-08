@@ -73,8 +73,9 @@ Use **☆** to collect favorite parameters and **Modified** to see changes since
 the last loaded preset/configuration. **Reset** restores a single parameter to
 that baseline. Loading a preset starts a new baseline; it does not erase favorites.
 On phones, the 4:3 screen stays above the work area. Use the compact **Media / Presets /
-Adjust / Export** tabs; in Adjust, choose a category tab and a parameter from the
-dropdown, then edit with its slider, number field or ± keys. **More** holds Guide,
+Adjust / Export** tabs; in Adjust, choose a category to view several parameters together.
+Each compact row keeps its slider, number field and ± keys together; additional controls
+remain available under **Fine adjustment**. **More** holds Guide,
 About, language switching and (in Adjust) Favorites/Modified. Only the work area
 scrolls; it never covers the screen.
 The mobile controls share one inset console, with compact navigation and a quiet
@@ -101,27 +102,30 @@ non-media files are rejected without replacing the current media. The file picke
 remains available on touch devices.
 
 Preview status stays in the operating strip; **Preview settings** opens mode,
-performance, automatic updating and refresh controls. The eleven categories are:
+performance, automatic updating and refresh controls. Categories follow the workflow:
 
 1. Media import
 2. Effect presets
 3. Pixel resolution
-4. CRT screen
-5. Color settings
-6. VHS settings
-7. Audio settings
-8. Video settings
-9. Media export
-10. User guide
-11. About & credits
+4. CRT texture
+5. VHS recording
+6. Optical effects
+7. Color settings
+8. Video settings (Export)
+9. Sound processing (Export; audition remains available)
+10. Media export
+11. User guide
+12. About & credits
 
 Effect presets open initially; import media with the shortcut above the category rail. **Pixel
-resolution** controls live pixelation, the linked RGB cell period and the mask.
-**CRT screen** contains curvature, flicker, vignette, beam and glow; **Color
+resolution** controls live pixelation and the linked RGB cell period.
+**CRT texture** contains phosphors, mask, flicker and beam. **Optical effects** contains curvature, vignette and glow. CRT, VHS and optical effects each have a master switch that bypasses processing without erasing parameters; these switches are saved in configuration and affect preview and export. **Color
 settings** contains brightness, contrast, saturation and media blur. **Video
 settings** contains quality, mosaic blocks, duration and encoding parameters;
 **Media export** contains save actions and progress. Use encoded preview to
 inspect export-only mosaic. Configuration remains below the screen.
+
+Favorites and Reset appear above each parameter. Help expands on demand across its full width. Two-column layout is used only when the parameter area itself is at least 640px wide. The supplied **Soft analog video** preset replaces the former Clean/Latest/Damaged VHS and Vaporwave looks; **Worn low-bitrate VHS** remains. Built-in looks preserve the current clip duration and preview mode; full JSON import restores all saved settings.
 
 Every numeric parameter has an editable number field on desktop and mobile.
 Use the adjacent minus/plus buttons to adjust by the parameter step.
@@ -190,6 +194,8 @@ and file finalization separately. Remaining time estimates cover the video stage
 Finalization is indeterminate; “Export complete” appears only when the file is built,
 not when the browser has finished saving it. Compatibility recording uses playback
 time and lacks offline mosaic/audio processing.
+
+Use **Cancel export** to stop video export. Cancellation is checked between decoding, rendering and encoding steps; an in-flight encoder/decoder call may finish first. Partial files are not downloaded, and controls and preview are restored. You can start another export afterwards.
 
 **Export image** saves the current processed frame as PNG. Casing, glass reflection
 and controls are excluded.
@@ -367,25 +373,32 @@ PNG、离线逐帧 MP4／WebM 和导出音轨处理；中英文界面及独立�
 输入格式支持取决于浏览器解码器。
 
 预览内容、预览性能、自动更新、刷新按钮和预览状态在所有分组上方直接显示。
-下面依次为 11 个分组：
+分类按使用流程安排：
 
 1. 媒体导入
 2. 效果预设
 3. 像素分辨率
-4. CRT屏幕
-5. 色彩设置
-6. VHS设置
-7. 音频设置
-8. 视频设置
-9. 媒体导出
-10. 使用说明
-11. 关于鸣谢
+4. CRT 纹理
+5. VHS 录像
+6. 光学效果
+7. 色彩设置
+8. 视频设置（导出页）
+9. 声音处理（导出页，保留试听）
+10. 媒体导出
+11. 使用说明
+12. 关于鸣谢
 
 默认选中“媒体导入”，其他分类通过固定操作条切换。“像素分辨率”调整实时像素化、联动的
-RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、光带和辉光；
+RGB 像素周期；“CRT 纹理”调整荧光粉、点遮罩、闪烁和光带；“光学效果”调整曲面、暗角和辉光；
 “色彩设置”调整亮度、对比度、饱和度和媒体模糊。“视频设置”调整画质、马赛克、
 时长及编码参数，“媒体导出”提供导出按钮和真实进度。导出马赛克可通过编码预览查看。
 配置管理仍位于屏幕下方。
+
+CRT、VHS、光学效果各有独立总开关，关闭只绕过处理、不清空参数，重新开启恢复原值；开关影响预览和导出，也保存到配置文件。收藏、还原位于参数上方，说明按需展开并使用完整宽度。操作区自身至少 640px 宽才使用双列。
+
+新增“柔和模拟录像”预设，保留“低码率磨损 VHS”，移除干净录像带、最新 VHS、受损磁带和蒸汽波偏色。内置效果预设不覆盖当前导出时长和预览模式；完整 JSON 导入仍恢复全部设置。
+
+视频导出时可点击“取消导出”。取消会在解码、渲染与编码步骤之间检查；已经执行中的编码或解码调用可能需要先结束。不会下载残缺文件，随后恢复控件和预览，可再次导出。
 
 所有数值参数在电脑和手机上都提供数字输入框，旁边的减号、加号按参数精度微调。
 输入后按回车或离开输入框即可应用，
@@ -427,7 +440,7 @@ RGB 像素周期和点遮罩；“CRT屏幕”调整曲面、闪烁、暗角、�
 点击 ☆ 收藏参数，在“常用”中集中调节；“已修改”显示与最近载入的预设／配置不同的参数。
 “还原”只恢复这一项。载入预设会更新比较基准，不删除收藏；收藏仅保存在当前浏览器。
 手机上方保持完整的 4:3 屏幕，下方用紧凑的“媒体／预设／调整／导出”标签切换工作区。
-在“调整”中选择分类标签，再从下拉框选择参数，一次调节一个参数。
+在“调整”中选择分类标签，同组多个参数同时显示。每项的滑轨、数字输入与加减按钮并排放置；其余参数可展开“精细调整”。
 “更多”收纳使用说明、关于鸣谢和语言切换；调整页还可在这里进入“常用／已修改”。
 手机操作区采用一体式浅凹面板，减少重复边框；参数说明点击展开，底部预览工具带保持紧凑。
 数字输入、± 和滑条仍然可用，工作区独立滚动，不遮挡屏幕，也不用整页来回翻找。
