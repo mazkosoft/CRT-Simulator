@@ -81,8 +81,11 @@ scrolls; it never covers the screen.
 The mobile controls share one inset console, with compact navigation and a quiet
 preview tool strip. Expand **Parameter help** for explanations without permanently
 using up the adjustment area.
-The preview status remains at the bottom. **Preview settings** opens mode/quality
-options; **Hold for original** compares the unprocessed media while held.
+On phones, raised **Refresh / Hold original / Preview** buttons sit below the main tabs.
+Preview settings opens in the shared editor, with **Back** returning to the previous page.
+**More** is a peer tab with Guide / About & credits / Interface categories. There is no
+permanent bottom preview strip; processing status appears only while generating a preview.
+Desktop preview controls retain their existing location.
 Import, Guide, About and the configuration button remain available in every workspace.
 
 Two supplied looks are available: **Worn low-bitrate VHS** and **Glowing pixel CRT**.
@@ -441,10 +444,10 @@ CRT、VHS、光学效果各有独立总开关，关闭只绕过处理、不清�
 “还原”只恢复这一项。载入预设会更新比较基准，不删除收藏；收藏仅保存在当前浏览器。
 手机上方保持完整的 4:3 屏幕，下方用紧凑的“媒体／预设／调整／导出”标签切换工作区。
 在“调整”中选择分类标签，同组多个参数同时显示。每项的滑轨、数字输入与加减按钮并排放置；其余参数可展开“精细调整”。
-“更多”收纳使用说明、关于鸣谢和语言切换；调整页还可在这里进入“常用／已修改”。
-手机操作区采用一体式浅凹面板，减少重复边框；参数说明点击展开，底部预览工具带保持紧凑。
+“更多”是同级标签页，分为使用说明、关于鸣谢和界面设置；语言、搜索和“常用／已修改”位于界面设置。
+手机操作区采用一体式浅凹面板，减少重复边框；参数说明点击展开。主标签下方是带图标的拟物预览按钮。
 数字输入、± 和滑条仍然可用，工作区独立滚动，不遮挡屏幕，也不用整页来回翻找。
-底部保留预览状态，“预览设置”展开编码选项，“按住对比原图”临时查看未处理媒体。
+手机不再保留底部预览栏；“预览设置”在同一操作面板显示，点击“返回”回到原页面。生成期间才显示处理状态。“按住对比”临时查看未处理媒体。电脑端保留原预览布局。
 导入媒体、使用说明、关于鸣谢和屏幕下方的配置按钮始终保留。
 
 新增“低码率磨损 VHS”和“高辉光像素 CRT”预设。应用内置预设不覆盖当前导出时长。

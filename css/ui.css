@@ -60,6 +60,7 @@
 .preview-console { margin:0 2px 20px; }
 .preview-console .preview-quality-control { margin:0 0 12px; }
 .preview-console > button { width:100%; }
+.preview-commands[hidden],.preview-console[hidden],.workspace-auxiliary[hidden],.mobile-more-tab { display:none; }
 .parameter-stepper { display:flex; align-items:center; gap:8px; margin:4px 0 8px; }
 .parameter-stepper button { flex:none; min-width:40px; min-height:40px; padding:4px; }
 .parameter-stepper input { min-width:0; width:100%; height:40px; padding:6px 10px; font:400 16px "Segoe UI","Microsoft YaHei",sans-serif; color:#494238; border:1px solid #b1a58e; border-radius:5px; background:#d4cbb7; box-shadow:inset 1px 2px 3px #8f806455,0 1px #fff3dc; font-variant-numeric:tabular-nums; }
@@ -205,10 +206,25 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
   .terminal-workspace .parameter-content :is(select,input[type=text]),.terminal-workspace .preview-options select { height:var(--panel-control-height); }
   .terminal-workspace .control input::file-selector-button { min-height:var(--panel-control-height); padding:4px 10px; font-size:13px; }
   .terminal-workspace .dos-header { display:none; }
-  .parameter-toolbar { grid-template-columns:minmax(0,1fr) 48px; gap:4px; padding:0; border-bottom:1px solid #afa187; box-shadow:0 1px #f8efdc; }
+  .parameter-toolbar { grid-template-columns:minmax(0,1fr); gap:4px; padding:0; border-bottom:1px solid #afa187; box-shadow:0 1px #f8efdc; }
   .workspace-modes { gap:3px; align-items:end; border:0; box-shadow:none; }
   .workspace-modes [role=tab] { display:block; min-height:36px; padding:6px 3px; font-size:14px; font-weight:400; border-radius:5px 5px 0 0; border:1px solid #b3a58c; border-bottom:0; background:linear-gradient(#eee6d5,#cfc3ad); box-shadow:inset 1px 1px #fff8e8, inset -1px 0 #b9ac94; color:#665b48; }
   .workspace-modes [role=tab][aria-selected=true] { color:#453e31; background:linear-gradient(#f0e8d7,#e2d9c7); border-color:#b3a58c; box-shadow:inset 0 1px #fff7e7; margin-bottom:-1px; padding-bottom:7px; }
+  .preview-commands { display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:5px; padding:6px 0 2px; flex:none; }
+  .terminal-workspace .preview-commands > button { display:flex; justify-content:center; align-items:center; gap:5px; min-height:32px; padding:4px; font-size:12px; border:1px solid #b6a88e; border-radius:5px; background:linear-gradient(#eee5d3,#d7cbb5); box-shadow:inset 0 1px #fff8e8,0 2px 2px #93866d55; }
+  .preview-commands svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.6; }
+  .preview-commands > .hint { display:none; }
+  .preview-commands > .hint[data-busy=true] { display:block; grid-column:1 / -1; font-size:11px; margin:0; }
+  #previewGroup .preview-back { margin-bottom:8px; }
+  #previewGroup .hint,#interfaceGroup .hint { font-size:12px; line-height:1.5; margin:6px 0; }
+  #interfaceGroup { padding:4px 0; }
+  #interfaceGroup .dos-tools { justify-content:flex-start; padding:8px 0; }
+  #interfaceGroup #parameterSearch { display:block; width:100%; height:32px; }
+  #interfaceGroup > .group-body > button { margin:8px 4px 0 0; }
+  .module-help { margin:6px 0; }
+  .terminal-workspace .module-help > summary { padding:6px; min-height:28px; margin:0; font-size:12px; background:none; box-shadow:none; border:0; }
+  .terminal-workspace .module-help > summary::after { content:' +'; }
+  .terminal-workspace .module-help[open] > summary::after { content:' −'; }
   .workspace-auxiliary { display:block; min-width:0; align-self:end; }
   .workspace-auxiliary > summary { display:block; min-height:36px; padding:8px 2px; font-size:13px; text-align:center; list-style:none; cursor:pointer; color:#665b48; }
   .workspace-auxiliary > summary::after { content:' ▾'; }

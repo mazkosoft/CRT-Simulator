@@ -152,7 +152,7 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 @media(max-width:900px) {
   .cabinet-controls { grid-template-columns:repeat(4,32px) minmax(52px,1fr) 48px; gap:0 2px; }
   .cabinet-controls > .config-control { grid-column:4; }
-  .cabinet-controls > .volume-control { grid-column:5; width:52px; justify-self:center; }
+  .cabinet-controls > .volume-control { grid-column:5; width:52px; justify-self:end; margin-right:8px; }
   .cabinet-controls > .power-assembly { grid-column:6; width:48px; }
   .cabinet-controls .monitor-oval { width:32px; height:32px; }
   .cabinet-controls > .monitor-view-control { width:32px; min-width:0; grid-template-columns:minmax(0,1fr); }
@@ -234,6 +234,7 @@ body { padding:18px; background:#555753; color:var(--ink); font-family:"Segoe UI
 .preview-console { margin:0 2px 20px; }
 .preview-console .preview-quality-control { margin:0 0 12px; }
 .preview-console > button { width:100%; }
+.preview-commands[hidden],.preview-console[hidden],.workspace-auxiliary[hidden],.mobile-more-tab { display:none; }
 .parameter-stepper { display:flex; align-items:center; gap:8px; margin:4px 0 8px; }
 .parameter-stepper button { flex:none; min-width:40px; min-height:40px; padding:4px; }
 .parameter-stepper input { min-width:0; width:100%; height:40px; padding:6px 10px; font:400 16px "Segoe UI","Microsoft YaHei",sans-serif; color:#494238; border:1px solid #b1a58e; border-radius:5px; background:#d4cbb7; box-shadow:inset 1px 2px 3px #8f806455,0 1px #fff3dc; font-variant-numeric:tabular-nums; }
@@ -379,10 +380,25 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
   .terminal-workspace .parameter-content :is(select,input[type=text]),.terminal-workspace .preview-options select { height:var(--panel-control-height); }
   .terminal-workspace .control input::file-selector-button { min-height:var(--panel-control-height); padding:4px 10px; font-size:13px; }
   .terminal-workspace .dos-header { display:none; }
-  .parameter-toolbar { grid-template-columns:minmax(0,1fr) 48px; gap:4px; padding:0; border-bottom:1px solid #afa187; box-shadow:0 1px #f8efdc; }
+  .parameter-toolbar { grid-template-columns:minmax(0,1fr); gap:4px; padding:0; border-bottom:1px solid #afa187; box-shadow:0 1px #f8efdc; }
   .workspace-modes { gap:3px; align-items:end; border:0; box-shadow:none; }
   .workspace-modes [role=tab] { display:block; min-height:36px; padding:6px 3px; font-size:14px; font-weight:400; border-radius:5px 5px 0 0; border:1px solid #b3a58c; border-bottom:0; background:linear-gradient(#eee6d5,#cfc3ad); box-shadow:inset 1px 1px #fff8e8, inset -1px 0 #b9ac94; color:#665b48; }
   .workspace-modes [role=tab][aria-selected=true] { color:#453e31; background:linear-gradient(#f0e8d7,#e2d9c7); border-color:#b3a58c; box-shadow:inset 0 1px #fff7e7; margin-bottom:-1px; padding-bottom:7px; }
+  .preview-commands { display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:5px; padding:6px 0 2px; flex:none; }
+  .terminal-workspace .preview-commands > button { display:flex; justify-content:center; align-items:center; gap:5px; min-height:32px; padding:4px; font-size:12px; border:1px solid #b6a88e; border-radius:5px; background:linear-gradient(#eee5d3,#d7cbb5); box-shadow:inset 0 1px #fff8e8,0 2px 2px #93866d55; }
+  .preview-commands svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.6; }
+  .preview-commands > .hint { display:none; }
+  .preview-commands > .hint[data-busy=true] { display:block; grid-column:1 / -1; font-size:11px; margin:0; }
+  #previewGroup .preview-back { margin-bottom:8px; }
+  #previewGroup .hint,#interfaceGroup .hint { font-size:12px; line-height:1.5; margin:6px 0; }
+  #interfaceGroup { padding:4px 0; }
+  #interfaceGroup .dos-tools { justify-content:flex-start; padding:8px 0; }
+  #interfaceGroup #parameterSearch { display:block; width:100%; height:32px; }
+  #interfaceGroup > .group-body > button { margin:8px 4px 0 0; }
+  .module-help { margin:6px 0; }
+  .terminal-workspace .module-help > summary { padding:6px; min-height:28px; margin:0; font-size:12px; background:none; box-shadow:none; border:0; }
+  .terminal-workspace .module-help > summary::after { content:' +'; }
+  .terminal-workspace .module-help[open] > summary::after { content:' −'; }
   .workspace-auxiliary { display:block; min-width:0; align-self:end; }
   .workspace-auxiliary > summary { display:block; min-height:36px; padding:8px 2px; font-size:13px; text-align:center; list-style:none; cursor:pointer; color:#665b48; }
   .workspace-auxiliary > summary::after { content:' ▾'; }
@@ -1037,11 +1053,11 @@ input[type=range]:active,.control input[type=range]:active { outline:none; }
 <p class="hint" data-i18n-zh="1. 在“媒体导入”选择图片或视频，再在“效果预设”选择并应用效果。" data-i18n-en="1. Load an image or video in Media import, then choose and apply an Effect preset.">1. 在“媒体导入”选择图片或视频，再在“效果预设”选择并应用效果。</p>
 <p class="hint" data-i18n-zh="2. 像素化与点阵在“像素分辨率”；曲面、闪烁、暗角和辉光在“CRT屏幕”；亮度、对比度和模糊在“色彩设置”。" data-i18n-en="2. Pixel resolution controls pixelation and the mask. CRT screen controls curvature, flicker, vignette and glow. Color settings controls brightness, contrast and blur.">2. 像素化与点阵在“像素分辨率”；曲面、闪烁、暗角和辉光在“CRT屏幕”；亮度、对比度和模糊在“色彩设置”。</p>
 <p class="hint" data-i18n-zh="3. 数值可以直接输入，按回车或离开输入框应用；旁边的减号和加号按参数精度微调。滑杆接近有效整数时吸附，0～1 参数保留小数。" data-i18n-en="3. Enter a number and press Enter or leave the field to apply it. Minus and plus adjust by the parameter step. Sliders attract valid integers; ranges from zero to one retain fractional control.">3. 数值可以直接输入，按回车或离开输入框应用；旁边的减号和加号按参数精度微调。滑杆接近有效整数时吸附，0～1 参数保留小数。</p>
-<p class="hint" data-i18n-zh="4. 在面板底部的“预览设置”中切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。" data-i18n-en="4. Switch live effects and encoded preview in Preview settings at the bottom of the panel. On slower devices, turn off automatic updates and refresh manually. Controls below the screen play, pause, restart, adjust volume or zoom.">4. 在面板底部的“预览设置”中切换效果预览与编码预览。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。</p>
+<p class="hint" data-i18n-zh="4. 点击“预览设置”切换效果预览与编码预览。手机端入口位于主标签下方，返回按钮回到原页面。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。" data-i18n-en="4. Open Preview settings to switch live effects and encoded preview. On phones, the button sits below the main tabs; Back returns to the previous page. On slower devices, disable automatic updates and refresh manually. Screen controls provide playback, seeking, volume and zoom.">4. 点击“预览设置”切换效果预览与编码预览。手机端入口位于主标签下方，返回按钮回到原页面。设备较慢时关闭自动更新，调好参数后点击刷新。屏幕下方可播放、暂停、重播、调音量或放大查看。</p>
 <p class="hint" data-i18n-zh="编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。" data-i18n-en="The screen shows up to two seconds encoded with your actual settings. It updates after changes settle; disable automatic updates and refresh manually on slower devices.">编码预览在原屏幕显示最多 2 秒的真实编码结果。参数停止变化后自动更新；设备较慢时可关闭自动更新并手动刷新。</p>
 <p class="hint" data-i18n-zh="5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。" data-i18n-en="5. Choose quality, duration, frame rate, bitrate and format in Video settings, then save an image or video in Media export. Export mosaic affects encoded output, unlike live pixelation.">5. 在“视频设置”调整画质、时长、帧率、码率及格式，然后在“媒体导出”导出图片或视频。导出马赛克只作用于编码结果，不同于实时像素化。</p>
 <p class="hint" data-i18n-zh="6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。" data-i18n-en="6. Use the configuration button below the screen to import, export or save settings. Media is processed locally and is not uploaded.">6. 屏幕下方的配置按钮可导入、导出和保存参数。媒体在浏览器本地处理，不会上传到服务器。</p>
-<p class="hint" data-i18n-zh="电脑端可用分类键和搜索查找参数。手机端通过“媒体／预设／调整／导出”标签切换，在调整页选择分类和参数下拉框；使用说明、鸣谢、语言及常用参数入口收纳在“更多”中。" data-i18n-en="On desktop, use category keys or search. On phones, switch Media / Presets / Adjust / Export tabs, then choose a category and a parameter from the dropdown. More holds the guide, credits, language and favorite settings.">电脑端可用分类键和搜索查找参数。手机端通过“媒体／预设／调整／导出”标签切换，在调整页选择分类和参数下拉框；使用说明、鸣谢、语言及常用参数入口收纳在“更多”中。</p>
+<p class="hint" data-i18n-zh="电脑端可用分类键和搜索查找参数。手机端通过“媒体／预设／调整／导出／更多”标签切换，同组多个参数并排排列滑轨和数值。更多页分为使用说明、关于鸣谢和界面设置；语言、搜索、常用及已修改入口位于界面设置。" data-i18n-en="On desktop, use category keys or search. On phones, switch Media / Presets / Adjust / Export / More tabs; each category shows multiple parameter rows. More has Guide, About & credits and Interface categories. Interface holds language, search, favorites and modified settings.">电脑端可用分类键和搜索查找参数。手机端通过“媒体／预设／调整／导出／更多”标签切换，同组多个参数并排排列滑轨和数值。更多页分为使用说明、关于鸣谢和界面设置；语言、搜索、常用及已修改入口位于界面设置。</p>
 <p class="credit-text"><a id="userGuideLink" href="https://github.com/mazkosoft/CRT-Simulator#简体中文" target="_blank" rel="noopener noreferrer" data-i18n-zh="完整使用说明书" data-i18n-en="Complete user guide">完整使用说明书</a></p>
     </details>
 
@@ -5895,7 +5911,8 @@ refreshUserPresetSelect();
 document.querySelectorAll(".control-group").forEach(group => {
   const body = document.createElement("div");
   body.className = "group-body";
-  while (group.children.length > 1) body.append(group.children[1]);
+  const summary = group.querySelector(':scope > summary');
+  for (const child of [...group.children]) if (child !== summary) body.append(child);
   group.append(body);
 });
 
@@ -5926,11 +5943,12 @@ function initializeParameterNavigation() {
   const groupOrder=['mediaGroup','presetsGroup','phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup','videoSettingsGroup','audioGroup','exportGroup','userGuideGroup','aboutGroup'];
   const groups = [...panel.querySelectorAll('.control-group')].filter(group=>group.id!=='displayGroup').sort((a,b)=>groupOrder.indexOf(a.id)-groupOrder.indexOf(b.id));
   const search = document.getElementById('parameterSearch');
+  const searchLabel=search.closest('label');
   const status = document.getElementById('navigationStatus');
   const language=document.querySelector('.dos-tools');
   const header=language.parentElement;
   const mobile = matchMedia('(max-width:900px)');
-  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup'], export:['videoSettingsGroup','audioGroup','exportGroup'] };
+  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup'], export:['videoSettingsGroup','audioGroup','exportGroup'], more:['userGuideGroup','aboutGroup','interfaceGroup'], preview:['previewGroup'] };
   const common = new Set(['imageFit','effectBoundary','rgbPeriod','pixelate','rgbOpacity','maskOpacity','scale','glowOpacity','vignette','brightness','contrast','finalSaturation','vhsNoise','vhsJitter','vhsChromaBleed','audioVolume','audioBandwidth','audioHiss','audioReverb','exportScale','exportFps','exportBitrate','exportDuration','exportFormat','exportPixelSize']);
   const workspace = document.createElement('div'); workspace.className = 'workspace-body';
   const rail = document.createElement('nav'); rail.className = 'category-rail';
@@ -5953,6 +5971,29 @@ function initializeParameterNavigation() {
   preview.prepend(previewStatus,info);
   disclosure.append(...[...preview.children].filter(el=>!['encodedPreviewStatus','exportPreviewInfo','previewExportButton','compareOriginalButton'].includes(el.id)));
   preview.append(disclosure);
+  function workspaceGroup(id,zh,en) {
+    const group=document.createElement('details');group.id=id;group.className='control-group';
+    const heading=document.createElement('summary');heading.dataset.i18nZh=zh;heading.dataset.i18nEn=en;heading.textContent=currentLang==='zh'?zh:en;
+    const body=document.createElement('div');body.className='group-body';group.append(heading,body);content.append(group);groups.push(group);return group;
+  }
+  const interfaceGroup=workspaceGroup('interfaceGroup','界面设置','Interface');
+  const previewGroup=workspaceGroup('previewGroup','预览设置','Preview');
+  const previewBody=previewGroup.querySelector('.group-body');
+  const previewCommands=document.createElement('div');previewCommands.className='preview-commands';toolbar.after(previewCommands);
+  new MutationObserver(()=>{previewStatus.dataset.busy=String(/正在|生成中|Generating|Encoding/i.test(previewStatus.textContent));}).observe(previewStatus,{childList:true,subtree:true,characterData:true});
+  const refreshPreview=document.getElementById('previewExportButton'),comparePreview=document.getElementById('compareOriginalButton');
+  const previewSettings=button('预览设置','Preview',()=>{if(page!=='preview')previousWorkspace={page,active};page='preview';active='previewGroup';content.scrollTop=0;refresh();});
+  const previewBack=button('返回','Back',()=>{page=previousWorkspace.page;active=previousWorkspace.active;refresh();});
+  previewBack.className='preview-back';previewBody.prepend(previewBack);
+  let previousWorkspace={page:'presets',active:'presetsGroup'};
+  for(const group of groups){
+    const hints=[...group.querySelector('.group-body').children].filter(el=>el.classList.contains('hint'));
+    if(hints.length&&['tapeGroup','textureGroup','opticsGroup'].includes(group.id)){
+      const help=document.createElement('details');help.className='module-help';
+      const heading=document.createElement('summary');heading.dataset.i18nZh='效果说明';heading.dataset.i18nEn='About this effect';heading.textContent=currentLang==='zh'?'效果说明':'About this effect';
+      help.append(heading,...hints);group.querySelector('.group-body').append(help);
+    }
+  }
   let page='presets', active='presetsGroup', selected='', baseline=collectConfig();
   let favorites=new Set();
   try {favorites=new Set(JSON.parse(localStorage.getItem('crt-favorite-parameters')||'[]').filter(key=>key in DEFAULT_CONFIG));}catch { /* Storage optional. */ }
@@ -5966,13 +6007,14 @@ function initializeParameterNavigation() {
   }
   const modes=toolbar.querySelector('.workspace-modes');
   const mediaTab=button('媒体','Media',()=>{});mediaTab.dataset.page='media';mediaTab.className='mobile-media-tab';modes.prepend(mediaTab);
+  const moreTab=button('更多','More',()=>{});moreTab.dataset.page='more';moreTab.className='mobile-more-tab';modes.append(moreTab);
   modes.setAttribute('role','tablist');
   modes.setAttribute('aria-label',currentLang==='zh'?'操作面板':'Workspace');
   for(const tab of modes.children){tab.id=`workspace-tab-${tab.dataset.page}`;tab.setAttribute('role','tab');tab.setAttribute('aria-controls','parameterWorkspace');}
   content.id='parameterWorkspace';content.setAttribute('role','tabpanel');
   modes.addEventListener('keydown',event=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-    const tabs=[...modes.children].filter(el=>mobile.matches||el!==mediaTab),index=tabs.indexOf(event.target);
+    const tabs=[...modes.children].filter(el=>mobile.matches||![mediaTab,moreTab].includes(el)),index=tabs.indexOf(event.target);
     const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
     event.preventDefault();tabs[next].focus();tabs[next].click();
   });
@@ -6026,14 +6068,33 @@ function initializeParameterNavigation() {
     for(const entry of entries)if(entry.help){
       if(entry.help.dataset.mobile!==String(mobile.matches)){entry.help.open=false;entry.help.dataset.mobile=String(mobile.matches);}
     }
-    (mobile.matches?utilities:header).append(language);
-    if(!mobile.matches&&page==='media')page='presets';
+    (mobile.matches?interfaceGroup.querySelector('.group-body'):header).append(language);
+    if(!mobile.matches&&['media','more','preview'].includes(page)){page='presets';active='presetsGroup';}
+    auxiliary.hidden=mobile.matches;
+    preview.hidden=mobile.matches;
+    previewCommands.hidden=!mobile.matches;
+    if(mobile.matches){
+      previewCommands.append(refreshPreview,comparePreview,previewSettings,previewStatus);
+      previewBody.append(...[...disclosure.children].filter(el=>el!==title));
+      interfaceGroup.querySelector('.group-body').append(search,favoriteButton,modifiedButton);
+    }else{
+      preview.prepend(previewStatus,info,refreshPreview,comparePreview);
+      disclosure.append(...[...previewBody.children].filter(el=>el!==previewBack));
+      searchLabel.append(search);
+    }
     auxiliaryTitle.textContent=currentLang==='zh'?'更多':'More';
     modes.setAttribute('aria-label',currentLang==='zh'?'操作面板':'Workspace');
-    if(mobile.matches)utilities.append(favoriteButton,modifiedButton);else rail.prepend(favoriteButton,modifiedButton);
-    if(mobile.matches)disclosure.append(info);else previewStatus.after(info);
-    document.getElementById('previewExportButton').textContent=currentLang==='zh'?(mobile.matches?'刷新预览':'刷新编码预览'):(mobile.matches?'Refresh':'Refresh encoded preview');
+    if(!mobile.matches)rail.prepend(favoriteButton,modifiedButton);
+    if(mobile.matches)previewBody.append(info);else previewStatus.after(info);
+    document.getElementById('previewExportButton').textContent=currentLang==='zh'?(mobile.matches?'刷新':'刷新编码预览'):(mobile.matches?'Refresh':'Refresh encoded preview');
     document.getElementById('compareOriginalButton').textContent=currentLang==='zh'?(mobile.matches?'按住对比':'按住对比原图'):(mobile.matches?'Hold original':'Hold for original');
+    if(mobile.matches){
+      previewSettings.textContent=currentLang==='zh'?'预览设置':'Preview';
+      for(const [btn,path]of [[refreshPreview,'M20 7v5h-5M20 12a8 8 0 1 0-2 5'],[comparePreview,'M12 3v18M3 5h18v14H3Z'],[previewSettings,'M4 7h16M4 17h16M8 4v6M16 14v6']]){
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
+        const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d',path);svg.append(line);btn.prepend(svg);
+      }
+    }
     const query=search.value.trim(), filtered=!!query||['favorites','modified'].includes(active);
     const candidates=entries.filter(entry=>query?matchesParameterSearch(`${label(entry)} ${entry.key} ${entry.item.querySelector('label span')?.dataset.i18nZh||''} ${entry.item.querySelector('label span')?.dataset.i18nEn||''}`,query):active==='favorites'?favorites.has(entry.key):active==='modified'?changed(entry):entry.group.id===active);
     if(!candidates.some(entry=>entry.key===selected))selected=candidates[0]?.key||'';
@@ -6067,7 +6128,7 @@ function initializeParameterNavigation() {
     rail.hidden=mobile.matches&&![...categoryButtons.values()].some(btn=>!btn.hidden);
     rail.setAttribute('role',mobile.matches?'tablist':'navigation');
     rail.setAttribute('aria-label',currentLang==='zh'?'参数分类':'Parameter categories');
-    favoriteButton.hidden=modifiedButton.hidden=page!=='adjust';favoriteButton.setAttribute('aria-pressed',String(active==='favorites'));modifiedButton.setAttribute('aria-pressed',String(active==='modified'));
+    favoriteButton.hidden=modifiedButton.hidden=mobile.matches?active!=='interfaceGroup':page!=='adjust';favoriteButton.setAttribute('aria-pressed',String(active==='favorites'));modifiedButton.setAttribute('aria-pressed',String(active==='modified'));
     for(const btn of toolbar.querySelectorAll('[data-page]')){const on=btn.dataset.page===page;btn.setAttribute('aria-pressed',String(on));btn.setAttribute('aria-selected',String(on));btn.tabIndex=on?0:-1;if(on)content.setAttribute('aria-labelledby',btn.id);}
     for(const entry of entries) {
       entry.star.textContent=favorites.has(entry.key)?'★':'☆';entry.star.setAttribute('aria-pressed',String(favorites.has(entry.key)));

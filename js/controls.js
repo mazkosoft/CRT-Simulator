@@ -681,7 +681,8 @@ refreshUserPresetSelect();
 document.querySelectorAll(".control-group").forEach(group => {
   const body = document.createElement("div");
   body.className = "group-body";
-  while (group.children.length > 1) body.append(group.children[1]);
+  const summary = group.querySelector(':scope > summary');
+  for (const child of [...group.children]) if (child !== summary) body.append(child);
   group.append(body);
 });
 

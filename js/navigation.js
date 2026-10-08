@@ -19,11 +19,12 @@ function initializeParameterNavigation() {
   const groupOrder=['mediaGroup','presetsGroup','phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup','videoSettingsGroup','audioGroup','exportGroup','userGuideGroup','aboutGroup'];
   const groups = [...panel.querySelectorAll('.control-group')].filter(group=>group.id!=='displayGroup').sort((a,b)=>groupOrder.indexOf(a.id)-groupOrder.indexOf(b.id));
   const search = document.getElementById('parameterSearch');
+  const searchLabel=search.closest('label');
   const status = document.getElementById('navigationStatus');
   const language=document.querySelector('.dos-tools');
   const header=language.parentElement;
   const mobile = matchMedia('(max-width:900px)');
-  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup'], export:['videoSettingsGroup','audioGroup','exportGroup'] };
+  const pages = { media:['mediaGroup'], presets:['presetsGroup','mediaGroup'], adjust:['phosphorGroup','textureGroup','tapeGroup','opticsGroup','colorGroup'], export:['videoSettingsGroup','audioGroup','exportGroup'], more:['userGuideGroup','aboutGroup','interfaceGroup'], preview:['previewGroup'] };
   const common = new Set(['imageFit','effectBoundary','rgbPeriod','pixelate','rgbOpacity','maskOpacity','scale','glowOpacity','vignette','brightness','contrast','finalSaturation','vhsNoise','vhsJitter','vhsChromaBleed','audioVolume','audioBandwidth','audioHiss','audioReverb','exportScale','exportFps','exportBitrate','exportDuration','exportFormat','exportPixelSize']);
   const workspace = document.createElement('div'); workspace.className = 'workspace-body';
   const rail = document.createElement('nav'); rail.className = 'category-rail';
@@ -46,6 +47,29 @@ function initializeParameterNavigation() {
   preview.prepend(previewStatus,info);
   disclosure.append(...[...preview.children].filter(el=>!['encodedPreviewStatus','exportPreviewInfo','previewExportButton','compareOriginalButton'].includes(el.id)));
   preview.append(disclosure);
+  function workspaceGroup(id,zh,en) {
+    const group=document.createElement('details');group.id=id;group.className='control-group';
+    const heading=document.createElement('summary');heading.dataset.i18nZh=zh;heading.dataset.i18nEn=en;heading.textContent=currentLang==='zh'?zh:en;
+    const body=document.createElement('div');body.className='group-body';group.append(heading,body);content.append(group);groups.push(group);return group;
+  }
+  const interfaceGroup=workspaceGroup('interfaceGroup','界面设置','Interface');
+  const previewGroup=workspaceGroup('previewGroup','预览设置','Preview');
+  const previewBody=previewGroup.querySelector('.group-body');
+  const previewCommands=document.createElement('div');previewCommands.className='preview-commands';toolbar.after(previewCommands);
+  new MutationObserver(()=>{previewStatus.dataset.busy=String(/正在|生成中|Generating|Encoding/i.test(previewStatus.textContent));}).observe(previewStatus,{childList:true,subtree:true,characterData:true});
+  const refreshPreview=document.getElementById('previewExportButton'),comparePreview=document.getElementById('compareOriginalButton');
+  const previewSettings=button('预览设置','Preview',()=>{if(page!=='preview')previousWorkspace={page,active};page='preview';active='previewGroup';content.scrollTop=0;refresh();});
+  const previewBack=button('返回','Back',()=>{page=previousWorkspace.page;active=previousWorkspace.active;refresh();});
+  previewBack.className='preview-back';previewBody.prepend(previewBack);
+  let previousWorkspace={page:'presets',active:'presetsGroup'};
+  for(const group of groups){
+    const hints=[...group.querySelector('.group-body').children].filter(el=>el.classList.contains('hint'));
+    if(hints.length&&['tapeGroup','textureGroup','opticsGroup'].includes(group.id)){
+      const help=document.createElement('details');help.className='module-help';
+      const heading=document.createElement('summary');heading.dataset.i18nZh='效果说明';heading.dataset.i18nEn='About this effect';heading.textContent=currentLang==='zh'?'效果说明':'About this effect';
+      help.append(heading,...hints);group.querySelector('.group-body').append(help);
+    }
+  }
   let page='presets', active='presetsGroup', selected='', baseline=collectConfig();
   let favorites=new Set();
   try {favorites=new Set(JSON.parse(localStorage.getItem('crt-favorite-parameters')||'[]').filter(key=>key in DEFAULT_CONFIG));}catch { /* Storage optional. */ }
@@ -59,13 +83,14 @@ function initializeParameterNavigation() {
   }
   const modes=toolbar.querySelector('.workspace-modes');
   const mediaTab=button('媒体','Media',()=>{});mediaTab.dataset.page='media';mediaTab.className='mobile-media-tab';modes.prepend(mediaTab);
+  const moreTab=button('更多','More',()=>{});moreTab.dataset.page='more';moreTab.className='mobile-more-tab';modes.append(moreTab);
   modes.setAttribute('role','tablist');
   modes.setAttribute('aria-label',currentLang==='zh'?'操作面板':'Workspace');
   for(const tab of modes.children){tab.id=`workspace-tab-${tab.dataset.page}`;tab.setAttribute('role','tab');tab.setAttribute('aria-controls','parameterWorkspace');}
   content.id='parameterWorkspace';content.setAttribute('role','tabpanel');
   modes.addEventListener('keydown',event=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-    const tabs=[...modes.children].filter(el=>mobile.matches||el!==mediaTab),index=tabs.indexOf(event.target);
+    const tabs=[...modes.children].filter(el=>mobile.matches||![mediaTab,moreTab].includes(el)),index=tabs.indexOf(event.target);
     const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
     event.preventDefault();tabs[next].focus();tabs[next].click();
   });
@@ -119,14 +144,33 @@ function initializeParameterNavigation() {
     for(const entry of entries)if(entry.help){
       if(entry.help.dataset.mobile!==String(mobile.matches)){entry.help.open=false;entry.help.dataset.mobile=String(mobile.matches);}
     }
-    (mobile.matches?utilities:header).append(language);
-    if(!mobile.matches&&page==='media')page='presets';
+    (mobile.matches?interfaceGroup.querySelector('.group-body'):header).append(language);
+    if(!mobile.matches&&['media','more','preview'].includes(page)){page='presets';active='presetsGroup';}
+    auxiliary.hidden=mobile.matches;
+    preview.hidden=mobile.matches;
+    previewCommands.hidden=!mobile.matches;
+    if(mobile.matches){
+      previewCommands.append(refreshPreview,comparePreview,previewSettings,previewStatus);
+      previewBody.append(...[...disclosure.children].filter(el=>el!==title));
+      interfaceGroup.querySelector('.group-body').append(search,favoriteButton,modifiedButton);
+    }else{
+      preview.prepend(previewStatus,info,refreshPreview,comparePreview);
+      disclosure.append(...[...previewBody.children].filter(el=>el!==previewBack));
+      searchLabel.append(search);
+    }
     auxiliaryTitle.textContent=currentLang==='zh'?'更多':'More';
     modes.setAttribute('aria-label',currentLang==='zh'?'操作面板':'Workspace');
-    if(mobile.matches)utilities.append(favoriteButton,modifiedButton);else rail.prepend(favoriteButton,modifiedButton);
-    if(mobile.matches)disclosure.append(info);else previewStatus.after(info);
-    document.getElementById('previewExportButton').textContent=currentLang==='zh'?(mobile.matches?'刷新预览':'刷新编码预览'):(mobile.matches?'Refresh':'Refresh encoded preview');
+    if(!mobile.matches)rail.prepend(favoriteButton,modifiedButton);
+    if(mobile.matches)previewBody.append(info);else previewStatus.after(info);
+    document.getElementById('previewExportButton').textContent=currentLang==='zh'?(mobile.matches?'刷新':'刷新编码预览'):(mobile.matches?'Refresh':'Refresh encoded preview');
     document.getElementById('compareOriginalButton').textContent=currentLang==='zh'?(mobile.matches?'按住对比':'按住对比原图'):(mobile.matches?'Hold original':'Hold for original');
+    if(mobile.matches){
+      previewSettings.textContent=currentLang==='zh'?'预览设置':'Preview';
+      for(const [btn,path]of [[refreshPreview,'M20 7v5h-5M20 12a8 8 0 1 0-2 5'],[comparePreview,'M12 3v18M3 5h18v14H3Z'],[previewSettings,'M4 7h16M4 17h16M8 4v6M16 14v6']]){
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
+        const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d',path);svg.append(line);btn.prepend(svg);
+      }
+    }
     const query=search.value.trim(), filtered=!!query||['favorites','modified'].includes(active);
     const candidates=entries.filter(entry=>query?matchesParameterSearch(`${label(entry)} ${entry.key} ${entry.item.querySelector('label span')?.dataset.i18nZh||''} ${entry.item.querySelector('label span')?.dataset.i18nEn||''}`,query):active==='favorites'?favorites.has(entry.key):active==='modified'?changed(entry):entry.group.id===active);
     if(!candidates.some(entry=>entry.key===selected))selected=candidates[0]?.key||'';
@@ -160,7 +204,7 @@ function initializeParameterNavigation() {
     rail.hidden=mobile.matches&&![...categoryButtons.values()].some(btn=>!btn.hidden);
     rail.setAttribute('role',mobile.matches?'tablist':'navigation');
     rail.setAttribute('aria-label',currentLang==='zh'?'参数分类':'Parameter categories');
-    favoriteButton.hidden=modifiedButton.hidden=page!=='adjust';favoriteButton.setAttribute('aria-pressed',String(active==='favorites'));modifiedButton.setAttribute('aria-pressed',String(active==='modified'));
+    favoriteButton.hidden=modifiedButton.hidden=mobile.matches?active!=='interfaceGroup':page!=='adjust';favoriteButton.setAttribute('aria-pressed',String(active==='favorites'));modifiedButton.setAttribute('aria-pressed',String(active==='modified'));
     for(const btn of toolbar.querySelectorAll('[data-page]')){const on=btn.dataset.page===page;btn.setAttribute('aria-pressed',String(on));btn.setAttribute('aria-selected',String(on));btn.tabIndex=on?0:-1;if(on)content.setAttribute('aria-labelledby',btn.id);}
     for(const entry of entries) {
       entry.star.textContent=favorites.has(entry.key)?'★':'☆';entry.star.setAttribute('aria-pressed',String(favorites.has(entry.key)));
